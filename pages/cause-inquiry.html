@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="ko" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SIF 건설재해 위험성평가 - 기인물조회</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"></script>
+  <script src="https://cdn.jsdelivr.net/npm/papaparse@5"></script>
+  <link rel="stylesheet" href="../css/style.css">
+</head>
+<body class="bg-gray-950 text-gray-100 min-h-screen">
+  <div id="sidebar"></div>
+
+  <main id="content" class="p-4 lg:p-6">
+    <div id="page-header"></div>
+
+    <!-- 필터 바 -->
+    <div class="filter-bar mb-4">
+      <div class="filter-group">
+        <label>KOEN 공정</label>
+        <select id="filter-koen">
+          <option value="">전체</option>
+          <option value="true">YES</option>
+          <option value="false">NO</option>
+        </select>
+      </div>
+      <div class="filter-group">
+        <label>12대 기인물</label>
+        <select id="filter-12">
+          <option value="">전체</option>
+          <option value="true">12대 기인물만</option>
+        </select>
+      </div>
+      <div class="filter-group">
+        <label>기인물 분류</label>
+        <select id="filter-classification"></select>
+      </div>
+      <div class="filter-group">
+        <label>기인물</label>
+        <select id="filter-cause"></select>
+      </div>
+      <button id="btn-reset" class="px-4 py-2 bg-gray-700 hover:bg-gray-600 text-sm rounded-lg transition-colors">초기화</button>
+    </div>
+
+    <!-- 선택된 기인물 요약 -->
+    <div id="cause-summary" class="mb-4 hidden">
+      <div class="chart-container">
+        <div class="flex flex-wrap items-center gap-4">
+          <div>
+            <p class="text-xs text-gray-500">선택 기인물</p>
+            <p class="text-xl font-bold text-white" id="cause-name">-</p>
+          </div>
+          <div>
+            <p class="text-xs text-gray-500">총 사고건수</p>
+            <p class="text-xl font-bold text-red-400" id="cause-count">-</p>
+          </div>
+          <div>
+            <p class="text-xs text-gray-500">전체 순위</p>
+            <p class="text-xl font-bold text-amber-400" id="cause-rank">-</p>
+          </div>
+          <div id="cause-badge-12"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 차트 Row -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-4">
+      <div class="chart-container">
+        <h3 class="text-sm font-semibold text-gray-300 mb-3">공종별 사고건수</h3>
+        <div style="height:300px"><canvas id="chart-by-construction"></canvas></div>
+      </div>
+      <div class="chart-container">
+        <h3 class="text-sm font-semibold text-gray-300 mb-3">재해형태별 건수</h3>
+        <div style="height:300px"><canvas id="chart-by-disaster"></canvas></div>
+      </div>
+    </div>
+
+    <!-- 작업명 분포 + 테이블 -->
+    <div class="grid grid-cols-1 xl:grid-cols-3 gap-4">
+      <div class="chart-container">
+        <h3 class="text-sm font-semibold text-gray-300 mb-3">작업명별 사고건수</h3>
+        <div style="height:400px"><canvas id="chart-by-work"></canvas></div>
+      </div>
+      <div class="xl:col-span-2 chart-container">
+        <h3 class="text-sm font-semibold text-gray-300 mb-3">재해 사례 목록</h3>
+        <div id="data-table"></div>
+      </div>
+    </div>
+  </main>
+
+  <script src="../js/data-loader.js"></script>
+  <script src="../js/filter-manager.js"></script>
+  <script src="../js/chart-manager.js"></script>
+  <script src="../js/utils.js"></script>
+  <script src="../js/components.js"></script>
+  <script src="../js/app.js"></script>
+
+  <script>
+    const cm = new ChartManager();
+    const fm = new FilterManager(['koen', '12대기인물', '기인물분류', '기인물']);
+    fm.setDownstream('기인물분류', ['기인물']);
+
+    let allData = [];
+    let dropdownRef = {};
+
+    async function init() {
+      renderPageHeader('기인물조회', '기인물 기준 역방향 조회 - 해당 기인물이 어떤 공정에서 위험한지 분석');
+
+      allData = await DataLoader.loadDB();
+      dropdownRef = await DataLoader.loadDropdownRef();
+
+      setupFilters();
+      renderResults();
+    }
+
+    function setupFilters() {
+      const classifications = Object.keys(dropdownRef['기인물분류'] || {}).sort();
+      populateDropdown('filter-classification', classifications, '전체 분류');
+
+      const allCauses = (dropdownRef['기인물목록'] || []).sort();
+      populateDropdown('filter-cause', allCauses, '기인물 선택');
+
+      document.getElementById('filter-koen').addEventListener('change', (e) => {
+        const val = e.target.value;
+        fm.set('koen', val === 'true' ? true : val === 'false' ? false : null);
+      });
+
+      document.getElementById('filter-12').addEventListener('change', (e) => {
+        fm.set('12대기인물', e.target.value === 'true' ? true : null);
+      });
+
+      document.getElementById('filter-classification').addEventListener('change', (e) => {
+        fm.set('기인물분류', e.target.value);
+      });
+
+      document.getElementById('filter-cause').addEventListener('change', (e) => {
+        fm.set('기인물', e.target.value);
+      });
+
+      // Cascading: 분류 변경 시 기인물 목록 갱신
+      fm.subscribe('기인물분류', (val) => {
+        if (val && dropdownRef['기인물분류'][val]) {
+          populateDropdown('filter-cause', dropdownRef['기인물분류'][val], '기인물 선택');
+        } else {
+          populateDropdown('filter-cause', dropdownRef['기인물목록'] || [], '기인물 선택');
+        }
+        document.getElementById('filter-cause').value = '';
+      });
+
+      document.getElementById('btn-reset').addEventListener('click', () => {
+        fm.reset();
+        document.querySelectorAll('.filter-bar select').forEach(s => s.value = '');
+        populateDropdown('filter-cause', dropdownRef['기인물목록'] || [], '기인물 선택');
+      });
+
+      fm.onDataChange(() => renderResults());
+    }
+
+    function renderResults() {
+      const filters = fm.getAll();
+      const filtered = filterDB(allData, filters);
+
+      renderCauseSummary(filtered, filters);
+      renderByConstructionChart(filtered);
+      renderByDisasterChart(filtered);
+      renderByWorkChart(filtered);
+      renderTable(filtered);
+    }
+
+    function renderCauseSummary(data, filters) {
+      const summary = document.getElementById('cause-summary');
+      const selectedCause = filters['기인물'];
+
+      if (!selectedCause) {
+        summary.classList.add('hidden');
+        return;
+      }
+      summary.classList.remove('hidden');
+
+      // 전체 순위 계산
+      const allAgg = aggregateBy(allData, '기인물');
+      const sorted = topN(allAgg, 'count', allAgg.length);
+      const rank = sorted.findIndex(a => a.key === selectedCause) + 1;
+      const is12 = (dropdownRef['12대기인물'] || []).includes(selectedCause);
+
+      document.getElementById('cause-name').textContent = selectedCause;
+      document.getElementById('cause-count').textContent = formatNumber(data.length) + '건';
+      document.getElementById('cause-rank').textContent = rank ? `${rank}위 / ${sorted.length}개` : '-';
+      document.getElementById('cause-badge-12').innerHTML = is12
+        ? '<span class="badge-12">12대 기인물 (중점관리대상)</span>'
+        : '';
+    }
+
+    function renderByConstructionChart(data) {
+      const agg = aggregateBy(data, '공종');
+      const sorted = topN(agg, 'count', 12);
+
+      cm.create('chart-by-construction', {
+        type: 'bar',
+        data: {
+          labels: sorted.map(a => a.key.replace(/^\d+\.\s*/, '')),
+          datasets: [{
+            data: sorted.map(a => a.count),
+            backgroundColor: sorted.map((_, i) => CHART_COLORS.getAlpha(CHART_COLORS.getColor(i), 0.7)),
+            borderColor: sorted.map((_, i) => CHART_COLORS.getColor(i)),
+            borderWidth: 1, borderRadius: 3,
+          }]
+        },
+        options: {
+          indexAxis: 'y',
+          plugins: { legend: { display: false } },
+          scales: {
+            x: { grid: { color: '#1F2937' } },
+            y: { grid: { display: false }, ticks: { font: { size: 10 } } }
+          }
+        }
+      });
+    }
+
+    function renderByDisasterChart(data) {
+      const agg = aggregateBy(data, '재해형태');
+      const sorted = topN(agg, 'count', 10);
+
+      cm.create('chart-by-disaster', {
+        type: 'bar',
+        data: {
+          labels: sorted.map(a => a.key),
+          datasets: [{
+            data: sorted.map(a => a.count),
+            backgroundColor: sorted.map((_, i) => CHART_COLORS.getAlpha(CHART_COLORS.getColor(i), 0.7)),
+            borderColor: sorted.map((_, i) => CHART_COLORS.getColor(i)),
+            borderWidth: 1, borderRadius: 3,
+          }]
+        },
+        options: {
+          indexAxis: 'y',
+          plugins: { legend: { display: false } },
+          scales: {
+            x: { grid: { color: '#1F2937' } },
+            y: { grid: { display: false }, ticks: { font: { size: 10 } } }
+          }
+        }
+      });
+    }
+
+    function renderByWorkChart(data) {
+      const agg = aggregateBy(data, '작업명');
+      const sorted = topN(agg, 'count', 10);
+
+      cm.create('chart-by-work', {
+        type: 'bar',
+        data: {
+          labels: sorted.map(a => a.key),
+          datasets: [{
+            data: sorted.map(a => a.count),
+            backgroundColor: sorted.map((_, i) => CHART_COLORS.getAlpha(CHART_COLORS.getColor(i), 0.7)),
+            borderColor: sorted.map((_, i) => CHART_COLORS.getColor(i)),
+            borderWidth: 1, borderRadius: 3,
+          }]
+        },
+        options: {
+          indexAxis: 'y',
+          plugins: { legend: { display: false } },
+          scales: {
+            x: { grid: { color: '#1F2937' } },
+            y: { grid: { display: false }, ticks: { font: { size: 9 }, autoSkip: false } }
+          }
+        }
+      });
+    }
+
+    function renderTable(data) {
+      const columns = [
+        { key: 'id', label: 'No', maxWidth: 50 },
+        { key: '공종', label: '공종', maxWidth: 120,
+          format: (v) => v ? v.replace(/^\d+\.\s*/, '') : '-' },
+        { key: '작업명', label: '작업명', maxWidth: 150 },
+        { key: '재해형태', label: '재해형태', maxWidth: 80 },
+        { key: '재해개요', label: '재해개요', maxWidth: 350, wrap: true,
+          format: (v) => `<div class="line-clamp-2 text-xs text-gray-300">${v || '-'}</div>` },
+        { key: '위험성감소대책', label: '감소대책', maxWidth: 250, wrap: true,
+          format: (v) => `<div class="line-clamp-2 text-xs text-gray-300">${v || '-'}</div>` },
+      ];
+      buildTable('data-table', columns, data, { pageSize: 15 });
+    }
+
+    init();
+  </script>
+</body>
+</html>

@@ -1,0 +1,648 @@
+<!DOCTYPE html>
+<html lang="ko" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SIF 건설재해 위험성평가 - 통계분석</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"></script>
+  <script src="https://cdn.jsdelivr.net/npm/papaparse@5"></script>
+  <link rel="stylesheet" href="../css/style.css">
+</head>
+<body class="bg-gray-950 text-gray-100 min-h-screen">
+  <div id="sidebar"></div>
+
+  <main id="content" class="p-4 lg:p-6">
+    <div id="page-header"></div>
+
+    <!-- 탭 네비게이션 -->
+    <div class="flex border-b border-gray-800 mb-4 overflow-x-auto">
+      <button class="tab-btn active" data-tab="tab-gongzong">공종별</button>
+      <button class="tab-btn" data-tab="tab-work">작업명별</button>
+      <button class="tab-btn" data-tab="tab-unit">단위작업명별</button>
+      <button class="tab-btn" data-tab="tab-cause">기인물별</button>
+      <button class="tab-btn" data-tab="tab-cross">교차분석</button>
+    </div>
+
+    <!-- 탭 1: 공종별 -->
+    <div id="tab-gongzong" class="tab-content">
+      <div class="filter-bar mb-4">
+        <div class="filter-group">
+          <label>공종 선택</label>
+          <select id="stat-gz-select"></select>
+        </div>
+      </div>
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-4">
+        <div class="chart-container">
+          <div class="flex items-center justify-between mb-3">
+            <h3 class="text-sm font-semibold text-gray-300">기인물 순위</h3>
+            <button class="toggle-btn" id="toggle-gz-cause" onclick="toggleView('gz-cause')">테이블 보기</button>
+          </div>
+          <div id="gz-cause-chart" style="height:350px"><canvas id="chart-gz-cause"></canvas></div>
+          <div id="gz-cause-table" class="hidden"></div>
+        </div>
+        <div class="chart-container">
+          <div class="flex items-center justify-between mb-3">
+            <h3 class="text-sm font-semibold text-gray-300">재해형태 분포</h3>
+            <button class="toggle-btn" id="toggle-gz-disaster" onclick="toggleView('gz-disaster')">테이블 보기</button>
+          </div>
+          <div id="gz-disaster-chart" style="height:350px"><canvas id="chart-gz-disaster"></canvas></div>
+          <div id="gz-disaster-table" class="hidden"></div>
+        </div>
+      </div>
+      <div class="chart-container">
+        <div class="flex items-center justify-between mb-3">
+          <h3 class="text-sm font-semibold text-gray-300">기인물별 재해형태 구성 (스택드 바)</h3>
+        </div>
+        <div style="height:400px"><canvas id="chart-gz-stacked"></canvas></div>
+      </div>
+    </div>
+
+    <!-- 탭 2: 작업명별 -->
+    <div id="tab-work" class="tab-content hidden">
+      <div class="filter-bar mb-4">
+        <div class="filter-group">
+          <label>공종</label>
+          <select id="stat-work-gz"></select>
+        </div>
+        <div class="filter-group">
+          <label>작업명</label>
+          <select id="stat-work-select"></select>
+        </div>
+      </div>
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        <div class="chart-container">
+          <h3 class="text-sm font-semibold text-gray-300 mb-3">기인물 순위</h3>
+          <div style="height:350px"><canvas id="chart-work-cause"></canvas></div>
+        </div>
+        <div class="chart-container">
+          <h3 class="text-sm font-semibold text-gray-300 mb-3">재해형태 분포</h3>
+          <div style="height:350px"><canvas id="chart-work-disaster"></canvas></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 탭 3: 단위작업명별 -->
+    <div id="tab-unit" class="tab-content hidden">
+      <div class="filter-bar mb-4">
+        <div class="filter-group">
+          <label>공종</label>
+          <select id="stat-unit-gz"></select>
+        </div>
+        <div class="filter-group">
+          <label>작업명</label>
+          <select id="stat-unit-work"></select>
+        </div>
+        <div class="filter-group">
+          <label>단위작업명</label>
+          <select id="stat-unit-select"></select>
+        </div>
+      </div>
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        <div class="chart-container">
+          <h3 class="text-sm font-semibold text-gray-300 mb-3">기인물 순위</h3>
+          <div style="height:350px"><canvas id="chart-unit-cause"></canvas></div>
+        </div>
+        <div class="chart-container">
+          <h3 class="text-sm font-semibold text-gray-300 mb-3">재해형태 분포</h3>
+          <div style="height:350px"><canvas id="chart-unit-disaster"></canvas></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 탭 4: 기인물별 -->
+    <div id="tab-cause" class="tab-content hidden">
+      <div class="filter-bar mb-4">
+        <div class="filter-group">
+          <label>기인물 선택</label>
+          <select id="stat-cause-select"></select>
+        </div>
+      </div>
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        <div class="chart-container">
+          <h3 class="text-sm font-semibold text-gray-300 mb-3">재해형태 분포</h3>
+          <div style="height:350px"><canvas id="chart-cause-disaster"></canvas></div>
+        </div>
+        <div class="chart-container">
+          <h3 class="text-sm font-semibold text-gray-300 mb-3">재해형태 비율</h3>
+          <div style="height:350px"><canvas id="chart-cause-pie"></canvas></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 탭 5: 교차분석 -->
+    <div id="tab-cross" class="tab-content hidden">
+      <div class="filter-bar mb-4">
+        <div class="filter-group">
+          <label>최소 사고건수</label>
+          <div class="flex items-center gap-2">
+            <input type="range" id="cross-min" min="0" max="50" value="5" class="w-32">
+            <span id="cross-min-label" class="text-sm text-gray-400">5건 이상</span>
+          </div>
+        </div>
+      </div>
+      <div class="chart-container mb-4">
+        <h3 class="text-sm font-semibold text-gray-300 mb-3">공종 x 기인물 교차분석</h3>
+        <div id="heatmap-gz-cause" class="overflow-x-auto" style="max-height:450px"></div>
+      </div>
+      <div class="chart-container">
+        <h3 class="text-sm font-semibold text-gray-300 mb-3">기인물 x 재해형태 교차분석</h3>
+        <div id="heatmap-cause-disaster" class="overflow-x-auto" style="max-height:450px"></div>
+      </div>
+    </div>
+  </main>
+
+  <script src="../js/data-loader.js"></script>
+  <script src="../js/filter-manager.js"></script>
+  <script src="../js/chart-manager.js"></script>
+  <script src="../js/utils.js"></script>
+  <script src="../js/components.js"></script>
+  <script src="../js/app.js"></script>
+
+  <script>
+    const cm = new ChartManager();
+    let csvData = {};
+    let dropdownRef = {};
+
+    // 탭 전환
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('.tab-content').forEach(c => c.classList.add('hidden'));
+        btn.classList.add('active');
+        document.getElementById(btn.dataset.tab).classList.remove('hidden');
+      });
+    });
+
+    function toggleView(prefix) {
+      const chart = document.getElementById(prefix + '-chart');
+      const table = document.getElementById(prefix + '-table');
+      const btn = document.getElementById('toggle-' + prefix);
+      chart.classList.toggle('hidden');
+      table.classList.toggle('hidden');
+      btn.textContent = chart.classList.contains('hidden') ? '차트 보기' : '테이블 보기';
+    }
+
+    async function init() {
+      renderPageHeader('통계분석', 'CSV 데이터 기반 다각도 차트 분석');
+
+      dropdownRef = await DataLoader.loadDropdownRef();
+
+      // CSV 파일 병렬 로드
+      const [csv1, csv4, csv5, csv6, csv7, csv9, csv10] = await Promise.all([
+        DataLoader.loadCSVFile('공종_기인물상세_재해형태_전체분석_정렬변경.csv'),
+        DataLoader.loadCSVFile('작업명별_기인물_전체분석_정렬변경.csv'),
+        DataLoader.loadCSVFile('작업명_기인물_재해형태_전체분석.csv'),
+        DataLoader.loadCSVFile('단위작업명별_기인물_전체분석_정렬변경.csv'),
+        DataLoader.loadCSVFile('단위작업명_기인물_재해형태_전체분석.csv'),
+        DataLoader.loadCSVFile('기인물별_재해형태_전체분석.csv'),
+        DataLoader.loadCSVFile('기인물별_재해형태_최종정렬.csv'),
+      ]);
+
+      csvData = { gz: csv1, workCause: csv4, workDisaster: csv5, unitCause: csv6, unitDisaster: csv7, causeDisaster: csv9, causeDisasterSorted: csv10 };
+
+      initTab1();
+      initTab2();
+      initTab3();
+      initTab4();
+      initTab5();
+    }
+
+    // ===== 탭 1: 공종별 =====
+    function initTab1() {
+      const gzList = [...new Set(csvData.gz.map(r => r['공종']))];
+      populateDropdown('stat-gz-select', gzList, '공종 선택');
+
+      document.getElementById('stat-gz-select').addEventListener('change', (e) => {
+        renderTab1(e.target.value);
+      });
+
+      if (gzList.length > 0) {
+        document.getElementById('stat-gz-select').value = gzList[0];
+        renderTab1(gzList[0]);
+      }
+    }
+
+    function renderTab1(gz) {
+      if (!gz) return;
+      const filtered = csvData.gz.filter(r => r['공종'] === gz);
+
+      // 기인물별 집계
+      const causeMap = {};
+      filtered.forEach(r => {
+        if (!causeMap[r['기인물']]) causeMap[r['기인물']] = 0;
+        causeMap[r['기인물']] += r['사고건수'] || 0;
+      });
+      const causeSorted = Object.entries(causeMap).sort((a, b) => b[1] - a[1]).slice(0, 10);
+
+      cm.create('chart-gz-cause', {
+        type: 'bar',
+        data: {
+          labels: causeSorted.map(a => a[0]),
+          datasets: [{
+            data: causeSorted.map(a => a[1]),
+            backgroundColor: causeSorted.map((_, i) => CHART_COLORS.getAlpha(CHART_COLORS.getColor(i), 0.7)),
+            borderColor: causeSorted.map((_, i) => CHART_COLORS.getColor(i)),
+            borderWidth: 1, borderRadius: 3,
+          }]
+        },
+        options: {
+          indexAxis: 'y',
+          plugins: { legend: { display: false } },
+          scales: { x: { grid: { color: '#1F2937' } }, y: { grid: { display: false }, ticks: { font: { size: 10 } } } }
+        }
+      });
+
+      // 테이블 데이터
+      const tableData = causeSorted.map(([k, v]) => ({ '기인물': k, '사고건수': v }));
+      buildTable('gz-cause-table', [
+        { key: '기인물', label: '기인물' },
+        { key: '사고건수', label: '사고건수' },
+      ], tableData, { pageSize: 10 });
+
+      // 재해형태별 집계
+      const disasterMap = {};
+      filtered.forEach(r => {
+        if (!disasterMap[r['재해형태']]) disasterMap[r['재해형태']] = 0;
+        disasterMap[r['재해형태']] += r['사고건수'] || 0;
+      });
+      const disasterSorted = Object.entries(disasterMap).sort((a, b) => b[1] - a[1]);
+
+      cm.create('chart-gz-disaster', {
+        type: 'doughnut',
+        data: {
+          labels: disasterSorted.map(a => a[0]),
+          datasets: [{
+            data: disasterSorted.map(a => a[1]),
+            backgroundColor: disasterSorted.map((_, i) => CHART_COLORS.getColor(i)),
+            borderWidth: 0,
+          }]
+        },
+        options: {
+          cutout: '50%',
+          plugins: { legend: { position: 'right', labels: { boxWidth: 10, font: { size: 10 } } } }
+        }
+      });
+
+      // 테이블 데이터
+      const dtTableData = disasterSorted.map(([k, v]) => ({ '재해형태': k, '사고건수': v }));
+      buildTable('gz-disaster-table', [
+        { key: '재해형태', label: '재해형태' },
+        { key: '사고건수', label: '사고건수' },
+      ], dtTableData, { pageSize: 10 });
+
+      // 스택드 바 차트
+      const topCauses = causeSorted.slice(0, 6).map(a => a[0]);
+      const disasterTypes = disasterSorted.slice(0, 5).map(a => a[0]);
+
+      const stackedDatasets = disasterTypes.map((dt, i) => ({
+        label: dt,
+        data: topCauses.map(cause => {
+          const row = filtered.find(r => r['기인물'] === cause && r['재해형태'] === dt);
+          return row ? row['사고건수'] : 0;
+        }),
+        backgroundColor: CHART_COLORS.getAlpha(CHART_COLORS.getColor(i), 0.7),
+        borderColor: CHART_COLORS.getColor(i),
+        borderWidth: 1,
+      }));
+
+      cm.create('chart-gz-stacked', {
+        type: 'bar',
+        data: { labels: topCauses, datasets: stackedDatasets },
+        options: {
+          indexAxis: 'y',
+          plugins: { legend: { position: 'top', labels: { boxWidth: 10, font: { size: 10 } } } },
+          scales: {
+            x: { stacked: true, grid: { color: '#1F2937' } },
+            y: { stacked: true, grid: { display: false }, ticks: { font: { size: 10 } } }
+          }
+        }
+      });
+    }
+
+    // ===== 탭 2: 작업명별 =====
+    function initTab2() {
+      const gzList = [...new Set(csvData.workCause.map(r => r['공종']))];
+      populateDropdown('stat-work-gz', gzList, '공종 선택');
+      populateDropdown('stat-work-select', [], '작업명 선택');
+
+      document.getElementById('stat-work-gz').addEventListener('change', (e) => {
+        const gz = e.target.value;
+        const works = [...new Set(csvData.workCause.filter(r => r['공종'] === gz).map(r => r['작업명']))];
+        populateDropdown('stat-work-select', works, '작업명 선택');
+      });
+
+      document.getElementById('stat-work-select').addEventListener('change', (e) => {
+        renderTab2(document.getElementById('stat-work-gz').value, e.target.value);
+      });
+    }
+
+    function renderTab2(gz, work) {
+      if (!gz || !work) return;
+
+      // 기인물 차트
+      const causeData = csvData.workCause.filter(r => r['공종'] === gz && r['작업명'] === work);
+      const causeSorted = causeData.sort((a, b) => (b['사고건수'] || 0) - (a['사고건수'] || 0)).slice(0, 10);
+
+      cm.create('chart-work-cause', {
+        type: 'bar',
+        data: {
+          labels: causeSorted.map(a => a['기인물']),
+          datasets: [{
+            data: causeSorted.map(a => a['사고건수']),
+            backgroundColor: causeSorted.map((_, i) => CHART_COLORS.getAlpha(CHART_COLORS.getColor(i), 0.7)),
+            borderColor: causeSorted.map((_, i) => CHART_COLORS.getColor(i)),
+            borderWidth: 1, borderRadius: 3,
+          }]
+        },
+        options: {
+          indexAxis: 'y',
+          plugins: { legend: { display: false } },
+          scales: { x: { grid: { color: '#1F2937' } }, y: { grid: { display: false }, ticks: { font: { size: 10 } } } }
+        }
+      });
+
+      // 재해형태 차트
+      const disasterData = csvData.workDisaster.filter(r => r['공종'] === gz && r['작업명'] === work);
+      const disasterMap = {};
+      disasterData.forEach(r => {
+        if (!disasterMap[r['재해형태']]) disasterMap[r['재해형태']] = 0;
+        disasterMap[r['재해형태']] += r['사고건수'] || 0;
+      });
+      const dSorted = Object.entries(disasterMap).sort((a, b) => b[1] - a[1]);
+
+      cm.create('chart-work-disaster', {
+        type: 'doughnut',
+        data: {
+          labels: dSorted.map(a => a[0]),
+          datasets: [{
+            data: dSorted.map(a => a[1]),
+            backgroundColor: dSorted.map((_, i) => CHART_COLORS.getColor(i)),
+            borderWidth: 0,
+          }]
+        },
+        options: {
+          cutout: '50%',
+          plugins: { legend: { position: 'right', labels: { boxWidth: 10, font: { size: 10 } } } }
+        }
+      });
+    }
+
+    // ===== 탭 3: 단위작업명별 =====
+    function initTab3() {
+      const gzList = [...new Set(csvData.unitCause.map(r => r['공종']))];
+      populateDropdown('stat-unit-gz', gzList, '공종 선택');
+      populateDropdown('stat-unit-work', [], '작업명 선택');
+      populateDropdown('stat-unit-select', [], '단위작업명 선택');
+
+      document.getElementById('stat-unit-gz').addEventListener('change', (e) => {
+        const gz = e.target.value;
+        const works = [...new Set(csvData.unitCause.filter(r => r['공종'] === gz).map(r => r['작업명']))];
+        populateDropdown('stat-unit-work', works, '작업명 선택');
+        populateDropdown('stat-unit-select', [], '단위작업명 선택');
+      });
+
+      document.getElementById('stat-unit-work').addEventListener('change', (e) => {
+        const gz = document.getElementById('stat-unit-gz').value;
+        const work = e.target.value;
+        const units = [...new Set(csvData.unitCause.filter(r => r['공종'] === gz && r['작업명'] === work).map(r => r['단위작업명']))];
+        populateDropdown('stat-unit-select', units, '단위작업명 선택');
+      });
+
+      document.getElementById('stat-unit-select').addEventListener('change', (e) => {
+        renderTab3(
+          document.getElementById('stat-unit-gz').value,
+          document.getElementById('stat-unit-work').value,
+          e.target.value
+        );
+      });
+    }
+
+    function renderTab3(gz, work, unit) {
+      if (!gz || !work || !unit) return;
+
+      const causeData = csvData.unitCause.filter(r => r['공종'] === gz && r['작업명'] === work && r['단위작업명'] === unit);
+      const causeSorted = causeData.sort((a, b) => (b['사고건수'] || 0) - (a['사고건수'] || 0)).slice(0, 10);
+
+      cm.create('chart-unit-cause', {
+        type: 'bar',
+        data: {
+          labels: causeSorted.map(a => a['기인물']),
+          datasets: [{
+            data: causeSorted.map(a => a['사고건수']),
+            backgroundColor: causeSorted.map((_, i) => CHART_COLORS.getAlpha(CHART_COLORS.getColor(i), 0.7)),
+            borderColor: causeSorted.map((_, i) => CHART_COLORS.getColor(i)),
+            borderWidth: 1, borderRadius: 3,
+          }]
+        },
+        options: {
+          indexAxis: 'y',
+          plugins: { legend: { display: false } },
+          scales: { x: { grid: { color: '#1F2937' } }, y: { grid: { display: false }, ticks: { font: { size: 10 } } } }
+        }
+      });
+
+      const disasterData = csvData.unitDisaster.filter(r => r['공종'] === gz && r['작업명'] === work && r['단위작업명'] === unit);
+      const disasterMap = {};
+      disasterData.forEach(r => {
+        if (!disasterMap[r['재해형태']]) disasterMap[r['재해형태']] = 0;
+        disasterMap[r['재해형태']] += r['사고건수'] || 0;
+      });
+      const dSorted = Object.entries(disasterMap).sort((a, b) => b[1] - a[1]);
+
+      cm.create('chart-unit-disaster', {
+        type: 'doughnut',
+        data: {
+          labels: dSorted.map(a => a[0]),
+          datasets: [{
+            data: dSorted.map(a => a[1]),
+            backgroundColor: dSorted.map((_, i) => CHART_COLORS.getColor(i)),
+            borderWidth: 0,
+          }]
+        },
+        options: {
+          cutout: '50%',
+          plugins: { legend: { position: 'right', labels: { boxWidth: 10, font: { size: 10 } } } }
+        }
+      });
+    }
+
+    // ===== 탭 4: 기인물별 =====
+    function initTab4() {
+      const causes = [...new Set(csvData.causeDisasterSorted.map(r => r['기인물']))];
+      populateDropdown('stat-cause-select', causes, '기인물 선택');
+
+      document.getElementById('stat-cause-select').addEventListener('change', (e) => {
+        renderTab4(e.target.value);
+      });
+
+      if (causes.length > 0) {
+        document.getElementById('stat-cause-select').value = causes[0];
+        renderTab4(causes[0]);
+      }
+    }
+
+    function renderTab4(cause) {
+      if (!cause) return;
+      const filtered = csvData.causeDisasterSorted.filter(r => r['기인물'] === cause);
+      const sorted = filtered.sort((a, b) => (b['사고건수'] || 0) - (a['사고건수'] || 0));
+
+      cm.create('chart-cause-disaster', {
+        type: 'bar',
+        data: {
+          labels: sorted.map(a => a['재해형태']),
+          datasets: [{
+            data: sorted.map(a => a['사고건수']),
+            backgroundColor: sorted.map((_, i) => CHART_COLORS.getAlpha(CHART_COLORS.getColor(i), 0.7)),
+            borderColor: sorted.map((_, i) => CHART_COLORS.getColor(i)),
+            borderWidth: 1, borderRadius: 3,
+          }]
+        },
+        options: {
+          indexAxis: 'y',
+          plugins: { legend: { display: false } },
+          scales: { x: { grid: { color: '#1F2937' } }, y: { grid: { display: false }, ticks: { font: { size: 10 } } } }
+        }
+      });
+
+      cm.create('chart-cause-pie', {
+        type: 'doughnut',
+        data: {
+          labels: sorted.map(a => a['재해형태']),
+          datasets: [{
+            data: sorted.map(a => a['사고건수']),
+            backgroundColor: sorted.map((_, i) => CHART_COLORS.getColor(i)),
+            borderWidth: 0,
+          }]
+        },
+        options: {
+          cutout: '50%',
+          plugins: { legend: { position: 'right', labels: { boxWidth: 10, font: { size: 10 } } } }
+        }
+      });
+    }
+
+    // ===== 탭 5: 교차분석 =====
+    function initTab5() {
+      const slider = document.getElementById('cross-min');
+      const label = document.getElementById('cross-min-label');
+      slider.addEventListener('input', () => {
+        label.textContent = slider.value + '건 이상';
+        renderTab5(parseInt(slider.value));
+      });
+      renderTab5(5);
+    }
+
+    function renderTab5(minCount) {
+      renderHeatmap1(minCount);
+      renderHeatmap2(minCount);
+    }
+
+    function renderHeatmap1(minCount) {
+      // 공종 x 기인물
+      const data = csvData.gz;
+      const gzList = [...new Set(data.map(r => r['공종']))].sort();
+
+      // 기인물별 총 건수로 상위 15개 선택
+      const causeTotal = {};
+      data.forEach(r => {
+        if (!causeTotal[r['기인물']]) causeTotal[r['기인물']] = 0;
+        causeTotal[r['기인물']] += r['사고건수'] || 0;
+      });
+      const topCauses = Object.entries(causeTotal)
+        .filter(([_, v]) => v >= minCount)
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, 15)
+        .map(a => a[0]);
+
+      // 교차집계
+      const matrix = {};
+      let maxVal = 0;
+      gzList.forEach(gz => {
+        matrix[gz] = {};
+        topCauses.forEach(c => { matrix[gz][c] = 0; });
+      });
+      data.forEach(r => {
+        if (matrix[r['공종']] && topCauses.includes(r['기인물'])) {
+          matrix[r['공종']][r['기인물']] += r['사고건수'] || 0;
+          maxVal = Math.max(maxVal, matrix[r['공종']][r['기인물']]);
+        }
+      });
+
+      let html = `<table class="w-full text-xs"><thead><tr><th class="px-2 py-1 text-left text-gray-500 sticky left-0 bg-gray-900 z-10"></th>`;
+      topCauses.forEach(c => {
+        html += `<th class="px-2 py-1 text-center text-gray-400 font-normal whitespace-nowrap" style="writing-mode:vertical-lr;min-width:32px">${c}</th>`;
+      });
+      html += `</tr></thead><tbody>`;
+
+      gzList.forEach(gz => {
+        const shortName = gz.replace(/^\d+\.\s*/, '');
+        html += `<tr><td class="px-2 py-1.5 text-gray-400 whitespace-nowrap sticky left-0 bg-gray-900 z-10">${shortName}</td>`;
+        topCauses.forEach(c => {
+          const val = matrix[gz][c];
+          const bg = val === 0 ? 'rgba(31,41,55,0.3)' : CHART_COLORS.heatmapColor(val, 0, maxVal);
+          html += `<td class="px-2 py-1.5 text-center font-medium text-xs" style="background:${bg}" title="${shortName} - ${c}: ${val}건">${val || ''}</td>`;
+        });
+        html += `</tr>`;
+      });
+      html += `</tbody></table>`;
+
+      document.getElementById('heatmap-gz-cause').innerHTML = html;
+    }
+
+    function renderHeatmap2(minCount) {
+      // 기인물 x 재해형태
+      const data = csvData.causeDisaster;
+      const disasterTypes = [...new Set(data.map(r => r['재해형태']))];
+
+      // 기인물별 총 건수 상위 15개
+      const causeTotal = {};
+      data.forEach(r => {
+        if (!causeTotal[r['기인물']]) causeTotal[r['기인물']] = 0;
+        causeTotal[r['기인물']] += r['사고건수'] || 0;
+      });
+      const topCauses = Object.entries(causeTotal)
+        .filter(([_, v]) => v >= minCount)
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, 15)
+        .map(a => a[0]);
+
+      // 교차집계
+      const matrix = {};
+      let maxVal = 0;
+      topCauses.forEach(c => {
+        matrix[c] = {};
+        disasterTypes.forEach(dt => { matrix[c][dt] = 0; });
+      });
+      data.forEach(r => {
+        if (topCauses.includes(r['기인물']) && disasterTypes.includes(r['재해형태'])) {
+          matrix[r['기인물']][r['재해형태']] += r['사고건수'] || 0;
+          maxVal = Math.max(maxVal, matrix[r['기인물']][r['재해형태']]);
+        }
+      });
+
+      let html = `<table class="w-full text-xs"><thead><tr><th class="px-2 py-1 text-left text-gray-500 sticky left-0 bg-gray-900 z-10"></th>`;
+      disasterTypes.forEach(dt => {
+        html += `<th class="px-2 py-1 text-center text-gray-400 font-normal whitespace-nowrap">${dt}</th>`;
+      });
+      html += `</tr></thead><tbody>`;
+
+      topCauses.forEach(c => {
+        html += `<tr><td class="px-2 py-1.5 text-gray-400 whitespace-nowrap sticky left-0 bg-gray-900 z-10">${c}</td>`;
+        disasterTypes.forEach(dt => {
+          const val = matrix[c][dt];
+          const bg = val === 0 ? 'rgba(31,41,55,0.3)' : CHART_COLORS.heatmapColor(val, 0, maxVal);
+          html += `<td class="px-2 py-1.5 text-center font-medium text-xs" style="background:${bg}" title="${c} - ${dt}: ${val}건">${val || ''}</td>`;
+        });
+        html += `</tr>`;
+      });
+      html += `</tbody></table>`;
+
+      document.getElementById('heatmap-cause-disaster').innerHTML = html;
+    }
+
+    init();
+  </script>
+</body>
+</html>

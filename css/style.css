@@ -1,0 +1,259 @@
+/* SIF 위험성평가 시스템 - 커스텀 스타일 */
+
+/* 스크롤바 */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #1F2937;
+}
+::-webkit-scrollbar-thumb {
+  background: #4B5563;
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #6B7280;
+}
+
+/* 메인 콘텐츠 영역 */
+#content {
+  margin-left: 0;
+}
+@media (min-width: 1024px) {
+  #content {
+    margin-left: 16rem; /* w-64 = 16rem */
+  }
+}
+
+/* 카드 */
+.stat-card {
+  background: #111827;
+  border: 1px solid #1F2937;
+  border-radius: 0.75rem;
+  padding: 1.25rem;
+  transition: border-color 0.2s;
+}
+.stat-card:hover {
+  border-color: #374151;
+}
+
+/* 차트 컨테이너 */
+.chart-container {
+  background: #111827;
+  border: 1px solid #1F2937;
+  border-radius: 0.75rem;
+  padding: 1.25rem;
+  position: relative;
+}
+.chart-container canvas {
+  max-width: 100%;
+}
+
+/* 필터 바 */
+.filter-bar {
+  background: #111827;
+  border: 1px solid #1F2937;
+  border-radius: 0.75rem;
+  padding: 1rem 1.25rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  align-items: flex-end;
+}
+
+.filter-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.filter-group label {
+  font-size: 0.75rem;
+  color: #9CA3AF;
+  font-weight: 500;
+}
+
+.filter-group select {
+  background: #1F2937;
+  border: 1px solid #374151;
+  border-radius: 0.5rem;
+  color: #E5E7EB;
+  padding: 0.5rem 2rem 0.5rem 0.75rem;
+  font-size: 0.875rem;
+  min-width: 160px;
+  cursor: pointer;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
+  background-position: right 0.5rem center;
+  background-repeat: no-repeat;
+  background-size: 1.25em 1.25em;
+}
+
+.filter-group select:focus {
+  outline: none;
+  border-color: #3B82F6;
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+}
+
+/* 테이블 */
+.data-table {
+  width: 100%;
+  text-align: left;
+  font-size: 0.875rem;
+}
+
+/* 탭 */
+.tab-btn {
+  padding: 0.5rem 1rem;
+  font-size: 0.875rem;
+  color: #9CA3AF;
+  border-bottom: 2px solid transparent;
+  cursor: pointer;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+.tab-btn:hover {
+  color: #E5E7EB;
+}
+.tab-btn.active {
+  color: #3B82F6;
+  border-bottom-color: #3B82F6;
+  font-weight: 500;
+}
+
+/* 위험도 배지 */
+.risk-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.125rem 0.5rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+.risk-badge.high {
+  background: rgba(239, 68, 68, 0.2);
+  color: #FCA5A5;
+}
+.risk-badge.medium {
+  background: rgba(245, 158, 11, 0.2);
+  color: #FCD34D;
+}
+.risk-badge.low {
+  background: rgba(16, 185, 129, 0.2);
+  color: #6EE7B7;
+}
+
+/* 12대 기인물 배지 */
+.badge-12 {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.125rem 0.5rem;
+  background: rgba(139, 92, 246, 0.2);
+  color: #C4B5FD;
+  border-radius: 9999px;
+  font-size: 0.625rem;
+  font-weight: 600;
+}
+
+/* 위자드 카드 */
+.wizard-card {
+  background: #1F2937;
+  border: 1px solid #374151;
+  border-radius: 0.75rem;
+  padding: 1rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  text-align: center;
+}
+.wizard-card:hover {
+  border-color: #3B82F6;
+  background: #1E3A5F;
+}
+.wizard-card.selected {
+  border-color: #3B82F6;
+  background: rgba(59, 130, 246, 0.15);
+}
+
+/* 스켈레톤 로딩 */
+.skeleton {
+  background: linear-gradient(90deg, #1F2937 25%, #374151 50%, #1F2937 75%);
+  background-size: 200% 100%;
+  animation: skeleton-loading 1.5s infinite;
+  border-radius: 0.5rem;
+}
+@keyframes skeleton-loading {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* 토글 버튼 */
+.toggle-btn {
+  font-size: 0.75rem;
+  color: #9CA3AF;
+  padding: 0.25rem 0.75rem;
+  border: 1px solid #374151;
+  border-radius: 0.375rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.toggle-btn:hover {
+  color: #E5E7EB;
+  border-color: #4B5563;
+}
+
+/* 브레드크럼 */
+.breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.875rem;
+  color: #9CA3AF;
+}
+.breadcrumb a {
+  color: #3B82F6;
+  cursor: pointer;
+}
+.breadcrumb a:hover {
+  text-decoration: underline;
+}
+.breadcrumb .separator {
+  color: #4B5563;
+}
+
+/* 인쇄 */
+@media print {
+  body {
+    background: white !important;
+    color: #111 !important;
+  }
+  #sidebar, #sidebar-panel, #mobile-menu-btn, #sidebar-overlay,
+  .filter-bar, .toggle-btn, .no-print {
+    display: none !important;
+  }
+  #content {
+    margin-left: 0 !important;
+    padding: 0 !important;
+  }
+  .stat-card, .chart-container {
+    background: white !important;
+    border-color: #ccc !important;
+    break-inside: avoid;
+  }
+  .chart-container {
+    page-break-inside: avoid;
+  }
+  .print-header {
+    display: block !important;
+    text-align: center;
+    margin-bottom: 1rem;
+    font-size: 1.25rem;
+    font-weight: bold;
+    color: #111;
+  }
+}
+
+.print-header {
+  display: none;
+}

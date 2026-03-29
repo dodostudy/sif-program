@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="ko" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SIF 건설재해 위험성평가 - 공정조회</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"></script>
+  <script src="https://cdn.jsdelivr.net/npm/papaparse@5"></script>
+  <link rel="stylesheet" href="../css/style.css">
+</head>
+<body class="bg-gray-950 text-gray-100 min-h-screen">
+  <div id="sidebar"></div>
+
+  <main id="content" class="p-4 lg:p-6">
+    <div id="page-header"></div>
+
+    <!-- 필터 바 -->
+    <div class="filter-bar mb-4">
+      <div class="filter-group">
+        <label>KOEN 공정</label>
+        <select id="filter-koen">
+          <option value="">전체</option>
+          <option value="true">YES</option>
+          <option value="false">NO</option>
+        </select>
+      </div>
+      <div class="filter-group">
+        <label>공종</label>
+        <select id="filter-gongzong"></select>
+      </div>
+      <div class="filter-group">
+        <label>작업명</label>
+        <select id="filter-work"></select>
+      </div>
+      <div class="filter-group">
+        <label>단위작업명</label>
+        <select id="filter-unit-work"></select>
+      </div>
+      <div class="filter-group">
+        <label>기인물</label>
+        <select id="filter-cause"></select>
+      </div>
+      <button id="btn-reset" class="px-4 py-2 bg-gray-700 hover:bg-gray-600 text-sm rounded-lg transition-colors">초기화</button>
+    </div>
+
+    <!-- 결과 요약 -->
+    <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-4" id="result-summary">
+    </div>
+
+    <!-- 메인 콘텐츠: 테이블 + 차트 -->
+    <div class="grid grid-cols-1 xl:grid-cols-3 gap-4">
+      <!-- 테이블 (2/3) -->
+      <div class="xl:col-span-2">
+        <div class="chart-container">
+          <div class="flex items-center justify-between mb-3">
+            <h3 class="text-sm font-semibold text-gray-300">재해 사례 목록</h3>
+          </div>
+          <div id="data-table"></div>
+        </div>
+      </div>
+
+      <!-- 차트 (1/3) -->
+      <div class="space-y-4">
+        <div class="chart-container">
+          <h3 class="text-sm font-semibold text-gray-300 mb-3">기인물별 사고건수</h3>
+          <div style="height:280px"><canvas id="chart-cause"></canvas></div>
+        </div>
+        <div class="chart-container">
+          <h3 class="text-sm font-semibold text-gray-300 mb-3">재해형태 비율</h3>
+          <div style="height:280px"><canvas id="chart-disaster"></canvas></div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <script src="../js/data-loader.js"></script>
+  <script src="../js/filter-manager.js"></script>
+  <script src="../js/chart-manager.js"></script>
+  <script src="../js/utils.js"></script>
+  <script src="../js/components.js"></script>
+  <script src="../js/app.js"></script>
+
+  <script>
+    const cm = new ChartManager();
+    const fm = new FilterManager(['koen', '공종', '작업명', '단위작업명', '기인물']);
+    fm.setDownstream('공종', ['작업명', '단위작업명', '기인물']);
+    fm.setDownstream('작업명', ['단위작업명', '기인물']);
+    fm.setDownstream('단위작업명', ['기인물']);
+
+    let allData = [];
+    let dropdownRef = {};
+
+    async function init() {
+      renderPageHeader('공정조회', 'Excel ③공정조회 시트 기반 - 공정별 재해사례 조회');
+
+      allData = await DataLoader.loadDB();
+      dropdownRef = await DataLoader.loadDropdownRef();
+
+      setupFilters();
+      renderResults();
+    }
+
+    function setupFilters() {
+      const hierarchy = dropdownRef.hierarchy || {};
+      const allGongzong = Object.keys(hierarchy);
+      populateDropdown('filter-gongzong', allGongzong, '전체 공종');
+      populateDropdown('filter-work', [], '작업명 선택');
+      populateDropdown('filter-unit-work', [], '단위작업명 선택');
+
+      // 기인물 전체 목록
+      const allCauses = [...new Set(allData.map(r => r['기인물']))].sort();
+      populateDropdown('filter-cause', allCauses, '전체 기인물');
+
+      // KOEN 필터
+      document.getElementById('filter-koen').addEventListener('change', (e) => {
+        const val = e.target.value;
+        fm.set('koen', val === 'true' ? true : val === 'false' ? false : null);
+      });
+
+      // 공종 필터
+      document.getElementById('filter-gongzong').addEventListener('change', (e) => {
+        fm.set('공종', e.target.value);
+      });
+
+      // 작업명 필터
+      document.getElementById('filter-work').addEventListener('change', (e) => {
+        fm.set('작업명', e.target.value);
+      });
+
+      // 단위작업명 필터
+      document.getElementById('filter-unit-work').addEventListener('change', (e) => {
+        fm.set('단위작업명', e.target.value);
+      });
+
+      // 기인물 필터
+      document.getElementById('filter-cause').addEventListener('change', (e) => {
+        fm.set('기인물', e.target.value);
+      });
+
+      // 초기화
+      document.getElementById('btn-reset').addEventListener('click', () => {
+        fm.reset();
+        document.getElementById('filter-koen').value = '';
+        document.getElementById('filter-gongzong').value = '';
+        document.getElementById('filter-work').value = '';
+        document.getElementById('filter-unit-work').value = '';
+        document.getElementById('filter-cause').value = '';
+        populateDropdown('filter-work', [], '작업명 선택');
+        populateDropdown('filter-unit-work', [], '단위작업명 선택');
+      });
+
+      // Cascading: 공종 변경 시 작업명 갱신
+      fm.subscribe('공종', (val) => {
+        if (val && hierarchy[val]) {
+          const works = Object.keys(hierarchy[val]);
+          populateDropdown('filter-work', works, '전체 작업명');
+        } else {
+          populateDropdown('filter-work', [], '작업명 선택');
+        }
+        document.getElementById('filter-work').value = '';
+        document.getElementById('filter-unit-work').value = '';
+      });
+
+      // Cascading: 작업명 변경 시 단위작업명 갱신
+      fm.subscribe('작업명', (val) => {
+        const gz = fm.get('공종');
+        if (gz && val && hierarchy[gz] && hierarchy[gz][val]) {
+          populateDropdown('filter-unit-work', hierarchy[gz][val], '전체 단위작업명');
+        } else {
+          populateDropdown('filter-unit-work', [], '단위작업명 선택');
+        }
+        document.getElementById('filter-unit-work').value = '';
+      });
+
+      // 데이터 변경 시 결과 갱신
+      fm.onDataChange(() => renderResults());
+    }
+
+    function renderResults() {
+      const filters = fm.getAll();
+      const filtered = filterDB(allData, filters);
+
+      renderSummary(filtered);
+      renderTable(filtered);
+      renderCauseChart(filtered);
+      renderDisasterChart(filtered);
+    }
+
+    function renderSummary(data) {
+      const total = data.length;
+      const causeCount = new Set(data.map(r => r['기인물'])).size;
+      const disasterCount = new Set(data.map(r => r['재해형태'])).size;
+      const is12Count = data.filter(r => r['12대기인물']).length;
+
+      document.getElementById('result-summary').innerHTML = `
+        <div class="stat-card">
+          <p class="text-xs text-gray-500">조회 건수</p>
+          <p class="text-2xl font-bold text-white">${formatNumber(total)}</p>
+        </div>
+        <div class="stat-card">
+          <p class="text-xs text-gray-500">기인물 종류</p>
+          <p class="text-2xl font-bold text-blue-400">${causeCount}</p>
+        </div>
+        <div class="stat-card">
+          <p class="text-xs text-gray-500">재해형태 종류</p>
+          <p class="text-2xl font-bold text-amber-400">${disasterCount}</p>
+        </div>
+        <div class="stat-card">
+          <p class="text-xs text-gray-500">12대 기인물 비중</p>
+          <p class="text-2xl font-bold text-purple-400">${formatPercent(is12Count, total)}</p>
+        </div>
+      `;
+    }
+
+    function renderTable(data) {
+      const columns = [
+        { key: 'id', label: 'No', maxWidth: 50 },
+        { key: '기인물', label: '기인물', maxWidth: 120 },
+        { key: '재해형태', label: '재해형태', maxWidth: 80 },
+        { key: '재해개요', label: '재해개요', maxWidth: 400, wrap: true,
+          format: (v) => `<div class="line-clamp-2 text-xs text-gray-300">${v || '-'}</div>` },
+        { key: '재해유발요인', label: '재해유발요인', maxWidth: 300, wrap: true,
+          format: (v) => `<div class="line-clamp-2 text-xs text-gray-300">${v || '-'}</div>` },
+        { key: '위험성감소대책', label: '감소대책', maxWidth: 300, wrap: true,
+          format: (v) => `<div class="line-clamp-2 text-xs text-gray-300">${v || '-'}</div>` },
+      ];
+      buildTable('data-table', columns, data, { pageSize: 15 });
+    }
+
+    function renderCauseChart(data) {
+      const agg = aggregateBy(data, '기인물');
+      const sorted = topN(agg, 'count', 8);
+
+      cm.create('chart-cause', {
+        type: 'bar',
+        data: {
+          labels: sorted.map(a => a.key),
+          datasets: [{
+            data: sorted.map(a => a.count),
+            backgroundColor: sorted.map((_, i) => CHART_COLORS.getAlpha(CHART_COLORS.getColor(i), 0.7)),
+            borderColor: sorted.map((_, i) => CHART_COLORS.getColor(i)),
+            borderWidth: 1,
+            borderRadius: 3,
+          }]
+        },
+        options: {
+          indexAxis: 'y',
+          plugins: { legend: { display: false } },
+          scales: {
+            x: { grid: { color: '#1F2937' }, ticks: { font: { size: 10 } } },
+            y: { grid: { display: false }, ticks: { font: { size: 9 } } }
+          }
+        }
+      });
+    }
+
+    function renderDisasterChart(data) {
+      const agg = aggregateBy(data, '재해형태');
+      const sorted = topN(agg, 'count', 8);
+
+      cm.create('chart-disaster', {
+        type: 'doughnut',
+        data: {
+          labels: sorted.map(a => a.key),
+          datasets: [{
+            data: sorted.map(a => a.count),
+            backgroundColor: sorted.map((_, i) => CHART_COLORS.getColor(i)),
+            borderWidth: 0,
+          }]
+        },
+        options: {
+          cutout: '50%',
+          plugins: {
+            legend: { position: 'right', labels: { boxWidth: 10, font: { size: 10 } } },
+          }
+        }
+      });
+    }
+
+    init();
+  </script>
+</body>
+</html>
