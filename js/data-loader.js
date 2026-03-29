@@ -46,8 +46,7 @@ const DataLoader = {
 
   _basePath(path) {
     // pages/ 하위에서 호출 시 상대경로 보정
-    const depth = window.location.pathname.split('/').filter(Boolean).length;
-    if (depth > 1 || window.location.pathname.includes('/pages/')) {
+    if (window.location.pathname.includes('/pages/')) {
       return '..' + path;
     }
     return '.' + path;
