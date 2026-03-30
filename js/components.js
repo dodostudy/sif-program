@@ -62,7 +62,7 @@ function renderSidebar() {
             <p class="text-xs text-blue-300 font-medium">분당발전본부 안전관리실</p>
           </div>
         </div>
-        <p class="text-xs text-gray-500 mt-2">건설재해 분석 시스템</p>
+        <p class="text-xs text-gray-500 mt-2">사고사망 고위험요인</p>
       </div>
       <nav class="flex-1 p-3 space-y-1 overflow-y-auto">
         ${navHtml}

@@ -9,6 +9,16 @@
   <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"></script>
   <script src="https://cdn.jsdelivr.net/npm/papaparse@5"></script>
   <link rel="stylesheet" href="../css/style.css">
+  <style>
+    /* 모바일 필터 최적화 */
+    @media (max-width: 767px) {
+      .filter-bar { flex-direction: column; gap: 0.5rem; }
+      .filter-group { width: 100%; }
+      .filter-group select { width: 100%; min-width: 0; }
+      .filter-group label { min-width: auto; }
+      #btn-reset { width: 100%; }
+    }
+  </style>
 </head>
 <body class="bg-gray-950 text-gray-100 min-h-screen">
   <div id="sidebar"></div>
@@ -18,6 +28,10 @@
 
     <!-- 필터 바 -->
     <div class="filter-bar mb-4">
+      <div class="filter-group">
+        <label>작업유형</label>
+        <select id="filter-worktype"></select>
+      </div>
       <div class="filter-group">
         <label>12대 기인물</label>
         <select id="filter-12">
@@ -86,12 +100,29 @@
   <script src="../js/app.js"></script>
 
   <script>
+    // 작업유형 분류 맵
+    const WORK_TYPE_MAP = {
+      '고소': ['비계', '달비계', '이동식비계', '비계(일체형비계)', '말비계', '사다리', '작업발판/가설계단', '리프트', '슬라브단부', '개구부(바닥개구부)', '개구부(기타개구부)', '엘리베이터피트', '철골(철골구조물)', '철골(철골자재)', '지붕(처마,홈통)', '지붕(채광판,선라이트)', '천장(판넬 등 마감재)', '거푸집', '동바리'],
+      '중장비': ['굴착기', '트럭', '이동식크레인', '고정식크레인', '콘크리트펌프카', '지게차', '천공기/항타기', '로울러', '콘크리트믹서', '기타건설장비', '기타건설기계기구', '고소작업대'],
+      '굴착': ['토사', '흙막이가시설', '암석', '기초파일'],
+      '전기': ['충전부', '전주'],
+      '중량물': ['철근콘크리트자재(철근,콘크리트,PC)', '각재(파이프,강관,합판)', '배관'],
+      '화기': ['용접(단)기', '절단기/톱'],
+      '밀폐': [],
+      '일반': ['기계설비', '외부마감재', '벽체', '기타구조물', '기타가설구조물', '기타자재(내부마감재,시멘트,마대)', '수목', '교통수단', '방망', '바닥(바닥에 걸려 넘어짐)', '계단', '분류불능', '물'],
+      '폭염/원인미상': ['폭염', '원인미상'],
+      '화학물질': ['화학물질'],
+    };
+
     const cm = new ChartManager();
-    const fm = new FilterManager(['12대기인물', '기인물']);
+    const fm = new FilterManager(['작업유형', '12대기인물', '기인물']);
+    fm.setDownstream('작업유형', ['기인물']);
     fm.setDownstream('12대기인물', ['기인물']);
 
     let allData = [];
     let dropdownRef = {};
+    // 전체 기인물별 건수 맵 (정렬용, 초기화 후 고정)
+    let causeCountMap = {};
 
     async function init() {
       renderPageHeader('기인물조회', '기인물 기준 역방향 조회 - 해당 기인물이 어떤 공정에서 위험한지 분석');
@@ -99,14 +130,66 @@
       allData = await DataLoader.loadDB();
       dropdownRef = await DataLoader.loadDropdownRef();
 
+      // 전체 건수 맵 구축
+      allData.forEach(r => {
+        const c = r['기인물'];
+        if (c) causeCountMap[c] = (causeCountMap[c] || 0) + 1;
+      });
+
       setupFilters();
       renderResults();
     }
 
+    // 건수 내림차순으로 정렬된 기인물 목록 생성
+    function sortCausesByCount(causeList) {
+      return [...causeList].sort((a, b) => (causeCountMap[b] || 0) - (causeCountMap[a] || 0));
+    }
+
+    // 기인물 드롭다운 (건수 포함) 채우기
+    function populateCauseDropdown(selectId, causeList, placeholder) {
+      const select = document.getElementById(selectId);
+      if (!select) return;
+      const currentValue = select.value;
+      const sorted = sortCausesByCount(causeList);
+      select.innerHTML = `<option value="">${placeholder}</option>`;
+      sorted.forEach(c => {
+        const option = document.createElement('option');
+        option.value = c;
+        option.textContent = `${c} (${causeCountMap[c] || 0}건)`;
+        select.appendChild(option);
+      });
+      if (currentValue && causeList.includes(currentValue)) {
+        select.value = currentValue;
+      }
+    }
+
     function setupFilters() {
-      const allCauses = (dropdownRef['기인물목록'] || []).sort();
+      const allCauses = (dropdownRef['기인물목록'] || []);
       const is12List = dropdownRef['12대기인물'] || [];
-      populateDropdown('filter-cause', allCauses, '기인물 선택');
+
+      // 작업유형 드롭다운 채우기
+      const workTypeSelect = document.getElementById('filter-worktype');
+      workTypeSelect.innerHTML = '<option value="">전체</option>';
+      Object.keys(WORK_TYPE_MAP).forEach(type => {
+        const count = WORK_TYPE_MAP[type].reduce((sum, c) => sum + (causeCountMap[c] || 0), 0);
+        const opt = document.createElement('option');
+        opt.value = type;
+        opt.textContent = `${type} (${count}건)`;
+        workTypeSelect.appendChild(opt);
+      });
+
+      // 초기 기인물 드롭다운
+      populateCauseDropdown('filter-cause', allCauses, '기인물 선택');
+
+      // 작업유형 필터
+      workTypeSelect.addEventListener('change', (e) => {
+        const type = e.target.value;
+        if (type && WORK_TYPE_MAP[type]) {
+          fm.set('작업유형', WORK_TYPE_MAP[type]);
+        } else {
+          fm.set('작업유형', null);
+        }
+      });
 
       document.getElementById('filter-12').addEventListener('change', (e) => {
         fm.set('12대기인물', e.target.value === 'true' ? true : null);
@@ -116,23 +199,47 @@
         fm.set('기인물', e.target.value);
       });
 
-      // 12대 기인물 선택 시 기인물 드롭다운 필터링
+      // 작업유형 변경 시 기인물 드롭다운 갱신
+      fm.subscribe('작업유형', (val) => {
+        updateCauseDropdown();
+        document.getElementById('filter-cause').value = '';
+      });
+
+      // 12대 기인물 선택 시 기인물 드롭다운 갱신
       fm.subscribe('12대기인물', (val) => {
-        if (val === true) {
-          populateDropdown('filter-cause', is12List.sort(), '기인물 선택');
-        } else {
-          populateDropdown('filter-cause', allCauses, '기인물 선택');
-        }
+        updateCauseDropdown();
         document.getElementById('filter-cause').value = '';
       });
 
       document.getElementById('btn-reset').addEventListener('click', () => {
         fm.reset();
         document.querySelectorAll('.filter-bar select').forEach(s => s.value = '');
-        populateDropdown('filter-cause', allCauses, '기인물 선택');
+        populateCauseDropdown('filter-cause', allCauses, '기인물 선택');
       });
 
       fm.onDataChange(() => renderResults());
+    }
+
+    // 상위 필터 조합에 따라 기인물 드롭다운 범위 제한
+    function updateCauseDropdown() {
+      const allCauses = dropdownRef['기인물목록'] || [];
+      const is12List = dropdownRef['12대기인물'] || [];
+      const workTypeVal = fm.get('작업유형');
+      const is12Val = fm.get('12대기인물');
+
+      let candidates = [...allCauses];
+
+      // 작업유형 필터 적용
+      if (workTypeVal && Array.isArray(workTypeVal)) {
+        candidates = candidates.filter(c => workTypeVal.includes(c));
+      }
+
+      // 12대 기인물 필터 적용
+      if (is12Val === true) {
+        candidates = candidates.filter(c => is12List.includes(c));
+      }
+
+      populateCauseDropdown('filter-cause', candidates, '기인물 선택');
     }
 
     function renderResults() {
