@@ -56,7 +56,7 @@ function renderSidebar() {
         <div class="flex items-center gap-3">
           <img src="${logoPath}" alt="행복플러스+ 분당" class="w-10 h-10 object-contain flex-shrink-0">
           <div>
-            <h1 class="text-lg font-bold text-white">위험성평가 지원 시스템</h1>
+            <h1 class="text-sm font-bold text-white whitespace-nowrap">위험성평가 지원 시스템</h1>
             <p class="text-xs text-blue-300 font-medium">분당발전본부 안전관리실</p>
             <p class="text-xs text-gray-500">SIF 사고사망 고위험요인</p>
           </div>
