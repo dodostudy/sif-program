@@ -6,6 +6,7 @@
   <title>SIF 건설재해 위험성평가 - 위험성평가 지원</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"></script>
   <script src="https://cdn.jsdelivr.net/npm/papaparse@5"></script>
   <link rel="stylesheet" href="../css/style.css">
 </head>
@@ -47,7 +48,7 @@
     </div>
 
     <!-- 결과 영역 -->
-    <div id="results" class="hidden">
+    <div id="results" class="hidden mt-6">
       <div class="flex items-center justify-between mb-4 no-print">
         <h3 class="text-lg font-semibold text-white">위험성평가 결과</h3>
         <div class="flex gap-2">
@@ -59,7 +60,7 @@
       <!-- 위험요인 카드 -->
       <div class="mb-6">
         <h4 class="text-sm font-semibold text-gray-400 mb-3">주요 위험요인 (기인물 + 재해형태 조합)</h4>
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-3" id="risk-cards"></div>
+        <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 xl:grid-cols-5 gap-3" id="risk-cards"></div>
       </div>
 
       <!-- 차트 -->
@@ -74,16 +75,10 @@
         </div>
       </div>
 
-      <!-- 재해사례 목록 -->
-      <div class="chart-container mb-6">
-        <h4 class="text-sm font-semibold text-gray-300 mb-3">재해 사례</h4>
-        <div id="case-list"></div>
-      </div>
-
-      <!-- 감소대책 -->
+      <!-- 재해사례 + 감소대책 통합 -->
       <div class="chart-container">
-        <h4 class="text-sm font-semibold text-gray-300 mb-3">위험성 감소대책</h4>
-        <div id="mitigation-list"></div>
+        <h4 class="text-sm font-semibold text-gray-300 mb-3">재해사례 및 위험성 감소대책</h4>
+        <div id="case-mitigation-list"></div>
       </div>
     </div>
   </main>
@@ -134,7 +129,6 @@
         document.getElementById(`step-${n}`).classList.toggle('hidden', n !== stepNum);
       });
       document.getElementById('wizard').classList.remove('hidden');
-      document.getElementById('results').classList.add('hidden');
     }
 
     function goToStep(stepNum) {
@@ -152,6 +146,7 @@
     function resetWizard() {
       selected = { 공종: null, 작업명: null, 단위작업명: null };
       updateBreadcrumb();
+      document.getElementById('results').classList.add('hidden');
       renderStep1();
     }
 
@@ -182,8 +177,11 @@
 
     function selectGZ(gz) {
       selected['공종'] = gz;
+      selected['작업명'] = null;
+      selected['단위작업명'] = null;
       updateBreadcrumb();
       renderStep2();
+      showResults();
     }
 
     // Step 2: 작업명
@@ -212,8 +210,10 @@
 
     function selectWork(work) {
       selected['작업명'] = work;
+      selected['단위작업명'] = null;
       updateBreadcrumb();
       renderStep3();
+      showResults();
     }
 
     // Step 3: 단위작업명
@@ -246,25 +246,27 @@
       showResults();
     }
 
-    // 결과 표시
+    // 결과 표시 — 각 단계에서 호출 (5.1)
     function showResults() {
-      document.getElementById('wizard').classList.add('hidden');
       document.getElementById('results').classList.remove('hidden');
 
       // 인쇄 제목
-      document.getElementById('print-title').textContent =
-        `위험성평가 결과보고서 - ${selected['공종']} > ${selected['작업명']} > ${selected['단위작업명']}`;
+      const parts = [selected['공종']];
+      if (selected['작업명']) parts.push(selected['작업명']);
+      if (selected['단위작업명']) parts.push(selected['단위작업명']);
+      document.getElementById('print-title').textContent = `위험성평가 결과보고서 - ${parts.join(' > ')}`;
 
-      const filtered = allData.filter(r =>
-        r['공종'] === selected['공종'] &&
-        r['작업명'] === selected['작업명'] &&
-        r['단위작업명'] === selected['단위작업명']
-      );
+      // 현재 선택 수준에 따라 필터링
+      const filtered = allData.filter(r => {
+        if (r['공종'] !== selected['공종']) return false;
+        if (selected['작업명'] && r['작업명'] !== selected['작업명']) return false;
+        if (selected['단위작업명'] && r['단위작업명'] !== selected['단위작업명']) return false;
+        return true;
+      });
 
       renderRiskCards(filtered);
       renderRiskCharts(filtered);
-      renderCaseList(filtered);
-      renderMitigationList(filtered);
+      renderCaseMitigationList(filtered);
     }
 
     function renderRiskCards(data) {
@@ -276,7 +278,7 @@
         combos[key].count++;
       });
 
-      const sorted = Object.values(combos).sort((a, b) => b.count - a.count).slice(0, 5);
+      const sorted = Object.values(combos).sort((a, b) => b.count - a.count).slice(0, 10);
       const total = data.length;
 
       document.getElementById('risk-cards').innerHTML = sorted.map((item, i) => {
@@ -347,12 +349,21 @@
         },
         options: {
           cutout: '50%',
-          plugins: { legend: { position: 'right', labels: { boxWidth: 10, font: { size: 10 } } } }
-        }
+          plugins: {
+            legend: { position: 'right', labels: { boxWidth: 10, font: { size: 10 } } },
+            datalabels: {
+              display: true, color: '#fff', font: { size: 9, weight: 'bold' },
+              formatter: (value, ctx) => { const t = ctx.dataset.data.reduce((a,b)=>a+b,0); const p=(value/t*100).toFixed(1); return p<5?'':`${value}건\n${p}%`; },
+              textAlign: 'center',
+            }
+          }
+        },
+        plugins: [ChartDataLabels]
       });
     }
 
-    function renderCaseList(data) {
+    // 사례 + 감소대책 통합 표시 (5.4 + 5.5)
+    function renderCaseMitigationList(data) {
       // 기인물별 그룹
       const grouped = {};
       data.forEach(r => {
@@ -366,62 +377,38 @@
       let html = '';
       sortedGroups.forEach(([cause, records]) => {
         html += `
-          <div class="mb-4">
-            <div class="flex items-center gap-2 mb-2">
+          <div class="mb-6">
+            <div class="flex items-center gap-2 mb-3">
               <h5 class="text-sm font-semibold text-blue-400">${cause}</h5>
               <span class="text-xs text-gray-500">(${records.length}건)</span>
             </div>
-            <div class="space-y-2 pl-4 border-l-2 border-gray-800">
+            <div class="space-y-3 pl-4 border-l-2 border-gray-700">
         `;
-        records.slice(0, 3).forEach(r => {
+        // 모든 사례 표시 (생략 없음 - 5.5)
+        records.forEach((r, i) => {
           html += `
-            <div class="text-xs">
-              <p class="text-gray-300"><span class="text-gray-500">[${r['재해형태']}]</span> ${r['재해개요'] || '-'}</p>
-              ${r['재해유발요인'] ? `<p class="text-gray-500 mt-1">유발요인: ${r['재해유발요인']}</p>` : ''}
+            <div class="text-xs pb-3 ${i < records.length - 1 ? 'border-b border-gray-800' : ''}">
+              <div class="mb-1">
+                <span class="text-blue-300 font-medium">사례 ${i + 1}</span>
+                <span class="text-gray-600 ml-1">[${r['재해형태']}]</span>
+              </div>
+              <p class="text-gray-300 mb-1">${r['재해개요'] || '-'}</p>
+              ${r['재해유발요인'] ? `<p class="text-gray-500 mb-2"><span class="text-gray-600">유발요인:</span> ${r['재해유발요인']}</p>` : ''}
+              ${r['위험성감소대책'] ? `
+                <div class="mt-1 pl-3 border-l-2 border-green-800">
+                  <p class="text-green-400 text-xs font-medium mb-1">감소대책</p>
+                  ${r['위험성감소대책'].split(/\n|▶/).filter(m => m.trim()).map(m =>
+                    `<p class="text-gray-300 flex items-start gap-1"><span class="text-green-500 mt-0.5 flex-shrink-0">&#10003;</span><span>${m.trim()}</span></p>`
+                  ).join('')}
+                </div>
+              ` : ''}
             </div>
           `;
         });
-        if (records.length > 3) {
-          html += `<p class="text-xs text-gray-600">... 외 ${records.length - 3}건</p>`;
-        }
         html += `</div></div>`;
       });
 
-      document.getElementById('case-list').innerHTML = html || '<p class="text-sm text-gray-500">해당 조건의 재해사례가 없습니다.</p>';
-    }
-
-    function renderMitigationList(data) {
-      // 기인물별 감소대책 수집 + 중복 제거
-      const grouped = {};
-      data.forEach(r => {
-        if (!r['위험성감소대책']) return;
-        if (!grouped[r['기인물']]) grouped[r['기인물']] = new Set();
-        // ▶ 구분자로 분리
-        const measures = r['위험성감소대책'].split(/\n|▶/).filter(m => m.trim());
-        measures.forEach(m => grouped[r['기인물']].add(m.trim()));
-      });
-
-      let html = '';
-      Object.entries(grouped).forEach(([cause, measures]) => {
-        if (measures.size === 0) return;
-        html += `
-          <div class="mb-4">
-            <h5 class="text-sm font-semibold text-green-400 mb-2">${cause}</h5>
-            <ul class="space-y-1 pl-4">
-        `;
-        [...measures].slice(0, 8).forEach(m => {
-          html += `<li class="text-xs text-gray-300 flex items-start gap-2">
-            <span class="text-green-500 mt-0.5">&#10003;</span>
-            <span>${m}</span>
-          </li>`;
-        });
-        if (measures.size > 8) {
-          html += `<li class="text-xs text-gray-600">... 외 ${measures.size - 8}건</li>`;
-        }
-        html += `</ul></div>`;
-      });
-
-      document.getElementById('mitigation-list').innerHTML = html || '<p class="text-sm text-gray-500">해당 조건의 감소대책이 없습니다.</p>';
+      document.getElementById('case-mitigation-list').innerHTML = html || '<p class="text-sm text-gray-500">해당 조건의 재해사례가 없습니다.</p>';
     }
 
     init();

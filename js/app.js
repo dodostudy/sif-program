@@ -20,6 +20,12 @@ document.addEventListener('DOMContentLoaded', () => {
     Chart.defaults.plugins.tooltip.padding = 12;
     Chart.defaults.responsive = true;
     Chart.defaults.maintainAspectRatio = false;
+
+    // datalabels 플러그인: 글로벌 비활성화 (도넛 차트에서만 per-chart 활성화)
+    if (typeof ChartDataLabels !== 'undefined') {
+      Chart.register(ChartDataLabels);
+      Chart.defaults.plugins.datalabels = { display: false };
+    }
   }
 
   // 사이드바 렌더링

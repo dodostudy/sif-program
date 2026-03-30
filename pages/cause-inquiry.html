@@ -19,14 +19,6 @@
     <!-- 필터 바 -->
     <div class="filter-bar mb-4">
       <div class="filter-group">
-        <label>KOEN 공정</label>
-        <select id="filter-koen">
-          <option value="">전체</option>
-          <option value="true">YES</option>
-          <option value="false">NO</option>
-        </select>
-      </div>
-      <div class="filter-group">
         <label>12대 기인물</label>
         <select id="filter-12">
           <option value="">전체</option>
@@ -99,7 +91,7 @@
 
   <script>
     const cm = new ChartManager();
-    const fm = new FilterManager(['koen', '12대기인물', '기인물분류', '기인물']);
+    const fm = new FilterManager(['12대기인물', '기인물분류', '기인물']);
     fm.setDownstream('기인물분류', ['기인물']);
 
     let allData = [];
@@ -121,11 +113,6 @@
 
       const allCauses = (dropdownRef['기인물목록'] || []).sort();
       populateDropdown('filter-cause', allCauses, '기인물 선택');
-
-      document.getElementById('filter-koen').addEventListener('change', (e) => {
-        const val = e.target.value;
-        fm.set('koen', val === 'true' ? true : val === 'false' ? false : null);
-      });
 
       document.getElementById('filter-12').addEventListener('change', (e) => {
         fm.set('12대기인물', e.target.value === 'true' ? true : null);
@@ -279,11 +266,11 @@
         { key: '작업명', label: '작업명', maxWidth: 150 },
         { key: '재해형태', label: '재해형태', maxWidth: 80 },
         { key: '재해개요', label: '재해개요', maxWidth: 350, wrap: true,
-          format: (v) => `<div class="line-clamp-2 text-xs text-gray-300">${v || '-'}</div>` },
+          format: (v) => `<div class="text-xs text-gray-300">${v || '-'}</div>` },
         { key: '위험성감소대책', label: '감소대책', maxWidth: 250, wrap: true,
-          format: (v) => `<div class="line-clamp-2 text-xs text-gray-300">${v || '-'}</div>` },
+          format: (v) => `<div class="text-xs text-gray-300">${v || '-'}</div>` },
       ];
-      buildTable('data-table', columns, data, { pageSize: 15 });
+      buildTable('data-table', columns, data, { pageSize: 10 });
     }
 
     init();

@@ -38,7 +38,7 @@ sif_Program/
 │   └── style.css                  # 다크모드, 프린트, 히트맵, 반응형 스타일
 ├── js/
 │   ├── app.js                     # Chart.js 글로벌 설정 + 사이드바 초기화
-│   ├── components.js              # 공통 사이드바/헤더/KOEN토글 렌더링
+│   ├── components.js              # 공통 사이드바/헤더/발전소공정 토글 렌더링
 │   ├── data-loader.js             # JSON/CSV fetch + 인메모리 캐시
 │   ├── chart-manager.js           # Chart.js 인스턴스 lifecycle 관리
 │   ├── filter-manager.js          # Observer 패턴 cascading 필터 상태관리
@@ -47,6 +47,8 @@ sif_Program/
 │   ├── db.json                    # Excel DB시트 → JSON 변환 (2,574건, ~3MB)
 │   ├── dropdown-ref.json          # 공종→작업명→단위작업명 계층구조 + 기인물분류 맵 (~12KB)
 │   └── csv/                       # 10개 사전집계 CSV 파일 (~700KB)
+├── images/
+│   └── logo.png                   # 행복플러스+ 분당 심볼 이미지
 ├── scripts/
 │   └── convert-excel.py           # Excel → JSON 변환 스크립트 (데이터 업데이트 시 실행)
 ├── source/                        # 원본 Excel/CSV 파일 (버전관리용)
@@ -159,11 +161,11 @@ python3 scripts/convert-excel.py
 
 | 페이지 | 파일 | 주요 기능 |
 |--------|------|-----------|
-| 대시보드 | `index.html` | 요약카드 4개 + 도넛/수평바/히트맵 차트, KOEN 토글 |
-| 공정조회 | `pages/process-inquiry.html` | 5단계 cascading 필터 → 재해사례 테이블 + 기인물/재해형태 차트 |
-| 기인물조회 | `pages/cause-inquiry.html` | 기인물 역방향 조회 → 공종별/재해형태별/작업명별 분포 차트 |
+| 대시보드 | `index.html` | 요약카드 3개 + 도넛/수평바/히트맵 차트, 발전소공정 토글, 공종 드릴다운 |
+| 공정조회 | `pages/process-inquiry.html` | 5단계 cascading 필터(발전소공정 연동) → 재해사례 테이블 + 기인물/재해형태 차트 |
+| 기인물조회 | `pages/cause-inquiry.html` | 기인물 역방향 조회(12대/분류/기인물) → 공종별/재해형태별/작업명별 분포 차트 |
 | 통계분석 | `pages/statistics.html` | 5탭 (공종/작업명/단위작업명/기인물/교차분석), 차트↔테이블 토글, 히트맵 |
-| 위험성평가 | `pages/risk-assessment.html` | 3단계 카드 위자드 → 위험요인 카드(Top5) + 재해사례 + 감소대책, 인쇄 지원 |
+| 위험성평가 | `pages/risk-assessment.html` | 3단계 카드 위자드(단계별 즉시결과) → 위험요인 카드(Top10) + 사례+대책 통합, 인쇄 지원 |
 
 ---
 

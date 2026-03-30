@@ -19,7 +19,7 @@
     <!-- 필터 바 -->
     <div class="filter-bar mb-4">
       <div class="filter-group">
-        <label>KOEN 공정</label>
+        <label>발전소 공정</label>
         <select id="filter-koen">
           <option value="">전체</option>
           <option value="true">YES</option>
@@ -113,7 +113,7 @@
       const allCauses = [...new Set(allData.map(r => r['기인물']))].sort();
       populateDropdown('filter-cause', allCauses, '전체 기인물');
 
-      // KOEN 필터
+      // 발전소 공정 필터
       document.getElementById('filter-koen').addEventListener('change', (e) => {
         const val = e.target.value;
         fm.set('koen', val === 'true' ? true : val === 'false' ? false : null);
@@ -147,8 +147,24 @@
         document.getElementById('filter-work').value = '';
         document.getElementById('filter-unit-work').value = '';
         document.getElementById('filter-cause').value = '';
+        populateDropdown('filter-gongzong', allGongzong, '전체 공종');
         populateDropdown('filter-work', [], '작업명 선택');
         populateDropdown('filter-unit-work', [], '단위작업명 선택');
+        populateDropdown('filter-cause', allCauses, '전체 기인물');
+      });
+
+      // 발전소 공정 필터 변경 시 공종 드롭다운 갱신 (3.1)
+      fm.subscribe('koen', (val) => {
+        if (val === true) {
+          // 발전소 공정 데이터가 있는 공종만 표시
+          const koenGongzong = [...new Set(allData.filter(r => r.KOEN공정).map(r => r['공종']))].sort();
+          populateDropdown('filter-gongzong', koenGongzong, '전체 공종');
+        } else {
+          populateDropdown('filter-gongzong', allGongzong, '전체 공종');
+        }
+        document.getElementById('filter-gongzong').value = '';
+        document.getElementById('filter-work').value = '';
+        document.getElementById('filter-unit-work').value = '';
       });
 
       // Cascading: 공종 변경 시 작업명 갱신
@@ -161,6 +177,7 @@
         }
         document.getElementById('filter-work').value = '';
         document.getElementById('filter-unit-work').value = '';
+        updateCauseDropdown();
       });
 
       // Cascading: 작업명 변경 시 단위작업명 갱신
@@ -172,10 +189,27 @@
           populateDropdown('filter-unit-work', [], '단위작업명 선택');
         }
         document.getElementById('filter-unit-work').value = '';
+        updateCauseDropdown();
+      });
+
+      // 단위작업명 변경 시 기인물 갱신 (3.2)
+      fm.subscribe('단위작업명', () => {
+        updateCauseDropdown();
       });
 
       // 데이터 변경 시 결과 갱신
       fm.onDataChange(() => renderResults());
+    }
+
+    // 상위 필터에 따라 기인물 드롭다운 범위 제한 (3.2)
+    function updateCauseDropdown() {
+      const filters = fm.getAll();
+      // 기인물 필터를 제외한 현재 필터로 데이터 필터링
+      const filtersWithoutCause = { ...filters };
+      delete filtersWithoutCause['기인물'];
+      const filtered = filterDB(allData, filtersWithoutCause);
+      const causes = [...new Set(filtered.map(r => r['기인물']))].sort();
+      populateDropdown('filter-cause', causes, '전체 기인물');
     }
 
     function renderResults() {
@@ -220,13 +254,13 @@
         { key: '기인물', label: '기인물', maxWidth: 120 },
         { key: '재해형태', label: '재해형태', maxWidth: 80 },
         { key: '재해개요', label: '재해개요', maxWidth: 400, wrap: true,
-          format: (v) => `<div class="line-clamp-2 text-xs text-gray-300">${v || '-'}</div>` },
+          format: (v) => `<div class="text-xs text-gray-300">${v || '-'}</div>` },
         { key: '재해유발요인', label: '재해유발요인', maxWidth: 300, wrap: true,
-          format: (v) => `<div class="line-clamp-2 text-xs text-gray-300">${v || '-'}</div>` },
+          format: (v) => `<div class="text-xs text-gray-300">${v || '-'}</div>` },
         { key: '위험성감소대책', label: '감소대책', maxWidth: 300, wrap: true,
-          format: (v) => `<div class="line-clamp-2 text-xs text-gray-300">${v || '-'}</div>` },
+          format: (v) => `<div class="text-xs text-gray-300">${v || '-'}</div>` },
       ];
-      buildTable('data-table', columns, data, { pageSize: 15 });
+      buildTable('data-table', columns, data, { pageSize: 10 });
     }
 
     function renderCauseChart(data) {
@@ -274,8 +308,20 @@
           cutout: '50%',
           plugins: {
             legend: { position: 'right', labels: { boxWidth: 10, font: { size: 10 } } },
+            datalabels: {
+              display: true, color: '#fff',
+              font: { size: 9, weight: 'bold' },
+              formatter: (value, ctx) => {
+                const total = ctx.dataset.data.reduce((a, b) => a + b, 0);
+                const pct = (value / total * 100).toFixed(1);
+                if (pct < 5) return '';
+                return `${value}건\n${pct}%`;
+              },
+              textAlign: 'center',
+            }
           }
-        }
+        },
+        plugins: [ChartDataLabels]
       });
     }
 

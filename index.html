@@ -17,8 +17,7 @@
     <div id="page-header"></div>
 
     <!-- 요약 카드 -->
-    <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6" id="summary-cards">
-      <div class="stat-card"><div class="skeleton h-20"></div></div>
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6" id="summary-cards">
       <div class="stat-card"><div class="skeleton h-20"></div></div>
       <div class="stat-card"><div class="skeleton h-20"></div></div>
       <div class="stat-card"><div class="skeleton h-20"></div></div>
@@ -35,8 +34,38 @@
       <div class="chart-container">
         <div class="flex items-center justify-between mb-3">
           <h3 class="text-sm font-semibold text-gray-300">공종별 재해건수</h3>
+          <span class="text-xs text-gray-500">바를 클릭하면 드릴다운</span>
         </div>
         <div style="height:320px"><canvas id="chart-construction-type"></canvas></div>
+      </div>
+    </div>
+
+    <!-- 드릴다운 영역 -->
+    <div id="drilldown-area" class="hidden mb-4">
+      <div class="breadcrumb mb-3" id="drill-breadcrumb"></div>
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-4">
+        <div class="chart-container">
+          <div class="flex items-center justify-between mb-3">
+            <h3 class="text-sm font-semibold text-gray-300" id="drill-bar-title">작업명별 재해건수</h3>
+            <span class="text-xs text-gray-500">클릭하여 세부조회</span>
+          </div>
+          <div style="height:320px"><canvas id="chart-drill-bar"></canvas></div>
+        </div>
+        <div class="chart-container">
+          <h3 class="text-sm font-semibold text-gray-300 mb-3">재해형태 분포</h3>
+          <div style="height:320px"><canvas id="chart-drill-disaster"></canvas></div>
+        </div>
+        <div class="chart-container">
+          <h3 class="text-sm font-semibold text-gray-300 mb-3">기인물 분포</h3>
+          <div style="height:320px"><canvas id="chart-drill-cause"></canvas></div>
+        </div>
+      </div>
+      <!-- 드릴다운 상세 테이블 -->
+      <div id="drill-table-area" class="hidden">
+        <div class="chart-container">
+          <h3 class="text-sm font-semibold text-gray-300 mb-3">상세 재해사례</h3>
+          <div id="drill-table"></div>
+        </div>
       </div>
     </div>
 
@@ -69,6 +98,7 @@
   <script>
     const cm = new ChartManager();
     let allData = [];
+    let currentData = []; // 현재 필터 적용된 데이터
     let dropdownRef = {};
 
     async function init() {
@@ -83,20 +113,19 @@
     }
 
     function renderAll(koenFilter) {
-      const data = koenFilter === true
+      currentData = koenFilter === true
         ? allData.filter(r => r.KOEN공정)
         : allData;
 
-      renderSummaryCards(data);
-      renderDisasterTypeChart(data);
-      renderConstructionTypeChart(data);
-      renderCauseTop10Chart(data);
-      renderHeatmap(data);
+      renderSummaryCards(currentData);
+      renderDisasterTypeChart(currentData);
+      renderConstructionTypeChart(currentData);
+      renderCauseTop10Chart(currentData);
+      renderHeatmap(currentData);
     }
 
     function renderSummaryCards(data) {
       const total = data.length;
-      const koenCount = data.filter(r => r.KOEN공정).length;
 
       // 최다 공종
       const byType = aggregateBy(data, '공종');
@@ -111,11 +140,6 @@
           <p class="text-xs text-gray-500 uppercase tracking-wide">총 재해건수</p>
           <p class="text-3xl font-bold text-white mt-2">${formatNumber(total)}</p>
           <p class="text-xs text-gray-500 mt-1">2019~2021년 사망/중상</p>
-        </div>
-        <div class="stat-card">
-          <p class="text-xs text-gray-500 uppercase tracking-wide">KOEN 관련</p>
-          <p class="text-3xl font-bold text-blue-400 mt-2">${formatNumber(koenCount)}</p>
-          <p class="text-xs text-gray-500 mt-1">${formatPercent(koenCount, total)} 비중</p>
         </div>
         <div class="stat-card">
           <p class="text-xs text-gray-500 uppercase tracking-wide">최다 공종</p>
@@ -163,11 +187,27 @@
                   return ` ${ctx.label}: ${formatNumber(ctx.raw)}건 (${formatPercent(ctx.raw, total)})`;
                 }
               }
+            },
+            datalabels: {
+              display: true,
+              color: '#fff',
+              font: { size: 10, weight: 'bold' },
+              formatter: (value, ctx) => {
+                const total = ctx.dataset.data.reduce((a, b) => a + b, 0);
+                const pct = (value / total * 100).toFixed(1);
+                if (pct < 5) return '';
+                return `${value}건\n${pct}%`;
+              },
+              textAlign: 'center',
             }
           }
-        }
+        },
+        plugins: [ChartDataLabels]
       });
     }
+
+    // 드릴다운 상태
+    let drillState = { 공종: null, 작업명: null, 단위작업명: null };
 
     function renderConstructionTypeChart(data) {
       const agg = aggregateBy(data, '공종');
@@ -198,9 +238,177 @@
           scales: {
             x: { grid: { color: '#1F2937' }, ticks: { font: { size: 10 } } },
             y: { grid: { display: false }, ticks: { font: { size: 10 } } }
+          },
+          onClick: (evt, elements) => {
+            if (elements.length === 0) return;
+            const idx = elements[0].index;
+            const gz = sorted[idx].key;
+            drillState = { 공종: gz, 작업명: null, 단위작업명: null };
+            renderDrilldown(data);
           }
         }
       });
+
+      // 드릴다운 초기화
+      drillState = { 공종: null, 작업명: null, 단위작업명: null };
+      document.getElementById('drilldown-area').classList.add('hidden');
+    }
+
+    function renderDrilldown(fullData) {
+      const area = document.getElementById('drilldown-area');
+      area.classList.remove('hidden');
+      area.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+      // 현재 드릴 레벨에 따라 필터링
+      let filtered = fullData.filter(r => r['공종'] === drillState['공종']);
+      if (drillState['작업명']) filtered = filtered.filter(r => r['작업명'] === drillState['작업명']);
+      if (drillState['단위작업명']) filtered = filtered.filter(r => r['단위작업명'] === drillState['단위작업명']);
+
+      // 브레드크럼
+      renderDrillBreadcrumb(fullData);
+
+      // 드릴다운 단계 결정
+      let groupKey, nextLevel, barTitle;
+      if (!drillState['작업명']) {
+        groupKey = '작업명';
+        nextLevel = '작업명';
+        barTitle = `${drillState['공종'].replace(/^\d+\.\s*/, '')} — 작업명별 재해건수`;
+      } else if (!drillState['단위작업명']) {
+        groupKey = '단위작업명';
+        nextLevel = '단위작업명';
+        barTitle = `${drillState['작업명']} — 단위작업명별 재해건수`;
+      } else {
+        // 최하위 — 테이블만 표시
+        groupKey = null;
+        barTitle = `${drillState['단위작업명']} — 상세`;
+      }
+
+      document.getElementById('drill-bar-title').textContent = groupKey ? barTitle : '상세';
+
+      if (groupKey) {
+        const agg = aggregateBy(filtered, groupKey);
+        const sorted = topN(agg, 'count', 15);
+
+        cm.create('chart-drill-bar', {
+          type: 'bar',
+          data: {
+            labels: sorted.map(a => a.key),
+            datasets: [{
+              data: sorted.map(a => a.count),
+              backgroundColor: sorted.map((_, i) => CHART_COLORS.getAlpha(CHART_COLORS.getColor(i), 0.7)),
+              borderColor: sorted.map((_, i) => CHART_COLORS.getColor(i)),
+              borderWidth: 1, borderRadius: 3,
+            }]
+          },
+          options: {
+            indexAxis: 'y',
+            plugins: { legend: { display: false } },
+            scales: {
+              x: { grid: { color: '#1F2937' }, ticks: { font: { size: 10 } } },
+              y: { grid: { display: false }, ticks: { font: { size: 9 } } }
+            },
+            onClick: (evt, elements) => {
+              if (elements.length === 0) return;
+              const idx = elements[0].index;
+              drillState[nextLevel] = sorted[idx].key;
+              renderDrilldown(fullData);
+            }
+          }
+        });
+      }
+
+      // 재해형태 도넛
+      const disasterAgg = aggregateBy(filtered, '재해형태');
+      const disasterSorted = topN(disasterAgg, 'count', 8);
+      cm.create('chart-drill-disaster', {
+        type: 'doughnut',
+        data: {
+          labels: disasterSorted.map(a => a.key),
+          datasets: [{ data: disasterSorted.map(a => a.count), backgroundColor: disasterSorted.map((_, i) => CHART_COLORS.getColor(i)), borderWidth: 0 }]
+        },
+        options: {
+          cutout: '50%',
+          plugins: {
+            legend: { position: 'right', labels: { boxWidth: 10, font: { size: 10 } } },
+            datalabels: {
+              display: true,
+              color: '#fff', font: { size: 9, weight: 'bold' },
+              formatter: (value, ctx) => { const t = ctx.dataset.data.reduce((a,b)=>a+b,0); const p=(value/t*100).toFixed(1); return p<5?'':`${value}건\n${p}%`; },
+              textAlign: 'center',
+            }
+          }
+        },
+        plugins: [ChartDataLabels]
+      });
+
+      // 기인물 도넛
+      const causeAgg = aggregateBy(filtered, '기인물');
+      const causeSorted = topN(causeAgg, 'count', 8);
+      cm.create('chart-drill-cause', {
+        type: 'doughnut',
+        data: {
+          labels: causeSorted.map(a => a.key),
+          datasets: [{ data: causeSorted.map(a => a.count), backgroundColor: causeSorted.map((_, i) => CHART_COLORS.getColor(i + 8)), borderWidth: 0 }]
+        },
+        options: {
+          cutout: '50%',
+          plugins: {
+            legend: { position: 'right', labels: { boxWidth: 10, font: { size: 10 } } },
+            datalabels: {
+              display: true,
+              color: '#fff', font: { size: 9, weight: 'bold' },
+              formatter: (value, ctx) => { const t = ctx.dataset.data.reduce((a,b)=>a+b,0); const p=(value/t*100).toFixed(1); return p<5?'':`${value}건\n${p}%`; },
+              textAlign: 'center',
+            }
+          }
+        },
+        plugins: [ChartDataLabels]
+      });
+
+      // 최하위 또는 클릭 시 상세 테이블 표시
+      const tableArea = document.getElementById('drill-table-area');
+      if (drillState['단위작업명']) {
+        tableArea.classList.remove('hidden');
+        const columns = [
+          { key: '기인물', label: '기인물', maxWidth: 120 },
+          { key: '재해형태', label: '재해형태', maxWidth: 80 },
+          { key: '재해개요', label: '재해개요', maxWidth: 350, wrap: true,
+            format: (v) => `<div class="text-xs text-gray-300">${v || '-'}</div>` },
+          { key: '재해유발요인', label: '재해유발요인', maxWidth: 250, wrap: true,
+            format: (v) => `<div class="text-xs text-gray-300">${v || '-'}</div>` },
+          { key: '위험성감소대책', label: '감소대책', maxWidth: 250, wrap: true,
+            format: (v) => `<div class="text-xs text-gray-300">${v || '-'}</div>` },
+        ];
+        buildTable('drill-table', columns, filtered, { pageSize: 10 });
+      } else {
+        tableArea.classList.add('hidden');
+      }
+    }
+
+    function renderDrillBreadcrumb(fullData) {
+      const bc = document.getElementById('drill-breadcrumb');
+      let parts = [`<a onclick="drillState={공종:null,작업명:null,단위작업명:null};document.getElementById('drilldown-area').classList.add('hidden');" class="cursor-pointer text-blue-400 hover:underline">전체</a>`];
+
+      if (drillState['공종']) {
+        const shortGz = drillState['공종'].replace(/^\d+\.\s*/, '');
+        if (drillState['작업명']) {
+          parts.push(`<a onclick="drillState.작업명=null;drillState.단위작업명=null;renderDrilldown(${fullData === allData ? 'allData' : 'allData'});" class="cursor-pointer text-blue-400 hover:underline">${shortGz}</a>`);
+        } else {
+          parts.push(`<span class="text-white font-medium">${shortGz}</span>`);
+        }
+      }
+      if (drillState['작업명']) {
+        if (drillState['단위작업명']) {
+          parts.push(`<a onclick="drillState.단위작업명=null;renderDrilldown(currentData);" class="cursor-pointer text-blue-400 hover:underline">${drillState['작업명']}</a>`);
+        } else {
+          parts.push(`<span class="text-white font-medium">${drillState['작업명']}</span>`);
+        }
+      }
+      if (drillState['단위작업명']) {
+        parts.push(`<span class="text-white font-medium">${drillState['단위작업명']}</span>`);
+      }
+
+      bc.innerHTML = parts.join('<span class="separator text-gray-600 mx-1">›</span>');
     }
 
     function renderCauseTop10Chart(data) {

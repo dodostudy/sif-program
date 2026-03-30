@@ -49,19 +49,26 @@ function renderSidebar() {
       </a>`;
   }).join('');
 
+  const logoPath = base + '/images/logo.png';
   sidebar.innerHTML = `
     <div class="flex flex-col h-full w-64 bg-gray-900 border-r border-gray-800 fixed top-0 left-0 z-40 transform -translate-x-full lg:translate-x-0 transition-transform" id="sidebar-panel">
       <div class="p-4 border-b border-gray-800">
-        <h1 class="text-lg font-bold text-white">
-          <span class="text-blue-400">SIF</span> 위험성평가
-        </h1>
-        <p class="text-xs text-gray-500 mt-1">건설재해 분석 시스템</p>
+        <div class="flex items-center gap-3">
+          <img src="${logoPath}" alt="행복플러스+ 분당" class="w-10 h-10 object-contain flex-shrink-0">
+          <div>
+            <h1 class="text-lg font-bold text-white">
+              <span class="text-blue-400">SIF</span> 위험성평가
+            </h1>
+            <p class="text-xs text-blue-300 font-medium">분당발전본부 안전관리실</p>
+          </div>
+        </div>
+        <p class="text-xs text-gray-500 mt-2">건설재해 분석 시스템</p>
       </div>
       <nav class="flex-1 p-3 space-y-1 overflow-y-auto">
         ${navHtml}
       </nav>
       <div class="p-4 border-t border-gray-800 text-xs text-gray-600">
-        KOEN 건설안전 데이터 (2019~2021)
+        건설안전 데이터 (2019~2021)
       </div>
     </div>
   `;
@@ -69,7 +76,7 @@ function renderSidebar() {
   // 모바일 햄버거 메뉴
   const mobileBtn = document.createElement('button');
   mobileBtn.id = 'mobile-menu-btn';
-  mobileBtn.className = 'fixed top-4 left-4 z-50 lg:hidden bg-gray-800 p-2 rounded-lg text-gray-300';
+  mobileBtn.className = 'fixed top-3 left-3 z-50 lg:hidden bg-gray-800/90 p-1.5 rounded-lg text-gray-300 backdrop-blur-sm';
   mobileBtn.innerHTML = ICONS.menu;
   document.body.appendChild(mobileBtn);
 
@@ -115,7 +122,7 @@ function createKoenToggle(containerId, onChange) {
 
   container.innerHTML = `
     <div class="flex items-center gap-2 bg-gray-800 rounded-lg px-3 py-2">
-      <span class="text-xs text-gray-400">KOEN 공정</span>
+      <span class="text-xs text-gray-400">발전소 공정</span>
       <label class="relative inline-flex items-center cursor-pointer">
         <input type="checkbox" id="koen-toggle" class="sr-only peer">
         <div class="w-9 h-5 bg-gray-600 rounded-full peer peer-checked:bg-blue-600 peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-0.5 after:left-0.5 after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all"></div>
@@ -127,7 +134,7 @@ function createKoenToggle(containerId, onChange) {
   const toggle = document.getElementById('koen-toggle');
   const label = document.getElementById('koen-label');
   toggle.addEventListener('change', () => {
-    label.textContent = toggle.checked ? 'KOEN만' : '전체';
+    label.textContent = toggle.checked ? '발전소 공정만' : '전체';
     onChange(toggle.checked ? true : null);
   });
 }

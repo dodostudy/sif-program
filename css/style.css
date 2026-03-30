@@ -16,6 +16,13 @@
   background: #6B7280;
 }
 
+/* 모바일 메뉴 버튼 영역 확보 */
+@media (max-width: 1023px) {
+  #page-header {
+    padding-left: 2.5rem;
+  }
+}
+
 /* 메인 콘텐츠 영역 */
 #content {
   margin-left: 0;
