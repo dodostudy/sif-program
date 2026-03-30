@@ -62,13 +62,14 @@ function renderSidebar() {
             <p class="text-xs text-blue-300 font-medium">분당발전본부 안전관리실</p>
           </div>
         </div>
-        <p class="text-xs text-gray-500 mt-2">사고사망 고위험요인</p>
+        <p class="text-xs text-gray-500 mt-2">SIF : 사고사망 고위험요인</p>
       </div>
       <nav class="flex-1 p-3 space-y-1 overflow-y-auto">
         ${navHtml}
       </nav>
-      <div class="p-4 border-t border-gray-800 text-xs text-gray-600">
-        건설안전 데이터 (2019~2021)
+      <div class="p-4 border-t border-gray-800 text-xs text-gray-600 space-y-1">
+        <p>건설안전 데이터 (2019~2021)</p>
+        <p>출처: 한국산업안전보건공단</p>
       </div>
     </div>
   `;
