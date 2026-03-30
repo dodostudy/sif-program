@@ -26,10 +26,6 @@
         </select>
       </div>
       <div class="filter-group">
-        <label>기인물 분류</label>
-        <select id="filter-classification"></select>
-      </div>
-      <div class="filter-group">
         <label>기인물</label>
         <select id="filter-cause"></select>
       </div>
@@ -91,8 +87,8 @@
 
   <script>
     const cm = new ChartManager();
-    const fm = new FilterManager(['12대기인물', '기인물분류', '기인물']);
-    fm.setDownstream('기인물분류', ['기인물']);
+    const fm = new FilterManager(['12대기인물', '기인물']);
+    fm.setDownstream('12대기인물', ['기인물']);
 
     let allData = [];
     let dropdownRef = {};
@@ -108,30 +104,24 @@
     }
 
     function setupFilters() {
-      const classifications = Object.keys(dropdownRef['기인물분류'] || {}).sort();
-      populateDropdown('filter-classification', classifications, '전체 분류');
-
       const allCauses = (dropdownRef['기인물목록'] || []).sort();
+      const is12List = dropdownRef['12대기인물'] || [];
       populateDropdown('filter-cause', allCauses, '기인물 선택');
 
       document.getElementById('filter-12').addEventListener('change', (e) => {
         fm.set('12대기인물', e.target.value === 'true' ? true : null);
       });
 
-      document.getElementById('filter-classification').addEventListener('change', (e) => {
-        fm.set('기인물분류', e.target.value);
-      });
-
       document.getElementById('filter-cause').addEventListener('change', (e) => {
         fm.set('기인물', e.target.value);
       });
 
-      // Cascading: 분류 변경 시 기인물 목록 갱신
-      fm.subscribe('기인물분류', (val) => {
-        if (val && dropdownRef['기인물분류'][val]) {
-          populateDropdown('filter-cause', dropdownRef['기인물분류'][val], '기인물 선택');
+      // 12대 기인물 선택 시 기인물 드롭다운 필터링
+      fm.subscribe('12대기인물', (val) => {
+        if (val === true) {
+          populateDropdown('filter-cause', is12List.sort(), '기인물 선택');
         } else {
-          populateDropdown('filter-cause', dropdownRef['기인물목록'] || [], '기인물 선택');
+          populateDropdown('filter-cause', allCauses, '기인물 선택');
         }
         document.getElementById('filter-cause').value = '';
       });
@@ -139,7 +129,7 @@
       document.getElementById('btn-reset').addEventListener('click', () => {
         fm.reset();
         document.querySelectorAll('.filter-bar select').forEach(s => s.value = '');
-        populateDropdown('filter-cause', dropdownRef['기인물목록'] || [], '기인물 선택');
+        populateDropdown('filter-cause', allCauses, '기인물 선택');
       });
 
       fm.onDataChange(() => renderResults());
