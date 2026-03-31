@@ -69,8 +69,8 @@ function renderSidebar() {
       </nav>
       <div class="p-4 border-t border-gray-800 space-y-1">
         <p class="text-xs text-white font-medium">산업재해 고위험요인 데이터 (2016년~2021년)</p>
-        <p class="text-xs text-gray-400">출처: 한국산업안전보건공단</p>
-        <p class="text-xs text-amber-300 font-medium pt-1 border-t border-gray-800">⚠ 상업적 이용 및 내용에 대한 변경 금지, 자료 출처 : 한국산업안전보건공단</p>
+        <p class="text-xs text-white">출처: 한국산업안전보건공단</p>
+        <p class="text-xs text-amber-300 font-medium pt-1 border-t border-gray-800">⚠ 상업적 이용 및 내용에 대한 변경 금지</p>
       </div>
     </div>
   `;
