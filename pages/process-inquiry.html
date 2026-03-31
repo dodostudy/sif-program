@@ -109,9 +109,18 @@
       populateDropdown('filter-work', [], '작업명 선택');
       populateDropdown('filter-unit-work', [], '단위작업명 선택');
 
-      // 기인물 전체 목록
-      const allCauses = [...new Set(allData.map(r => r['기인물']))].sort();
-      populateDropdown('filter-cause', allCauses, '전체 기인물');
+      // 기인물 전체 목록 (건수 내림차순)
+      const allCauseMap = {};
+      allData.forEach(r => { const c = r['기인물']; if (c) allCauseMap[c] = (allCauseMap[c] || 0) + 1; });
+      const allCausesSorted = Object.entries(allCauseMap).sort((a, b) => b[1] - a[1]);
+      const causeSelect = document.getElementById('filter-cause');
+      causeSelect.innerHTML = '<option value="">전체 기인물</option>';
+      allCausesSorted.forEach(([cause, count]) => {
+        const opt = document.createElement('option');
+        opt.value = cause;
+        opt.textContent = `${cause} (${count}건)`;
+        causeSelect.appendChild(opt);
+      });
 
       // 발전소 공정 필터
       document.getElementById('filter-koen').addEventListener('change', (e) => {
@@ -150,7 +159,15 @@
         populateDropdown('filter-gongzong', allGongzong, '전체 공종');
         populateDropdown('filter-work', [], '작업명 선택');
         populateDropdown('filter-unit-work', [], '단위작업명 선택');
-        populateDropdown('filter-cause', allCauses, '전체 기인물');
+        // 기인물 건수순 복원
+        const resetCauseSelect = document.getElementById('filter-cause');
+        resetCauseSelect.innerHTML = '<option value="">전체 기인물</option>';
+        allCausesSorted.forEach(([cause, count]) => {
+          const opt = document.createElement('option');
+          opt.value = cause;
+          opt.textContent = `${cause} (${count}건)`;
+          resetCauseSelect.appendChild(opt);
+        });
       });
 
       // 발전소 공정 필터 변경 시 공종 드롭다운 갱신 (3.1)
@@ -201,15 +218,31 @@
       fm.onDataChange(() => renderResults());
     }
 
-    // 상위 필터에 따라 기인물 드롭다운 범위 제한 (3.2)
+    // 상위 필터에 따라 기인물 드롭다운 범위 제한 (3.2) + 건수 내림차순 정렬
     function updateCauseDropdown() {
       const filters = fm.getAll();
-      // 기인물 필터를 제외한 현재 필터로 데이터 필터링
       const filtersWithoutCause = { ...filters };
       delete filtersWithoutCause['기인물'];
       const filtered = filterDB(allData, filtersWithoutCause);
-      const causes = [...new Set(filtered.map(r => r['기인물']))].sort();
-      populateDropdown('filter-cause', causes, '전체 기인물');
+
+      // 건수 집계 후 내림차순 정렬
+      const causeMap = {};
+      filtered.forEach(r => {
+        const c = r['기인물'];
+        if (c) causeMap[c] = (causeMap[c] || 0) + 1;
+      });
+      const sorted = Object.entries(causeMap).sort((a, b) => b[1] - a[1]);
+
+      const select = document.getElementById('filter-cause');
+      const current = select.value;
+      select.innerHTML = '<option value="">전체 기인물</option>';
+      sorted.forEach(([cause, count]) => {
+        const opt = document.createElement('option');
+        opt.value = cause;
+        opt.textContent = `${cause} (${count}건)`;
+        select.appendChild(opt);
+      });
+      if (current && causeMap[current]) select.value = current;
     }
 
     function renderResults() {
