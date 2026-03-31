@@ -67,16 +67,10 @@ function renderSidebar() {
       <nav class="flex-1 p-3 space-y-1 overflow-y-auto">
         ${navHtml}
       </nav>
-      <div class="p-4 border-t border-gray-800 space-y-2">
-        <div class="text-xs text-white space-y-1">
-          <p class="font-medium">산업재해 고위험요인 데이터</p>
-          <p class="text-gray-300">(2016년~2021년)</p>
-          <p class="text-gray-400">출처: 한국산업안전보건공단</p>
-        </div>
-        <div class="pt-2 border-t border-gray-800 text-xs text-amber-300 font-medium leading-relaxed">
-          <p>⚠ 상업적 이용 및 내용에 대한 변경 금지</p>
-          <p class="text-gray-400 font-normal text-xs mt-1">자료 출처 : 한국산업안전보건공단</p>
-        </div>
+      <div class="p-4 border-t border-gray-800 space-y-1">
+        <p class="text-xs text-white font-medium">산업재해 고위험요인 데이터 (2016년~2021년)</p>
+        <p class="text-xs text-gray-400">출처: 한국산업안전보건공단</p>
+        <p class="text-xs text-amber-300 font-medium pt-1 border-t border-gray-800">⚠ 상업적 이용 및 내용에 대한 변경 금지, 자료 출처 : 한국산업안전보건공단</p>
       </div>
     </div>
   `;
