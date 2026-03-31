@@ -100,7 +100,10 @@ function buildTable(containerId, columns, rows, options = {}) {
   Object.keys(columnFilters).forEach(key => {
     const val = columnFilters[key];
     if (val) {
-      filteredRows = filteredRows.filter(r => String(r[key] || '') === val);
+      filteredRows = filteredRows.filter(r => {
+        const cellVal = String(r[key] || '').trim();
+        return cellVal === val;
+      });
     }
   });
 
@@ -121,11 +124,14 @@ function buildTable(containerId, columns, rows, options = {}) {
   const start = (page - 1) * pageSize;
   const pageRows = sortedRows.slice(start, start + pageSize);
 
-  // 필터 가능 컬럼의 고유값 추출 (원본 rows 기준)
+  // 필터 가능 컬럼의 고유값 추출 (원본 rows 기준, 공백 정규화)
   const filterOptions = {};
   filterColumns.forEach(key => {
     const vals = {};
-    rows.forEach(r => { const v = r[key]; if (v) vals[v] = (vals[v] || 0) + 1; });
+    rows.forEach(r => {
+      const v = String(r[key] || '').trim();
+      if (v) vals[v] = (vals[v] || 0) + 1;
+    });
     filterOptions[key] = Object.entries(vals).sort((a, b) => b[1] - a[1]);
   });
 
