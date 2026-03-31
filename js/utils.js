@@ -156,7 +156,14 @@ function buildTable(containerId, columns, rows, options = {}) {
   }
 
   html += `<div class="overflow-x-auto">
-    <table class="w-full text-sm text-left">
+    <table class="w-full text-sm text-left" style="table-layout:fixed">
+      <colgroup>
+        ${columns.map(col => {
+          const w = col.width || '';
+          const minW = col.minWidth ? `min-width:${col.minWidth}px;` : '';
+          return `<col style="${w ? `width:${w}px;` : ''}${minW}">`;
+        }).join('')}
+      </colgroup>
       <thead class="text-xs uppercase bg-gray-800 text-gray-400">
         <tr>
           ${columns.map(col => `<th class="px-3 py-2 cursor-pointer hover:text-gray-200 whitespace-nowrap" data-sort="${col.key}">${col.label} ${sortKey === col.key ? (sortDir === 'desc' ? '▼' : '▲') : ''}</th>`).join('')}
@@ -172,8 +179,8 @@ function buildTable(containerId, columns, rows, options = {}) {
       if (col.format) value = col.format(value, row);
       else if (typeof value === 'number') value = formatNumber(value);
       else value = value || '-';
-      const maxW = col.maxWidth ? `max-width:${col.maxWidth}px;` : '';
-      html += `<td class="px-3 py-2 ${col.wrap ? '' : 'truncate'}" style="${maxW}" title="${String(row[col.key] || '').replace(/"/g, '&quot;')}">${value}</td>`;
+      const wrapStyle = col.wrap ? 'word-break:break-word;white-space:pre-wrap;' : 'white-space:nowrap;';
+      html += `<td class="px-3 py-2" style="${wrapStyle}" title="${String(row[col.key] || '').replace(/"/g, '&quot;')}">${value}</td>`;
     });
     html += `</tr>`;
   });

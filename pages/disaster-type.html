@@ -691,18 +691,18 @@
     function renderTable(data) {
       const sorted = [...data].sort((a, b) => (a['위험도순위'] || 999) - (b['위험도순위'] || 999));
       const columns = [
-        { key: '위험도순위', label: '위험도', maxWidth: 60 },
-        { key: '공종', label: '공종', maxWidth: 120,
+        { key: '위험도순위', label: '위험도', width: 50 },
+        { key: '공종', label: '공종', width: 80, wrap: true,
           format: (v) => v ? v.replace(/^\d+\.\s*/, '') : '-' },
-        { key: '작업명', label: '작업명', maxWidth: 150 },
-        { key: '단위작업명', label: '단위작업명', maxWidth: 150 },
-        { key: '기인물', label: '기인물', maxWidth: 120 },
-        { key: '재해형태', label: '재해형태', maxWidth: 80 },
-        { key: '재해개요', label: '재해개요', maxWidth: 350, wrap: true,
+        { key: '작업명', label: '작업명', width: 110, wrap: true },
+        { key: '단위작업명', label: '단위작업명', width: 110, wrap: true },
+        { key: '기인물', label: '기인물', width: 90, wrap: true },
+        { key: '재해형태', label: '재해형태', width: 70 },
+        { key: '재해개요', label: '재해개요', minWidth: 220, wrap: true,
           format: (v) => `<div class="text-xs text-gray-300">${v || '-'}</div>` },
-        { key: '재해유발요인', label: '재해유발요인', maxWidth: 250, wrap: true,
+        { key: '재해유발요인', label: '재해유발요인', minWidth: 180, wrap: true,
           format: (v) => `<div class="text-xs text-gray-300">${v || '-'}</div>` },
-        { key: '위험성감소대책', label: '감소대책', maxWidth: 300, wrap: true,
+        { key: '위험성감소대책', label: '감소대책', minWidth: 180, wrap: true,
           format: (v) => `<div class="text-xs text-gray-300">${v || '-'}</div>` },
       ];
       buildTable('data-table', columns, sorted, {

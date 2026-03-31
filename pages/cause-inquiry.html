@@ -355,14 +355,14 @@
 
     function renderTable(data) {
       const columns = [
-        { key: 'id', label: 'No', maxWidth: 50 },
-        { key: '공종', label: '공종', maxWidth: 120,
+        { key: 'id', label: 'No', width: 40 },
+        { key: '공종', label: '공종', width: 80, wrap: true,
           format: (v) => v ? v.replace(/^\d+\.\s*/, '') : '-' },
-        { key: '작업명', label: '작업명', maxWidth: 150 },
-        { key: '재해형태', label: '재해형태', maxWidth: 80 },
-        { key: '재해개요', label: '재해개요', maxWidth: 350, wrap: true,
+        { key: '작업명', label: '작업명', width: 100, wrap: true },
+        { key: '재해형태', label: '재해형태', width: 70 },
+        { key: '재해개요', label: '재해개요', minWidth: 250, wrap: true,
           format: (v) => `<div class="text-xs text-gray-300">${v || '-'}</div>` },
-        { key: '위험성감소대책', label: '감소대책', maxWidth: 250, wrap: true,
+        { key: '위험성감소대책', label: '감소대책', minWidth: 200, wrap: true,
           format: (v) => `<div class="text-xs text-gray-300">${v || '-'}</div>` },
       ];
       buildTable('data-table', columns, data, {

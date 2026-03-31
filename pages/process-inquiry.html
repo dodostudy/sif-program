@@ -278,14 +278,14 @@
 
     function renderTable(data) {
       const columns = [
-        { key: 'id', label: 'No', maxWidth: 50 },
-        { key: '기인물', label: '기인물', maxWidth: 120 },
-        { key: '재해형태', label: '재해형태', maxWidth: 80 },
-        { key: '재해개요', label: '재해개요', maxWidth: 400, wrap: true,
+        { key: 'id', label: 'No', width: 40 },
+        { key: '기인물', label: '기인물', width: 100, wrap: true },
+        { key: '재해형태', label: '재해형태', width: 70 },
+        { key: '재해개요', label: '재해개요', minWidth: 250, wrap: true,
           format: (v) => `<div class="text-xs text-gray-300">${v || '-'}</div>` },
-        { key: '재해유발요인', label: '재해유발요인', maxWidth: 300, wrap: true,
+        { key: '재해유발요인', label: '재해유발요인', minWidth: 200, wrap: true,
           format: (v) => `<div class="text-xs text-gray-300">${v || '-'}</div>` },
-        { key: '위험성감소대책', label: '감소대책', maxWidth: 300, wrap: true,
+        { key: '위험성감소대책', label: '감소대책', minWidth: 200, wrap: true,
           format: (v) => `<div class="text-xs text-gray-300">${v || '-'}</div>` },
       ];
       buildTable('data-table', columns, data, {
