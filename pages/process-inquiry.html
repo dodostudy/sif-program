@@ -49,29 +49,24 @@
     <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-4" id="result-summary">
     </div>
 
-    <!-- 메인 콘텐츠: 테이블 + 차트 -->
-    <div class="grid grid-cols-1 xl:grid-cols-3 gap-4">
-      <!-- 테이블 (2/3) -->
-      <div class="xl:col-span-2">
-        <div class="chart-container">
-          <div class="flex items-center justify-between mb-3">
-            <h3 class="text-sm font-semibold text-gray-300">재해 사례 목록</h3>
-          </div>
-          <div id="data-table"></div>
-        </div>
+    <!-- 차트: 기인물별 + 재해형태 한 행 -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-4">
+      <div class="chart-container">
+        <h3 class="text-sm font-semibold text-gray-300 mb-3">기인물별 사고건수</h3>
+        <div style="height:300px"><canvas id="chart-cause"></canvas></div>
       </div>
+      <div class="chart-container">
+        <h3 class="text-sm font-semibold text-gray-300 mb-3">재해형태 비율</h3>
+        <div style="height:300px"><canvas id="chart-disaster"></canvas></div>
+      </div>
+    </div>
 
-      <!-- 차트 (1/3) -->
-      <div class="space-y-4">
-        <div class="chart-container">
-          <h3 class="text-sm font-semibold text-gray-300 mb-3">기인물별 사고건수</h3>
-          <div style="height:280px"><canvas id="chart-cause"></canvas></div>
-        </div>
-        <div class="chart-container">
-          <h3 class="text-sm font-semibold text-gray-300 mb-3">재해형태 비율</h3>
-          <div style="height:280px"><canvas id="chart-disaster"></canvas></div>
-        </div>
+    <!-- 재해 사례 목록 (풀폭) -->
+    <div class="chart-container">
+      <div class="flex items-center justify-between mb-3">
+        <h3 class="text-sm font-semibold text-gray-300">재해 사례 목록</h3>
       </div>
+      <div id="data-table"></div>
     </div>
   </main>
 
@@ -293,7 +288,10 @@
         { key: '위험성감소대책', label: '감소대책', maxWidth: 300, wrap: true,
           format: (v) => `<div class="text-xs text-gray-300">${v || '-'}</div>` },
       ];
-      buildTable('data-table', columns, data, { pageSize: 10 });
+      buildTable('data-table', columns, data, {
+        pageSize: 10,
+        filterColumns: ['기인물', '재해형태']
+      });
     }
 
     function renderCauseChart(data) {

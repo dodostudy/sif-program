@@ -10,11 +10,37 @@
   <script src="https://cdn.jsdelivr.net/npm/papaparse@5"></script>
   <link rel="stylesheet" href="../css/style.css">
   <style>
+    /* 화살표 구분자 */
+    .filter-arrow {
+      display: flex;
+      align-items: flex-end;
+      padding-bottom: 0.625rem;
+      color: #6B7280;
+      font-size: 1rem;
+    }
+    .filter-arrow svg {
+      width: 1.25rem;
+      height: 1.25rem;
+    }
+    /* 필터 행 구분선 */
+    .filter-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      align-items: flex-end;
+    }
+    .filter-row + .filter-row {
+      margin-top: 0.5rem;
+      padding-top: 0.5rem;
+      border-top: 1px solid #1F2937;
+    }
     @media (max-width: 767px) {
       .filter-bar { flex-direction: column; gap: 0.5rem; }
+      .filter-row { flex-direction: column; gap: 0.5rem; }
       .filter-group { width: 100%; }
       .filter-group select { width: 100%; min-width: 0; }
       .filter-group label { min-width: auto; }
+      .filter-arrow { display: none; }
       #btn-reset { width: 100%; }
     }
   </style>
@@ -26,25 +52,41 @@
     <div id="page-header"></div>
 
     <!-- 필터 바 -->
-    <div class="filter-bar mb-4">
-      <div class="filter-group" id="koen-toggle-wrap"></div>
-      <div class="filter-group">
-        <label>재해형태</label>
-        <select id="filter-disaster"></select>
+    <div class="filter-bar mb-4" style="flex-direction:column; align-items:stretch;">
+      <!-- 1행: 발전소공정 | 재해형태 | 기인물 -->
+      <div class="filter-row">
+        <div class="filter-group" id="koen-toggle-wrap"></div>
+        <div class="filter-group">
+          <label>재해형태</label>
+          <select id="filter-disaster"></select>
+        </div>
+        <div class="filter-group">
+          <label>기인물</label>
+          <select id="filter-cause"></select>
+        </div>
       </div>
-      <div class="filter-group">
-        <label>공종</label>
-        <select id="filter-gz"></select>
+      <!-- 2행: 공종 → 작업명 → 단위작업명 | 초기화 -->
+      <div class="filter-row">
+        <div class="filter-group">
+          <label>공종</label>
+          <select id="filter-gz"></select>
+        </div>
+        <div class="filter-arrow">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+        </div>
+        <div class="filter-group">
+          <label>작업명</label>
+          <select id="filter-work"></select>
+        </div>
+        <div class="filter-arrow">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+        </div>
+        <div class="filter-group">
+          <label>단위작업명</label>
+          <select id="filter-unit"></select>
+        </div>
+        <button id="btn-reset" class="px-4 py-2 bg-gray-700 hover:bg-gray-600 text-sm rounded-lg transition-colors" style="margin-left:auto;">초기화</button>
       </div>
-      <div class="filter-group">
-        <label>작업명</label>
-        <select id="filter-work"></select>
-      </div>
-      <div class="filter-group">
-        <label>단위작업명</label>
-        <select id="filter-unit"></select>
-      </div>
-      <button id="btn-reset" class="px-4 py-2 bg-gray-700 hover:bg-gray-600 text-sm rounded-lg transition-colors">초기화</button>
     </div>
 
     <!-- 요약 카드 -->
@@ -107,18 +149,17 @@
 
   <script>
     const cm = new ChartManager();
-    const fm = new FilterManager(['koen', '재해형태', '공종', '작업명', '단위작업명']);
-    fm.setDownstream('재해형태', ['공종', '작업명', '단위작업명']);
+    const fm = new FilterManager(['koen', '재해형태', '기인물', '공종', '작업명', '단위작업명']);
+    fm.setDownstream('재해형태', ['기인물', '공종', '작업명', '단위작업명']);
+    fm.setDownstream('기인물', ['공종', '작업명', '단위작업명']);
     fm.setDownstream('공종', ['작업명', '단위작업명']);
     fm.setDownstream('작업명', ['단위작업명']);
 
     let allData = [];
     let dropdownRef = {};
     let disasterCountMap = {};
-    // 전체보기 상태
     let showAllCause = false;
     let showAllWork = false;
-    // 현재 필터링된 데이터 캐시
     let currentFiltered = [];
 
     async function init() {
@@ -127,7 +168,6 @@
       allData = await DataLoader.loadDB();
       dropdownRef = await DataLoader.loadDropdownRef();
 
-      // 전체 재해형태별 건수 맵
       allData.forEach(r => {
         const dt = r['재해형태'];
         if (dt) disasterCountMap[dt] = (disasterCountMap[dt] || 0) + 1;
@@ -139,13 +179,10 @@
     }
 
     function setupFilters() {
-      // 발전소 공정 토글 (가장 왼쪽)
       createKoenToggle('koen-toggle-wrap', (val) => fm.set('koen', val));
 
-      // 재해형태 드롭다운 (건수 내림차순)
       populateDisasterDropdown();
-
-      // 공종/작업명/단위작업명 초기 빈 상태
+      populateCauseDropdown();
       populateDropdown('filter-gz', [], '공종 선택');
       populateDropdown('filter-work', [], '작업명 선택');
       populateDropdown('filter-unit', [], '단위작업명 선택');
@@ -153,6 +190,9 @@
       // 이벤트 바인딩
       document.getElementById('filter-disaster').addEventListener('change', (e) => {
         fm.set('재해형태', e.target.value || null);
+      });
+      document.getElementById('filter-cause').addEventListener('change', (e) => {
+        fm.set('기인물', e.target.value || null);
       });
       document.getElementById('filter-gz').addEventListener('change', (e) => {
         fm.set('공종', e.target.value || null);
@@ -164,16 +204,29 @@
         fm.set('단위작업명', e.target.value || null);
       });
 
-      // koen 변경 시 재해형태 드롭다운 갱신 + 공종 갱신
+      // koen 변경 시 모든 드롭다운 갱신
       fm.subscribe('koen', () => {
         populateDisasterDropdown();
+        populateCauseDropdown();
         updateGzDropdown();
         updateWorkDropdown();
         updateUnitDropdown();
       });
 
-      // 재해형태 변경 시 공종 드롭다운 갱신
+      // 재해형태 변경 시 하위 드롭다운 갱신
       fm.subscribe('재해형태', () => {
+        populateCauseDropdown();
+        updateGzDropdown();
+        updateWorkDropdown();
+        updateUnitDropdown();
+        document.getElementById('filter-cause').value = '';
+        document.getElementById('filter-gz').value = '';
+        document.getElementById('filter-work').value = '';
+        document.getElementById('filter-unit').value = '';
+      });
+
+      // 기인물 변경 시 공종 이하 갱신
+      fm.subscribe('기인물', () => {
         updateGzDropdown();
         updateWorkDropdown();
         updateUnitDropdown();
@@ -182,7 +235,7 @@
         document.getElementById('filter-unit').value = '';
       });
 
-      // 공종 변경 시 작업명 갱신
+      // 공종 변경 시 작업명/단위작업명 갱신
       fm.subscribe('공종', () => {
         updateWorkDropdown();
         updateUnitDropdown();
@@ -204,6 +257,7 @@
         document.getElementById('btn-cause-all').textContent = '전체 보기';
         document.getElementById('btn-work-all').textContent = '전체 보기';
         document.getElementById('filter-disaster').value = '';
+        document.getElementById('filter-cause').value = '';
         document.getElementById('filter-gz').value = '';
         document.getElementById('filter-work').value = '';
         document.getElementById('filter-unit').value = '';
@@ -213,6 +267,7 @@
           document.getElementById('koen-label').textContent = '전체';
         }
         populateDisasterDropdown();
+        populateCauseDropdown();
         populateDropdown('filter-gz', [], '공종 선택');
         populateDropdown('filter-work', [], '작업명 선택');
         populateDropdown('filter-unit', [], '단위작업명 선택');
@@ -221,11 +276,16 @@
       fm.onDataChange(() => renderResults());
     }
 
-    function populateDisasterDropdown() {
+    // 기본 데이터 필터 (재해형태, 기인물 제외한 상위 필터만 적용)
+    function getBaseData() {
       const filters = fm.getAll();
       let data = [...allData];
       if (filters.koen === true) data = data.filter(r => r.KOEN공정);
+      return data;
+    }
 
+    function populateDisasterDropdown() {
+      const data = getBaseData();
       const dtMap = {};
       data.forEach(r => { const dt = r['재해형태']; if (dt) dtMap[dt] = (dtMap[dt] || 0) + 1; });
       const sorted = Object.entries(dtMap).sort((a, b) => b[1] - a[1]);
@@ -242,11 +302,32 @@
       if (current && dtMap[current]) select.value = current;
     }
 
+    function populateCauseDropdown() {
+      const filters = fm.getAll();
+      let data = getBaseData();
+      if (filters['재해형태']) data = data.filter(r => r['재해형태'] === filters['재해형태']);
+
+      const causeMap = {};
+      data.forEach(r => { const c = r['기인물']; if (c) causeMap[c] = (causeMap[c] || 0) + 1; });
+      const sorted = Object.entries(causeMap).sort((a, b) => b[1] - a[1]);
+
+      const select = document.getElementById('filter-cause');
+      const current = select.value;
+      select.innerHTML = '<option value="">전체 기인물</option>';
+      sorted.forEach(([cause, count]) => {
+        const opt = document.createElement('option');
+        opt.value = cause;
+        opt.textContent = `${cause} (${count}건)`;
+        select.appendChild(opt);
+      });
+      if (current && causeMap[current]) select.value = current;
+    }
+
     function updateGzDropdown() {
       const filters = fm.getAll();
-      let data = [...allData];
-      if (filters.koen === true) data = data.filter(r => r.KOEN공정);
+      let data = getBaseData();
       if (filters['재해형태']) data = data.filter(r => r['재해형태'] === filters['재해형태']);
+      if (filters['기인물']) data = data.filter(r => r['기인물'] === filters['기인물']);
 
       const gzCounts = {};
       data.forEach(r => { const gz = r['공종']; if (gz) gzCounts[gz] = (gzCounts[gz] || 0) + 1; });
@@ -266,9 +347,9 @@
 
     function updateWorkDropdown() {
       const filters = fm.getAll();
-      let data = [...allData];
-      if (filters.koen === true) data = data.filter(r => r.KOEN공정);
+      let data = getBaseData();
       if (filters['재해형태']) data = data.filter(r => r['재해형태'] === filters['재해형태']);
+      if (filters['기인물']) data = data.filter(r => r['기인물'] === filters['기인물']);
       if (filters['공종']) data = data.filter(r => r['공종'] === filters['공종']);
 
       const workCounts = {};
@@ -289,9 +370,9 @@
 
     function updateUnitDropdown() {
       const filters = fm.getAll();
-      let data = [...allData];
-      if (filters.koen === true) data = data.filter(r => r.KOEN공정);
+      let data = getBaseData();
       if (filters['재해형태']) data = data.filter(r => r['재해형태'] === filters['재해형태']);
+      if (filters['기인물']) data = data.filter(r => r['기인물'] === filters['기인물']);
       if (filters['공종']) data = data.filter(r => r['공종'] === filters['공종']);
       if (filters['작업명']) data = data.filter(r => r['작업명'] === filters['작업명']);
 
@@ -332,7 +413,7 @@
 
       renderSummaryCards(filtered, selectedDT);
 
-      if (!selectedDT) {
+      if (!selectedDT && !filters['기인물']) {
         document.getElementById('overview-section').classList.remove('hidden');
         document.getElementById('detail-section').classList.add('hidden');
         renderOverviewChart(filters);
@@ -350,11 +431,10 @@
     function renderSummaryCards(data, selectedDT) {
       const container = document.getElementById('summary-cards');
       const filters = fm.getAll();
-      let baseData = [...allData];
-      if (filters.koen === true) baseData = baseData.filter(r => r.KOEN공정);
+      const baseData = getBaseData();
       const total = baseData.length;
 
-      if (!selectedDT) {
+      if (!selectedDT && !filters['기인물']) {
         const dtMap = {};
         baseData.forEach(r => { const dt = r['재해형태']; if (dt) dtMap[dt] = (dtMap[dt] || 0) + 1; });
         const dtCount = Object.keys(dtMap).length;
@@ -385,32 +465,32 @@
       } else {
         const gzCount = new Set(data.map(r => r['공종'])).size;
         const causeCount = new Set(data.map(r => r['기인물'])).size;
-        const dtBaseCount = baseData.filter(r => r['재해형태'] === selectedDT).length;
+        const dtCount = new Set(data.map(r => r['재해형태'])).size;
+        const label = selectedDT || (filters['기인물'] ? filters['기인물'] : '선택 조건');
         container.innerHTML = `
           <div class="stat-card">
-            <p class="text-xs text-gray-500">선택 재해형태</p>
-            <p class="text-lg font-bold text-white">${selectedDT}</p>
+            <p class="text-xs text-gray-500">선택 조건</p>
+            <p class="text-lg font-bold text-white truncate" title="${label}">${label}</p>
           </div>
           <div class="stat-card">
             <p class="text-xs text-gray-500">조회 건수</p>
             <p class="text-2xl font-bold text-red-400">${formatNumber(data.length)}건</p>
-            <p class="text-xs text-gray-500">전체 대비 ${formatPercent(dtBaseCount, total)}</p>
+            <p class="text-xs text-gray-500">전체 대비 ${formatPercent(data.length, total)}</p>
           </div>
           <div class="stat-card">
             <p class="text-xs text-gray-500">관련 공종</p>
             <p class="text-2xl font-bold text-blue-400">${gzCount}개</p>
           </div>
           <div class="stat-card">
-            <p class="text-xs text-gray-500">관련 기인물</p>
-            <p class="text-2xl font-bold text-amber-400">${causeCount}개</p>
+            <p class="text-xs text-gray-500">${selectedDT ? '관련 기인물' : '관련 재해형태'}</p>
+            <p class="text-2xl font-bold text-amber-400">${selectedDT ? causeCount : dtCount}개</p>
           </div>
         `;
       }
     }
 
     function renderOverviewChart(filters) {
-      let data = [...allData];
-      if (filters.koen === true) data = data.filter(r => r.KOEN공정);
+      let data = getBaseData();
 
       const dtMap = {};
       data.forEach(r => { const dt = r['재해형태']; if (dt) dtMap[dt] = (dtMap[dt] || 0) + 1; });
@@ -617,14 +697,18 @@
         { key: '작업명', label: '작업명', maxWidth: 150 },
         { key: '단위작업명', label: '단위작업명', maxWidth: 150 },
         { key: '기인물', label: '기인물', maxWidth: 120 },
+        { key: '재해형태', label: '재해형태', maxWidth: 80 },
         { key: '재해개요', label: '재해개요', maxWidth: 350, wrap: true,
           format: (v) => `<div class="text-xs text-gray-300">${v || '-'}</div>` },
         { key: '재해유발요인', label: '재해유발요인', maxWidth: 250, wrap: true,
           format: (v) => `<div class="text-xs text-gray-300">${v || '-'}</div>` },
-        { key: '위험성감소대책', label: '위험성감소대책', maxWidth: 300, wrap: true,
+        { key: '위험성감소대책', label: '감소대책', maxWidth: 300, wrap: true,
           format: (v) => `<div class="text-xs text-gray-300">${v || '-'}</div>` },
       ];
-      buildTable('data-table', columns, sorted, { pageSize: 10 });
+      buildTable('data-table', columns, sorted, {
+        pageSize: 10,
+        filterColumns: ['공종', '기인물', '재해형태', '작업명']
+      });
     }
 
     init();

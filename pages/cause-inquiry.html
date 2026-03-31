@@ -67,8 +67,8 @@
       </div>
     </div>
 
-    <!-- 차트 Row -->
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-4">
+    <!-- 차트: 공종별 + 재해형태별 + 작업명별 한 행 -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-4">
       <div class="chart-container">
         <h3 class="text-sm font-semibold text-gray-300 mb-3">공종별 사고건수</h3>
         <div style="height:300px"><canvas id="chart-by-construction"></canvas></div>
@@ -77,18 +77,16 @@
         <h3 class="text-sm font-semibold text-gray-300 mb-3">재해형태별 건수</h3>
         <div style="height:300px"><canvas id="chart-by-disaster"></canvas></div>
       </div>
-    </div>
-
-    <!-- 작업명 분포 + 테이블 -->
-    <div class="grid grid-cols-1 xl:grid-cols-3 gap-4">
       <div class="chart-container">
         <h3 class="text-sm font-semibold text-gray-300 mb-3">작업명별 사고건수</h3>
-        <div style="height:400px"><canvas id="chart-by-work"></canvas></div>
+        <div style="height:300px"><canvas id="chart-by-work"></canvas></div>
       </div>
-      <div class="xl:col-span-2 chart-container">
-        <h3 class="text-sm font-semibold text-gray-300 mb-3">재해 사례 목록</h3>
-        <div id="data-table"></div>
-      </div>
+    </div>
+
+    <!-- 재해 사례 목록 (풀폭) -->
+    <div class="chart-container">
+      <h3 class="text-sm font-semibold text-gray-300 mb-3">재해 사례 목록</h3>
+      <div id="data-table"></div>
     </div>
   </main>
 
@@ -367,7 +365,10 @@
         { key: '위험성감소대책', label: '감소대책', maxWidth: 250, wrap: true,
           format: (v) => `<div class="text-xs text-gray-300">${v || '-'}</div>` },
       ];
-      buildTable('data-table', columns, data, { pageSize: 10 });
+      buildTable('data-table', columns, data, {
+        pageSize: 10,
+        filterColumns: ['공종', '재해형태', '작업명']
+      });
     }
 
     init();

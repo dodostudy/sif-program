@@ -87,15 +87,25 @@ function populateDropdown(selectId, options, placeholder = '전체') {
   }
 }
 
-/** HTML 테이블 생성 */
+/** HTML 테이블 생성 (컬럼 필터 지원) */
 function buildTable(containerId, columns, rows, options = {}) {
   const container = document.getElementById(containerId);
   if (!container) return;
 
-  const { pageSize = 20, currentPage = 1, sortKey = null, sortDir = 'desc' } = options;
+  const { pageSize = 20, currentPage = 1, sortKey = null, sortDir = 'desc',
+          columnFilters = {}, filterColumns = [] } = options;
+
+  // 컬럼 필터 적용
+  let filteredRows = [...rows];
+  Object.keys(columnFilters).forEach(key => {
+    const val = columnFilters[key];
+    if (val) {
+      filteredRows = filteredRows.filter(r => String(r[key] || '') === val);
+    }
+  });
 
   // 정렬
-  let sortedRows = [...rows];
+  let sortedRows = [...filteredRows];
   if (sortKey) {
     sortedRows.sort((a, b) => {
       const va = a[sortKey] || '';
@@ -111,9 +121,41 @@ function buildTable(containerId, columns, rows, options = {}) {
   const start = (page - 1) * pageSize;
   const pageRows = sortedRows.slice(start, start + pageSize);
 
+  // 필터 가능 컬럼의 고유값 추출 (원본 rows 기준)
+  const filterOptions = {};
+  filterColumns.forEach(key => {
+    const vals = {};
+    rows.forEach(r => { const v = r[key]; if (v) vals[v] = (vals[v] || 0) + 1; });
+    filterOptions[key] = Object.entries(vals).sort((a, b) => b[1] - a[1]);
+  });
+
   let html = `
-    <div class="text-sm text-gray-400 mb-2">총 ${formatNumber(rows.length)}건${totalPages > 1 ? ` (${page}/${totalPages} 페이지)` : ''}</div>
-    <div class="overflow-x-auto">
+    <div class="text-sm text-gray-400 mb-2">총 ${formatNumber(filteredRows.length)}건${rows.length !== filteredRows.length ? ` (전체 ${formatNumber(rows.length)}건)` : ''}${totalPages > 1 ? ` · ${page}/${totalPages} 페이지` : ''}</div>`;
+
+  // 컬럼 필터 바
+  if (filterColumns.length > 0) {
+    html += `<div class="flex flex-wrap gap-2 mb-2">`;
+    filterColumns.forEach(key => {
+      const col = columns.find(c => c.key === key);
+      const label = col ? col.label : key;
+      const currentVal = columnFilters[key] || '';
+      html += `<select class="table-col-filter bg-gray-800 border border-gray-600 rounded text-xs text-gray-300 px-2 py-1" data-filter-key="${key}" style="min-width:100px">`;
+      html += `<option value="">${label} ▼</option>`;
+      (filterOptions[key] || []).forEach(([val, cnt]) => {
+        const display = key === '공종' ? val.replace(/^\d+\.\s*/, '') : val;
+        const selected = currentVal === val ? ' selected' : '';
+        html += `<option value="${val.replace(/"/g, '&quot;')}"${selected}>${display} (${cnt})</option>`;
+      });
+      html += `</select>`;
+    });
+    const hasActiveFilter = Object.values(columnFilters).some(v => v);
+    if (hasActiveFilter) {
+      html += `<button class="table-filter-reset text-xs text-blue-400 hover:text-blue-300 px-2 py-1 border border-gray-600 rounded">필터 초기화</button>`;
+    }
+    html += `</div>`;
+  }
+
+  html += `<div class="overflow-x-auto">
     <table class="w-full text-sm text-left">
       <thead class="text-xs uppercase bg-gray-800 text-gray-400">
         <tr>
@@ -154,6 +196,24 @@ function buildTable(containerId, columns, rows, options = {}) {
   }
 
   container.innerHTML = html;
+
+  // 컬럼 필터 이벤트
+  container.querySelectorAll('.table-col-filter').forEach(sel => {
+    sel.addEventListener('change', () => {
+      const key = sel.dataset.filterKey;
+      const newFilters = { ...columnFilters, [key]: sel.value || undefined };
+      if (!sel.value) delete newFilters[key];
+      buildTable(containerId, columns, rows, { ...options, columnFilters: newFilters, currentPage: 1 });
+    });
+  });
+
+  // 필터 초기화 버튼
+  const resetBtn = container.querySelector('.table-filter-reset');
+  if (resetBtn) {
+    resetBtn.addEventListener('click', () => {
+      buildTable(containerId, columns, rows, { ...options, columnFilters: {}, currentPage: 1 });
+    });
+  }
 
   // 정렬 이벤트
   container.querySelectorAll('th[data-sort]').forEach(th => {
