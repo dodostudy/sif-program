@@ -124,19 +124,35 @@ function buildTable(containerId, columns, rows, options = {}) {
   const start = (page - 1) * pageSize;
   const pageRows = sortedRows.slice(start, start + pageSize);
 
-  // 필터 가능 컬럼의 고유값 추출 (원본 rows 기준, 공백 정규화)
+  // 필터 옵션 생성: 각 컬럼은 "다른 필터 적용 후" 가능한 값만 표시 (연계 필터)
   const filterOptions = {};
   filterColumns.forEach(key => {
     const vals = {};
-    rows.forEach(r => {
+    // 이 컬럼을 제외한 나머지 필터 적용
+    let baseRows = rows;
+    Object.keys(columnFilters).forEach(otherKey => {
+      if (otherKey === key) return;
+      const otherVal = columnFilters[otherKey];
+      if (otherVal) {
+        baseRows = baseRows.filter(r => String(r[otherKey] || '').trim() === otherVal);
+      }
+    });
+    baseRows.forEach(r => {
       const v = String(r[key] || '').trim();
       if (v) vals[v] = (vals[v] || 0) + 1;
     });
     filterOptions[key] = Object.entries(vals).sort((a, b) => b[1] - a[1]);
   });
 
+  const totalCount = formatNumber(filteredRows.length);
+  const totalHint = rows.length !== filteredRows.length ? ` (전체 ${formatNumber(rows.length)}건)` : '';
+  const pageHint = totalPages > 1 ? ` · ${page}/${totalPages} 페이지` : '';
+
   let html = `
-    <div class="text-sm text-gray-400 mb-2">총 ${formatNumber(filteredRows.length)}건${rows.length !== filteredRows.length ? ` (전체 ${formatNumber(rows.length)}건)` : ''}${totalPages > 1 ? ` · ${page}/${totalPages} 페이지` : ''}</div>`;
+    <div class="flex items-center justify-between mb-2">
+      <div class="text-sm text-gray-400">총 ${totalCount}건${totalHint}${pageHint}</div>
+      <button class="table-excel-btn text-xs text-emerald-400 hover:text-emerald-300 px-3 py-1 border border-emerald-700 hover:border-emerald-500 rounded transition-colors">📥 엑셀 다운로드</button>
+    </div>`;
 
   // 컬럼 필터 바
   if (filterColumns.length > 0) {
@@ -246,6 +262,35 @@ function buildTable(containerId, columns, rows, options = {}) {
       }
     });
   });
+
+  // 엑셀 다운로드 버튼 이벤트
+  const excelBtn = container.querySelector('.table-excel-btn');
+  if (excelBtn) {
+    excelBtn.addEventListener('click', () => {
+      downloadTableAsExcel(columns, filteredRows);
+    });
+  }
+}
+
+/** CSV(Excel) 다운로드 */
+function downloadTableAsExcel(columns, rows, filename = '재해사례') {
+  const headers = columns.map(col => `"${col.label}"`).join(',');
+  const data = rows.map(row =>
+    columns.map(col => {
+      let v = row[col.key];
+      // HTML 태그 제거
+      v = String(v == null ? '' : v).replace(/<[^>]*>/g, '').replace(/\n/g, ' ').trim();
+      return `"${v.replace(/"/g, '""')}"`;
+    }).join(',')
+  ).join('\n');
+
+  const blob = new Blob(['\uFEFF' + headers + '\n' + data], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `${filename}_${new Date().toISOString().slice(0,10)}.csv`;
+  a.click();
+  URL.revokeObjectURL(url);
 }
 
 /** 차트/테이블 토글 */
