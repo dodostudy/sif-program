@@ -31,3 +31,60 @@ document.addEventListener('DOMContentLoaded', () => {
   // 사이드바 렌더링
   renderSidebar();
 });
+
+/* =====================================================
+   인쇄 / PDF 지원: canvas → 흰 배경 이미지 변환
+   ===================================================== */
+let _printImgs = [];
+
+window.addEventListener('beforeprint', () => {
+  document.body.classList.add('is-printing');
+
+  // 1) Chart.js 축 라벨/범례 텍스트를 인쇄용 어두운 색으로 변경
+  if (typeof Chart !== 'undefined') {
+    Chart.defaults.color = '#1f2937';
+    Chart.defaults.borderColor = '#9ca3af';
+    try {
+      Object.values(Chart.instances).forEach(chart => chart.update('none'));
+    } catch (e) { /* 무시 */ }
+  }
+
+  // 2) 각 canvas를 오프스크린 canvas에 흰 배경으로 합성 → <img> 로 변환
+  _printImgs = [];
+  document.querySelectorAll('canvas').forEach(canvas => {
+    if (!canvas.offsetParent && !document.body.classList.contains('is-printing')) return;
+    if (canvas.width === 0 || canvas.height === 0) return;
+    try {
+      const off = document.createElement('canvas');
+      off.width  = canvas.width;
+      off.height = canvas.height;
+      const ctx = off.getContext('2d');
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(0, 0, off.width, off.height);
+      ctx.drawImage(canvas, 0, 0);
+
+      const img = document.createElement('img');
+      img.src = off.toDataURL('image/png');
+      img.className = 'print-canvas-img';
+      canvas.parentNode.insertBefore(img, canvas.nextSibling);
+      _printImgs.push({ img, canvas });
+    } catch (e) { /* CORS 등 오류 무시 */ }
+  });
+});
+
+window.addEventListener('afterprint', () => {
+  document.body.classList.remove('is-printing');
+
+  // Chart.js 색상 복원
+  if (typeof Chart !== 'undefined') {
+    Chart.defaults.color = '#9CA3AF';
+    Chart.defaults.borderColor = '#374151';
+    try {
+      Object.values(Chart.instances).forEach(chart => chart.update('none'));
+    } catch (e) { /* 무시 */ }
+  }
+
+  // 삽입한 이미지 제거
+  _printImgs.forEach(({ img }) => img.remove());
+  _printImgs = [];
+});

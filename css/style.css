@@ -229,38 +229,177 @@
   color: #4B5563;
 }
 
-/* 인쇄 */
+/* =====================================================
+   인쇄 / PDF
+   ===================================================== */
+@page {
+  size: A4 landscape;
+  margin: 12mm 15mm;
+}
+
 @media print {
-  body {
-    background: white !important;
-    color: #111 !important;
+  /* 색상 강제 출력 */
+  * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
   }
-  #sidebar, #sidebar-panel, #mobile-menu-btn, #sidebar-overlay,
-  .filter-bar, .toggle-btn, .no-print {
+
+  /* 기본 배경/텍스트 */
+  html, body {
+    background: #ffffff !important;
+    color: #111111 !important;
+  }
+
+  /* 숨길 UI 요소 */
+  #sidebar,
+  #sidebar-panel,
+  #mobile-menu-btn,
+  #sidebar-overlay,
+  .filter-bar,
+  .toggle-btn,
+  .no-print,
+  .table-excel-btn,
+  .table-page-btn,
+  .table-filter-reset,
+  .table-col-filter,
+  .breadcrumb,
+  .tab-btn,
+  button.no-print {
     display: none !important;
   }
+
+  /* 레이아웃: 사이드바 제거 */
   #content {
     margin-left: 0 !important;
-    padding: 0 !important;
+    padding: 8px !important;
   }
-  .stat-card, .chart-container {
-    background: white !important;
-    border-color: #ccc !important;
-    break-inside: avoid;
-  }
+
+  /* 카드 & 차트 컨테이너 */
+  .stat-card,
   .chart-container {
+    background: #ffffff !important;
+    border: 1px solid #d1d5db !important;
+    color: #111111 !important;
+    break-inside: avoid;
     page-break-inside: avoid;
   }
+
+  /* 모든 텍스트 어두운 색 */
+  h1, h2, h3, h4, h5, h6 {
+    color: #111111 !important;
+  }
+  p, span, div, td, th, label {
+    color: #333333 !important;
+  }
+
+  /* 인쇄용 페이지 제목 */
+  .print-title {
+    color: #111111 !important;
+    font-size: 1.4rem !important;
+  }
+  .print-subtitle {
+    color: #555555 !important;
+    font-size: 0.85rem !important;
+  }
+
+  /* canvas: JS가 <img>로 대체하므로 숨김 */
+  canvas {
+    display: none !important;
+  }
+
+  /* JS가 삽입한 인쇄용 이미지 */
+  .print-canvas-img {
+    display: block !important;
+    width: 100% !important;
+    height: auto !important;
+    max-width: 100%;
+  }
+
+  /* 히트맵 테이블 배경색 출력 */
+  #heatmap-container td,
+  #heatmap-container th {
+    color: #111111 !important;
+    font-size: 10px !important;
+  }
+
+  /* 테이블 */
+  table {
+    border-collapse: collapse !important;
+    width: 100% !important;
+    font-size: 10px !important;
+  }
+  thead {
+    background: #f3f4f6 !important;
+  }
+  th {
+    background: #f3f4f6 !important;
+    color: #111111 !important;
+    border: 1px solid #d1d5db !important;
+    padding: 4px 6px !important;
+    font-size: 10px !important;
+  }
+  td {
+    border: 1px solid #e5e7eb !important;
+    padding: 4px 6px !important;
+    color: #222222 !important;
+    font-size: 10px !important;
+  }
+  tr:nth-child(even) td {
+    background: #f9fafb !important;
+  }
+
+  /* 탭: 숨겨진 콘텐츠 유지 */
+  .tab-content.hidden {
+    display: none !important;
+  }
+
+  /* 배지 */
+  .badge-12 {
+    background: rgba(139, 92, 246, 0.15) !important;
+    color: #6d28d9 !important;
+    border: 1px solid #8b5cf6 !important;
+  }
+
+  /* 인쇄 날짜 푸터 */
+  .print-footer {
+    display: block !important;
+    position: fixed;
+    bottom: 5mm;
+    right: 10mm;
+    font-size: 9px;
+    color: #9ca3af !important;
+  }
+
+  /* 구식 print-header (위험성평가 호환) */
   .print-header {
     display: block !important;
     text-align: center;
-    margin-bottom: 1rem;
-    font-size: 1.25rem;
+    margin-bottom: 0.75rem;
+    font-size: 1.1rem;
     font-weight: bold;
-    color: #111;
+    color: #111111 !important;
+  }
+
+  /* 페이지 나눔 제어 */
+  .stat-card,
+  .chart-container {
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+
+  /* 그리드를 인쇄 시에도 유지 */
+  .grid {
+    display: grid !important;
   }
 }
 
+/* 화면에서는 숨김 */
+.print-canvas-img {
+  display: none;
+}
+.print-footer {
+  display: none;
+}
 .print-header {
   display: none;
 }
