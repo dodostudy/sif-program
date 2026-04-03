@@ -106,7 +106,7 @@
       '전기': ['충전부', '전주'],
       '중량물': ['철근콘크리트자재(철근,콘크리트,PC)', '각재(파이프,강관,합판)', '배관'],
       '화기': ['용접(단)기', '절단기/톱'],
-      '밀폐': [],
+      '밀폐': null, // 재해형태 '산소결핍 질식' 기준 특수 필터
       '일반': ['기계설비', '외부마감재', '벽체', '기타구조물', '기타가설구조물', '기타자재(내부마감재,시멘트,마대)', '수목', '교통수단', '방망', '바닥(바닥에 걸려 넘어짐)', '계단', '분류불능', '물'],
       '폭염/원인미상': ['폭염', '원인미상'],
       '화학물질': ['화학물질'],
@@ -114,6 +114,7 @@
 
     const cm = new ChartManager();
     const fm = new FilterManager(['작업유형', '12대기인물', '기인물']);
+    let isMilpeActive = false; // 밀폐 특수 필터 상태
     fm.setDownstream('작업유형', ['기인물']);
     fm.setDownstream('12대기인물', ['기인물']);
 
@@ -165,11 +166,17 @@
       const allCauses = (dropdownRef['기인물목록'] || []);
       const is12List = dropdownRef['12대기인물'] || [];
 
+      // 밀폐: 재해형태 '산소결핍 질식' 건수 사전 계산
+      const milpeCount = allData.filter(r => r['재해형태'] === '산소결핍 질식').length;
+
       // 작업유형 드롭다운 채우기
       const workTypeSelect = document.getElementById('filter-worktype');
       workTypeSelect.innerHTML = '<option value="">전체</option>';
       Object.keys(WORK_TYPE_MAP).forEach(type => {
-        const count = WORK_TYPE_MAP[type].reduce((sum, c) => sum + (causeCountMap[c] || 0), 0);
+        const causeList = WORK_TYPE_MAP[type];
+        const count = causeList === null
+          ? milpeCount // 밀폐: 재해형태 기준
+          : (causeList || []).reduce((sum, c) => sum + (causeCountMap[c] || 0), 0);
         const opt = document.createElement('option');
         opt.value = type;
         opt.textContent = `${type} (${count}건)`;
@@ -182,9 +189,15 @@
       // 작업유형 필터
       workTypeSelect.addEventListener('change', (e) => {
         const type = e.target.value;
-        if (type && WORK_TYPE_MAP[type]) {
+        if (type === '밀폐') {
+          // 밀폐: 재해형태 기준 특수 필터
+          isMilpeActive = true;
+          fm.set('작업유형', null);
+        } else if (type && WORK_TYPE_MAP[type]) {
+          isMilpeActive = false;
           fm.set('작업유형', WORK_TYPE_MAP[type]);
         } else {
+          isMilpeActive = false;
           fm.set('작업유형', null);
         }
       });
@@ -211,6 +224,7 @@
 
       document.getElementById('btn-reset').addEventListener('click', () => {
         fm.reset();
+        isMilpeActive = false;
         document.querySelectorAll('.filter-bar select').forEach(s => s.value = '');
         populateCauseDropdown('filter-cause', allCauses, '기인물 선택');
       });
@@ -227,8 +241,13 @@
 
       let candidates = [...allCauses];
 
-      // 작업유형 필터 적용
-      if (workTypeVal && Array.isArray(workTypeVal)) {
+      if (isMilpeActive) {
+        // 밀폐: 산소결핍 질식 건에 실제로 등장하는 기인물만 표시
+        const milpeCauses = [...new Set(
+          allData.filter(r => r['재해형태'] === '산소결핍 질식').map(r => r['기인물']).filter(Boolean)
+        )];
+        candidates = candidates.filter(c => milpeCauses.includes(c));
+      } else if (workTypeVal && Array.isArray(workTypeVal)) {
         candidates = candidates.filter(c => workTypeVal.includes(c));
       }
 
@@ -242,7 +261,12 @@
 
     function renderResults() {
       const filters = fm.getAll();
-      const filtered = filterDB(allData, filters);
+      let filtered = filterDB(allData, filters);
+
+      // 밀폐 특수 필터: 재해형태 = 산소결핍 질식
+      if (isMilpeActive) {
+        filtered = filtered.filter(r => r['재해형태'] === '산소결핍 질식');
+      }
 
       renderCauseSummary(filtered, filters);
       renderByConstructionChart(filtered);
