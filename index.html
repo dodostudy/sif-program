@@ -34,7 +34,7 @@
       <div class="chart-container">
         <div class="flex items-center justify-between mb-3">
           <h3 class="text-sm font-semibold text-gray-300">공종별 재해건수</h3>
-          <span class="text-xs text-gray-500">바를 클릭하면 드릴다운</span>
+          <span class="text-xs text-blue-300 font-semibold border border-blue-800 bg-blue-900/20 px-2 py-0.5 rounded">↙ 바를 클릭하면 드릴다운</span>
         </div>
         <div style="height:320px"><canvas id="chart-construction-type"></canvas></div>
       </div>
@@ -47,7 +47,7 @@
         <div class="chart-container">
           <div class="flex items-center justify-between mb-3">
             <h3 class="text-sm font-semibold text-gray-300" id="drill-bar-title">작업명별 재해건수</h3>
-            <span class="text-xs text-gray-500">클릭하여 세부조회</span>
+            <span class="text-xs text-blue-300 font-semibold border border-blue-800 bg-blue-900/20 px-2 py-0.5 rounded">↙ 클릭하여 세부조회</span>
           </div>
           <div style="height:320px"><canvas id="chart-drill-bar"></canvas></div>
         </div>
@@ -98,58 +98,193 @@
   <script>
     const cm = new ChartManager();
     let allData = [];
-    let currentData = []; // 현재 필터 적용된 데이터
     let dropdownRef = {};
+
+    // 전역 필터 상태
+    let currentKoenFilter = null;
+    let activeGongzongFilter = null;
+    let activeDisasterFilter = null;
+
+    function getKoenData() {
+      return currentKoenFilter === true ? allData.filter(r => r.KOEN공정) : allData;
+    }
+
+    function getChartData() {
+      let data = getKoenData();
+      if (activeGongzongFilter) data = data.filter(r => r['공종'] === activeGongzongFilter);
+      if (activeDisasterFilter) data = data.filter(r => r['재해형태'] === activeDisasterFilter);
+      return data;
+    }
 
     async function init() {
       renderPageHeader('대시보드', '건설재해 위험성평가 데이터 현황');
       createKoenToggle('header-controls', (koen) => {
-        renderAll(koen);
+        currentKoenFilter = koen;
+        activeGongzongFilter = null;
+        activeDisasterFilter = null;
+        renderAll();
       });
 
       allData = await DataLoader.loadDB();
       dropdownRef = await DataLoader.loadDropdownRef();
-      renderAll(null);
+      renderAll();
+
+      // 드롭다운 외부 클릭 시 닫기
+      document.addEventListener('click', (e) => {
+        const cardGz = document.getElementById('card-gongzong');
+        const cardDs = document.getElementById('card-disaster');
+        const ddGz = document.getElementById('dropdown-gongzong');
+        const ddDs = document.getElementById('dropdown-disaster');
+        if (ddGz && cardGz && !cardGz.contains(e.target)) ddGz.classList.add('hidden');
+        if (ddDs && cardDs && !cardDs.contains(e.target)) ddDs.classList.add('hidden');
+      });
     }
 
-    function renderAll(koenFilter) {
-      currentData = koenFilter === true
-        ? allData.filter(r => r.KOEN공정)
-        : allData;
+    function renderAll() {
+      const koenData = getKoenData();
+      const chartData = getChartData();
 
-      renderSummaryCards(currentData);
-      renderDisasterTypeChart(currentData);
-      renderConstructionTypeChart(currentData);
-      renderCauseTop10Chart(currentData);
-      renderHeatmap(currentData);
+      renderSummaryCards(koenData);
+      renderDisasterTypeChart(chartData);
+      renderConstructionTypeChart(chartData);
+      renderCauseTop10Chart(chartData);
+      renderHeatmap(chartData);
+
+      // 드릴다운 초기화
+      drillState = { 공종: null, 작업명: null, 단위작업명: null };
+      document.getElementById('drilldown-area').classList.add('hidden');
+    }
+
+    function toggleCardDropdown(which) {
+      const ddGz = document.getElementById('dropdown-gongzong');
+      const ddDs = document.getElementById('dropdown-disaster');
+      if (which === 'gongzong') {
+        ddGz.classList.toggle('hidden');
+        if (ddDs) ddDs.classList.add('hidden');
+      } else {
+        ddDs.classList.toggle('hidden');
+        if (ddGz) ddGz.classList.add('hidden');
+      }
+    }
+
+    function selectGongzong(gz) {
+      activeGongzongFilter = gz;
+      const dd = document.getElementById('dropdown-gongzong');
+      if (dd) dd.classList.add('hidden');
+      const chartData = getChartData();
+      const koenData = getKoenData();
+      renderSummaryCards(koenData);
+      renderDisasterTypeChart(chartData);
+      renderConstructionTypeChart(chartData);
+      renderCauseTop10Chart(chartData);
+      renderHeatmap(chartData);
+      drillState = { 공종: null, 작업명: null, 단위작업명: null };
+      document.getElementById('drilldown-area').classList.add('hidden');
+    }
+
+    function selectDisaster(dt) {
+      activeDisasterFilter = dt;
+      const dd = document.getElementById('dropdown-disaster');
+      if (dd) dd.classList.add('hidden');
+      const chartData = getChartData();
+      const koenData = getKoenData();
+      renderSummaryCards(koenData);
+      renderDisasterTypeChart(chartData);
+      renderConstructionTypeChart(chartData);
+      renderCauseTop10Chart(chartData);
+      renderHeatmap(chartData);
+      drillState = { 공종: null, 작업명: null, 단위작업명: null };
+      document.getElementById('drilldown-area').classList.add('hidden');
     }
 
     function renderSummaryCards(data) {
       const total = data.length;
 
-      // 최다 공종
+      // 고위험 공종 (다빈도 전체 정렬)
       const byType = aggregateBy(data, '공종');
-      const topType = topN(byType, 'count', 1)[0];
+      const sortedTypes = [...byType].sort((a, b) => b.count - a.count);
+      const topType = sortedTypes[0];
 
-      // 최다 재해형태
+      // 최다 재해형태 (다빈도 전체 정렬)
       const byDisaster = aggregateBy(data, '재해형태');
-      const topDisaster = topN(byDisaster, 'count', 1)[0];
+      const sortedDisasters = [...byDisaster].sort((a, b) => b.count - a.count);
+      const topDisaster = sortedDisasters[0];
+
+      // 활성 필터에 따른 카드 표시값
+      const activeGzObj = activeGongzongFilter ? sortedTypes.find(t => t.key === activeGongzongFilter) : null;
+      const activeGzLabel = activeGzObj
+        ? activeGzObj.key.replace(/^\d+\.\s*/, '')
+        : (topType ? topType.key.replace(/^\d+\.\s*/, '') : '-');
+      const activeGzInfo = activeGzObj
+        ? `${formatNumber(activeGzObj.count)}건 (${formatPercent(activeGzObj.count, total)})`
+        : (topType ? `${formatNumber(topType.count)}건 (${formatPercent(topType.count, total)})` : '');
+
+      const activeDsObj = activeDisasterFilter ? sortedDisasters.find(d => d.key === activeDisasterFilter) : null;
+      const activeDsLabel = activeDsObj ? activeDsObj.key : (topDisaster ? topDisaster.key : '-');
+      const activeDsInfo = activeDsObj
+        ? `${formatNumber(activeDsObj.count)}건 (${formatPercent(activeDsObj.count, total)})`
+        : (topDisaster ? `${formatNumber(topDisaster.count)}건 (${formatPercent(topDisaster.count, total)})` : '');
+
+      // 공종 드롭다운 아이템 HTML
+      const gzDropdownItems = sortedTypes.map((t, i) => {
+        const label = t.key.replace(/^\d+\.\s*/, '');
+        const safeKey = t.key.replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+        const isActive = activeGongzongFilter === t.key;
+        return `<button onclick="event.stopPropagation();selectGongzong('${safeKey}')" class="w-full text-left text-xs px-3 py-1.5 hover:bg-gray-700 flex items-center justify-between ${isActive ? 'text-blue-400 bg-blue-900/20' : ''}">
+          <span>${i + 1}. ${label}</span>
+          <span class="text-gray-500 ml-2 flex-shrink-0">${formatNumber(t.count)}건</span>
+        </button>`;
+      }).join('');
+
+      // 재해형태 드롭다운 아이템 HTML
+      const dsDropdownItems = sortedDisasters.map((d, i) => {
+        const safeKey = d.key.replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+        const isActive = activeDisasterFilter === d.key;
+        return `<button onclick="event.stopPropagation();selectDisaster('${safeKey}')" class="w-full text-left text-xs px-3 py-1.5 hover:bg-gray-700 flex items-center justify-between ${isActive ? 'text-blue-400 bg-blue-900/20' : ''}">
+          <span>${i + 1}. ${d.key}</span>
+          <span class="text-gray-500 ml-2 flex-shrink-0">${formatNumber(d.count)}건</span>
+        </button>`;
+      }).join('');
 
       document.getElementById('summary-cards').innerHTML = `
         <div class="stat-card">
           <p class="text-xs text-gray-500 uppercase tracking-wide">총 재해건수</p>
           <p class="text-3xl font-bold text-white mt-2">${formatNumber(total)}</p>
-          <p class="text-xs text-gray-500 mt-1">2019~2021년 사망/중상</p>
+          <p class="text-xs text-gray-500 mt-1">2013~2021년 사망/중상</p>
         </div>
-        <div class="stat-card">
-          <p class="text-xs text-gray-500 uppercase tracking-wide">최다 공종</p>
-          <p class="text-lg font-bold text-white mt-2">${topType ? topType.key.replace(/^\d+\.\s*/, '') : '-'}</p>
-          <p class="text-xs text-gray-500 mt-1">${topType ? formatNumber(topType.count) + '건 (' + formatPercent(topType.count, total) + ')' : ''}</p>
+        <div class="stat-card relative cursor-pointer select-none" id="card-gongzong" onclick="toggleCardDropdown('gongzong')">
+          <div class="flex items-center justify-between">
+            <p class="text-xs text-gray-500 uppercase tracking-wide">고위험 공종</p>
+            ${activeGongzongFilter
+              ? '<span class="text-xs text-blue-400 bg-blue-900/30 border border-blue-700 px-1.5 py-0.5 rounded">필터 적용중 ✕</span>'
+              : '<span class="text-xs text-gray-500">클릭하여 선택 ▼</span>'}
+          </div>
+          <p class="text-base font-bold text-white mt-2 leading-tight">${activeGzLabel}</p>
+          <p class="text-xs text-gray-500 mt-1">${activeGzInfo}</p>
+          <!-- 공종 드롭다운 -->
+          <div id="dropdown-gongzong" class="hidden absolute left-0 top-full mt-1 z-50 bg-gray-800 border border-gray-600 rounded-lg shadow-2xl min-w-full max-h-72 overflow-y-auto" onclick="event.stopPropagation()">
+            <div class="sticky top-0 bg-gray-800 border-b border-gray-700 p-2">
+              <button onclick="selectGongzong(null)" class="w-full text-left text-xs text-gray-400 hover:text-white px-2 py-1 rounded hover:bg-gray-700 ${!activeGongzongFilter ? 'text-blue-400' : ''}">전체 공종 (필터 해제)</button>
+            </div>
+            ${gzDropdownItems}
+          </div>
         </div>
-        <div class="stat-card">
-          <p class="text-xs text-gray-500 uppercase tracking-wide">최다 재해형태</p>
-          <p class="text-lg font-bold text-red-400 mt-2">${topDisaster ? topDisaster.key : '-'}</p>
-          <p class="text-xs text-gray-500 mt-1">${topDisaster ? formatNumber(topDisaster.count) + '건 (' + formatPercent(topDisaster.count, total) + ')' : ''}</p>
+        <div class="stat-card relative cursor-pointer select-none" id="card-disaster" onclick="toggleCardDropdown('disaster')">
+          <div class="flex items-center justify-between">
+            <p class="text-xs text-gray-500 uppercase tracking-wide">최다 재해형태</p>
+            ${activeDisasterFilter
+              ? '<span class="text-xs text-blue-400 bg-blue-900/30 border border-blue-700 px-1.5 py-0.5 rounded">필터 적용중 ✕</span>'
+              : '<span class="text-xs text-gray-500">클릭하여 선택 ▼</span>'}
+          </div>
+          <p class="text-base font-bold text-red-400 mt-2">${activeDsLabel}</p>
+          <p class="text-xs text-gray-500 mt-1">${activeDsInfo}</p>
+          <!-- 재해형태 드롭다운 -->
+          <div id="dropdown-disaster" class="hidden absolute left-0 top-full mt-1 z-50 bg-gray-800 border border-gray-600 rounded-lg shadow-2xl min-w-full max-h-72 overflow-y-auto" onclick="event.stopPropagation()">
+            <div class="sticky top-0 bg-gray-800 border-b border-gray-700 p-2">
+              <button onclick="selectDisaster(null)" class="w-full text-left text-xs text-gray-400 hover:text-white px-2 py-1 rounded hover:bg-gray-700 ${!activeDisasterFilter ? 'text-blue-400' : ''}">전체 재해형태 (필터 해제)</button>
+            </div>
+            ${dsDropdownItems}
+          </div>
         </div>
       `;
     }
@@ -278,7 +413,6 @@
         nextLevel = '단위작업명';
         barTitle = `${drillState['작업명']} — 단위작업명별 재해건수`;
       } else {
-        // 최하위 — 테이블만 표시
         groupKey = null;
         barTitle = `${drillState['단위작업명']} — 상세`;
       }
@@ -370,13 +504,13 @@
       if (drillState['단위작업명']) {
         tableArea.classList.remove('hidden');
         const columns = [
-          { key: '기인물', label: '기인물', maxWidth: 120 },
-          { key: '재해형태', label: '재해형태', maxWidth: 80 },
-          { key: '재해개요', label: '재해개요', maxWidth: 350, wrap: true,
+          { key: '기인물', label: '기인물', width: 120 },
+          { key: '재해형태', label: '재해형태', width: 80 },
+          { key: '재해개요', label: '재해개요', minWidth: 250, wrap: true,
             format: (v) => `<div class="text-xs text-gray-300">${v || '-'}</div>` },
-          { key: '재해유발요인', label: '재해유발요인', maxWidth: 250, wrap: true,
+          { key: '재해유발요인', label: '재해유발요인', minWidth: 200, wrap: true,
             format: (v) => `<div class="text-xs text-gray-300">${v || '-'}</div>` },
-          { key: '위험성감소대책', label: '감소대책', maxWidth: 250, wrap: true,
+          { key: '위험성감소대책', label: '감소대책', minWidth: 200, wrap: true,
             format: (v) => `<div class="text-xs text-gray-300">${v || '-'}</div>` },
         ];
         buildTable('drill-table', columns, filtered, { pageSize: 10 });
@@ -392,14 +526,14 @@
       if (drillState['공종']) {
         const shortGz = drillState['공종'].replace(/^\d+\.\s*/, '');
         if (drillState['작업명']) {
-          parts.push(`<a onclick="drillState.작업명=null;drillState.단위작업명=null;renderDrilldown(${fullData === allData ? 'allData' : 'allData'});" class="cursor-pointer text-blue-400 hover:underline">${shortGz}</a>`);
+          parts.push(`<a onclick="drillState.작업명=null;drillState.단위작업명=null;renderDrilldown(getChartData());" class="cursor-pointer text-blue-400 hover:underline">${shortGz}</a>`);
         } else {
           parts.push(`<span class="text-white font-medium">${shortGz}</span>`);
         }
       }
       if (drillState['작업명']) {
         if (drillState['단위작업명']) {
-          parts.push(`<a onclick="drillState.단위작업명=null;renderDrilldown(currentData);" class="cursor-pointer text-blue-400 hover:underline">${drillState['작업명']}</a>`);
+          parts.push(`<a onclick="drillState.단위작업명=null;renderDrilldown(getChartData());" class="cursor-pointer text-blue-400 hover:underline">${drillState['작업명']}</a>`);
         } else {
           parts.push(`<span class="text-white font-medium">${drillState['작업명']}</span>`);
         }
@@ -415,7 +549,6 @@
       const agg = aggregateBy(data, '기인물');
       const sorted = topN(agg, 'count', 10);
 
-      // 12대 기인물 여부 표시
       const is12 = dropdownRef['12대기인물'] || [];
 
       cm.create('chart-cause-top10', {
@@ -453,7 +586,6 @@
     }
 
     function renderHeatmap(data) {
-      // 공종 x 재해형태 교차분석 (HTML 테이블 기반 히트맵)
       const container = document.getElementById('heatmap-container');
       const canvas = document.getElementById('chart-heatmap');
       if (canvas) canvas.style.display = 'none';
@@ -461,7 +593,6 @@
       const disasterTypes = ['떨어짐', '깔림 뒤집힘', '맞음', '끼임', '부딪힘 접촉', '무너짐', '감전'];
       const constructionTypes = [...new Set(data.map(r => r['공종']))].sort();
 
-      // 교차집계
       const matrix = {};
       let maxVal = 0;
       constructionTypes.forEach(ct => {
