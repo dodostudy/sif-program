@@ -105,11 +105,17 @@ function renderSidebar() {
   });
 }
 
-function renderPageHeader(title, subtitle = '') {
+function renderPageHeader(title, subtitle = '', options = {}) {
   const header = document.getElementById('page-header');
   if (!header) return;
 
+  const { showPrint = true } = options;
+
   const printIcon = `<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/></svg>`;
+
+  const printBtn = showPrint
+    ? `<button onclick="handlePrintWithCharts()" class="no-print flex items-center gap-1.5 px-3 py-1.5 bg-gray-800 hover:bg-gray-700 border border-gray-700 hover:border-gray-500 text-sm text-gray-300 hover:text-white rounded-lg transition-colors">${printIcon} 인쇄 / PDF</button>`
+    : '';
 
   header.innerHTML = `
     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
@@ -119,9 +125,7 @@ function renderPageHeader(title, subtitle = '') {
       </div>
       <div class="flex items-center gap-3">
         <div class="flex items-center gap-3" id="header-controls"></div>
-        <button onclick="handlePrintWithCharts()" class="no-print flex items-center gap-1.5 px-3 py-1.5 bg-gray-800 hover:bg-gray-700 border border-gray-700 hover:border-gray-500 text-sm text-gray-300 hover:text-white rounded-lg transition-colors">
-          ${printIcon} 인쇄 / PDF
-        </button>
+        ${printBtn}
       </div>
     </div>
   `;

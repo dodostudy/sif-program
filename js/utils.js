@@ -101,15 +101,16 @@ function buildTable(containerId, columns, rows, options = {}) {
   const { pageSize = 20, currentPage = 1, sortKey = null, sortDir = 'desc',
           columnFilters = {}, filterColumns = [] } = options;
 
-  // 컬럼 필터 적용
+  // 컬럼 필터 적용 (배열 멀티셀렉트 지원)
   let filteredRows = [...rows];
   Object.keys(columnFilters).forEach(key => {
     const val = columnFilters[key];
     if (val) {
-      filteredRows = filteredRows.filter(r => {
-        const cellVal = String(r[key] || '').trim();
-        return cellVal === val;
-      });
+      if (Array.isArray(val)) {
+        filteredRows = filteredRows.filter(r => val.includes(String(r[key] || '').trim()));
+      } else {
+        filteredRows = filteredRows.filter(r => String(r[key] || '').trim() === val);
+      }
     }
   });
 
@@ -134,13 +135,16 @@ function buildTable(containerId, columns, rows, options = {}) {
   const filterOptions = {};
   filterColumns.forEach(key => {
     const vals = {};
-    // 이 컬럼을 제외한 나머지 필터 적용
     let baseRows = rows;
     Object.keys(columnFilters).forEach(otherKey => {
       if (otherKey === key) return;
       const otherVal = columnFilters[otherKey];
       if (otherVal) {
-        baseRows = baseRows.filter(r => String(r[otherKey] || '').trim() === otherVal);
+        if (Array.isArray(otherVal)) {
+          baseRows = baseRows.filter(r => otherVal.includes(String(r[otherKey] || '').trim()));
+        } else {
+          baseRows = baseRows.filter(r => String(r[otherKey] || '').trim() === otherVal);
+        }
       }
     });
     baseRows.forEach(r => {
@@ -160,23 +164,37 @@ function buildTable(containerId, columns, rows, options = {}) {
       <button class="table-excel-btn text-xs text-emerald-400 hover:text-emerald-300 px-3 py-1 border border-emerald-700 hover:border-emerald-500 rounded transition-colors">📥 엑셀 다운로드</button>
     </div>`;
 
-  // 컬럼 필터 바
+  // 컬럼 필터 바 (체크박스 멀티셀렉트)
   if (filterColumns.length > 0) {
     html += `<div class="flex flex-wrap gap-2 mb-2">`;
     filterColumns.forEach(key => {
       const col = columns.find(c => c.key === key);
       const label = col ? col.label : key;
-      const currentVal = columnFilters[key] || '';
-      html += `<select class="table-col-filter bg-gray-800 border border-gray-600 rounded text-xs text-gray-300 px-2 py-1" data-filter-key="${key}" style="min-width:100px">`;
-      html += `<option value="">${label} ▼</option>`;
+      const currentArr = columnFilters[key] || null;
+      const selectedCount = Array.isArray(currentArr) ? currentArr.length : 0;
+      const triggerText = selectedCount === 0 ? `${label} ▼`
+        : selectedCount === 1 ? (key === '공종' ? currentArr[0].replace(/^\d+\.\s*/, '') : currentArr[0])
+        : `${label} (${selectedCount}개)`;
+      const hasSelection = selectedCount > 0 ? ' tbl-ms-active' : '';
+
+      html += `<div class="tbl-ms" data-filter-key="${key}">`;
+      html += `<button type="button" class="tbl-ms-trigger${hasSelection}">${triggerText}</button>`;
+      html += `<div class="tbl-ms-panel hidden">`;
+      if ((filterOptions[key] || []).length >= 8) {
+        html += `<div class="tbl-ms-search"><input type="text" class="tbl-ms-search-input" placeholder="검색..."></div>`;
+      }
+      html += `<div class="tbl-ms-options">`;
       (filterOptions[key] || []).forEach(([val, cnt]) => {
         const display = key === '공종' ? val.replace(/^\d+\.\s*/, '') : val;
-        const selected = currentVal === val ? ' selected' : '';
-        html += `<option value="${val.replace(/"/g, '&quot;')}"${selected}>${display} (${cnt})</option>`;
+        const checked = (Array.isArray(currentArr) && currentArr.includes(val)) ? ' checked' : '';
+        const escaped = val.replace(/"/g, '&quot;');
+        html += `<label class="tbl-ms-option"><input type="checkbox" value="${escaped}"${checked}><span class="tbl-ms-option-label">${display}</span><span class="tbl-ms-option-count">(${cnt})</span></label>`;
       });
-      html += `</select>`;
+      html += `</div>`;
+      html += `<div class="tbl-ms-actions"><button type="button" class="tbl-ms-btn tbl-ms-btn-all">전체선택</button><button type="button" class="tbl-ms-btn tbl-ms-btn-clear">선택해제</button></div>`;
+      html += `</div></div>`;
     });
-    const hasActiveFilter = Object.values(columnFilters).some(v => v);
+    const hasActiveFilter = Object.values(columnFilters).some(v => v && (Array.isArray(v) ? v.length > 0 : true));
     if (hasActiveFilter) {
       html += `<button class="table-filter-reset text-xs text-blue-400 hover:text-blue-300 px-2 py-1 border border-gray-600 rounded">필터 초기화</button>`;
     }
@@ -269,15 +287,78 @@ function buildTable(containerId, columns, rows, options = {}) {
 
   container.innerHTML = html;
 
-  // 컬럼 필터 이벤트
-  container.querySelectorAll('.table-col-filter').forEach(sel => {
-    sel.addEventListener('change', () => {
-      const key = sel.dataset.filterKey;
-      const newFilters = { ...columnFilters, [key]: sel.value || undefined };
-      if (!sel.value) delete newFilters[key];
-      buildTable(containerId, columns, rows, { ...options, columnFilters: newFilters, currentPage: 1 });
+  // 컬럼 필터 멀티셀렉트 이벤트
+  function collectChecked(panel, filterKey) {
+    const checked = [...panel.querySelectorAll('.tbl-ms-option input[type="checkbox"]:checked')].map(cb => cb.value);
+    const newFilters = { ...columnFilters };
+    if (checked.length > 0) {
+      newFilters[filterKey] = checked;
+    } else {
+      delete newFilters[filterKey];
+    }
+    buildTable(containerId, columns, rows, { ...options, columnFilters: newFilters, currentPage: 1 });
+  }
+
+  container.querySelectorAll('.tbl-ms').forEach(ms => {
+    const trigger = ms.querySelector('.tbl-ms-trigger');
+    const panel = ms.querySelector('.tbl-ms-panel');
+    const filterKey = ms.dataset.filterKey;
+
+    // 트리거 클릭 → 열기/닫기
+    trigger.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const isOpen = !panel.classList.contains('hidden');
+      // 모든 패널 닫기
+      container.querySelectorAll('.tbl-ms-panel').forEach(p => p.classList.add('hidden'));
+      if (!isOpen) panel.classList.remove('hidden');
     });
+
+    // 체크박스 변경
+    panel.querySelectorAll('.tbl-ms-option input[type="checkbox"]').forEach(cb => {
+      cb.addEventListener('change', () => collectChecked(panel, filterKey));
+    });
+
+    // 전체선택
+    const btnAll = panel.querySelector('.tbl-ms-btn-all');
+    if (btnAll) {
+      btnAll.addEventListener('click', () => {
+        panel.querySelectorAll('.tbl-ms-option:not([style*="display: none"]) input[type="checkbox"]').forEach(cb => cb.checked = true);
+        collectChecked(panel, filterKey);
+      });
+    }
+
+    // 선택해제
+    const btnClear = panel.querySelector('.tbl-ms-btn-clear');
+    if (btnClear) {
+      btnClear.addEventListener('click', () => {
+        panel.querySelectorAll('.tbl-ms-option input[type="checkbox"]').forEach(cb => cb.checked = false);
+        collectChecked(panel, filterKey);
+      });
+    }
+
+    // 검색
+    const searchInput = panel.querySelector('.tbl-ms-search-input');
+    if (searchInput) {
+      searchInput.addEventListener('input', () => {
+        const query = searchInput.value.toLowerCase();
+        panel.querySelectorAll('.tbl-ms-option').forEach(opt => {
+          const label = opt.querySelector('.tbl-ms-option-label').textContent.toLowerCase();
+          opt.style.display = label.includes(query) ? '' : 'none';
+        });
+      });
+    }
   });
+
+  // 패널 외부 클릭 시 닫기
+  const closeTblMs = (e) => {
+    if (!e.target.closest('.tbl-ms')) {
+      container.querySelectorAll('.tbl-ms-panel').forEach(p => p.classList.add('hidden'));
+    }
+  };
+  // 이전 리스너 제거 후 등록 (중복 방지)
+  if (container._tblMsClose) document.removeEventListener('click', container._tblMsClose);
+  container._tblMsClose = closeTblMs;
+  document.addEventListener('click', closeTblMs);
 
   // 필터 초기화 버튼
   const resetBtn = container.querySelector('.table-filter-reset');

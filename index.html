@@ -117,7 +117,7 @@
     }
 
     async function init() {
-      renderPageHeader('대시보드', '건설재해 위험성평가 데이터 현황');
+      renderPageHeader('대시보드', '건설재해 위험성평가 데이터 현황', { showPrint: false });
       createKoenToggle('header-controls', (koen) => {
         currentKoenFilter = koen;
         activeGongzongFilter = null;

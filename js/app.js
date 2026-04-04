@@ -33,16 +33,19 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 /* =====================================================
-   인쇄 / PDF 지원: canvas → 흰 배경 이미지 변환
+   인쇄 / PDF 지원: 고해상도 캔버스 → 이미지 변환
    ===================================================== */
 let _printImgs = [];
-// 인쇄 전 각 차트의 원래 datalabels 색상 보존용
 let _origDatalabelsColors = new Map();
+let _origChartDPRs = new Map();
+// handlePrintWithCharts 에서 캡처 완료 여부 (beforeprint 폴백 판단용)
+let _capturedByHandler = false;
 
 /**
  * 인쇄 버튼 핸들러:
- * 차트 색상을 먼저 인쇄용으로 변경 → 렌더링 완료 후 window.print()
- * (beforeprint에서 바로 캡처하면 첫 번째 클릭 시 차트가 아직 업데이트 안 된 상태로 캡처됨)
+ * 1) Chart.js 색상을 인쇄용으로 변경 + 해상도 3배로 상향
+ * 2) 렌더링 완료 후 캔버스를 고해상도 이미지로 캡처
+ * 3) window.print() 호출
  */
 function handlePrintWithCharts() {
   if (typeof Chart !== 'undefined') {
@@ -51,43 +54,55 @@ function handlePrintWithCharts() {
     Chart.defaults.borderColor = '#9ca3af';
 
     _origDatalabelsColors.clear();
+    _origChartDPRs.clear();
     try {
       Object.values(Chart.instances).forEach(chart => {
+        // 데이터라벨 색상 변경 (도넛 차트 등)
         const dl = chart.config?.options?.plugins?.datalabels;
         if (dl) {
-          // 원래 색상 저장 후 검은색으로 변경
-          // (도넛 차트 등에서 '#fff'이면 흰 배경에 안 보임)
           _origDatalabelsColors.set(chart.id, dl.color);
           dl.color = '#1a1a1a';
         }
-        // 'none': 애니메이션 없이 즉시 재렌더링 (기본 update()는 1000ms 애니메이션이라
-        // setTimeout 150ms 안에 렌더링이 완료되지 않아 첫 번째 클릭 시 차트 누락)
+        // 인쇄 해상도 3배로 상향 (선명한 출력)
+        _origChartDPRs.set(chart.id, chart.currentDevicePixelRatio);
+        chart.options.devicePixelRatio = 3;
         chart.update('none');
       });
     } catch (e) { /* 무시 */ }
   }
-  // 즉시 렌더링된 캔버스를 다음 2프레임에서 캡처하도록 인쇄 실행
+
+  // 렌더링 완료 후 캡처 → 인쇄
   requestAnimationFrame(() => {
     requestAnimationFrame(() => {
+      captureCanvasesForPrint();
+      _capturedByHandler = true;
       window.print();
     });
   });
 }
 
-window.addEventListener('beforeprint', () => {
-  document.body.classList.add('is-printing');
-
-  // canvas → 흰 배경 합성 이미지로 변환
+/**
+ * 모든 canvas를 흰 배경 PNG 이미지로 변환하여 DOM에 삽입
+ */
+function captureCanvasesForPrint() {
+  // 기존 이미지 정리
+  _printImgs.forEach(({ img }) => img.remove());
   _printImgs = [];
+
   document.querySelectorAll('canvas').forEach(canvas => {
+    // 빈 캔버스 또는 보이지 않는 캔버스 건너뛰기
     if (canvas.width === 0 || canvas.height === 0) return;
+
     try {
       const off = document.createElement('canvas');
       off.width  = canvas.width;
       off.height = canvas.height;
       const ctx = off.getContext('2d');
+
+      // 흰색 배경 그리기 (다크모드 → 인쇄용 흰 배경)
       ctx.fillStyle = '#ffffff';
       ctx.fillRect(0, 0, off.width, off.height);
+      // 원본 캔버스를 흰 배경 위에 합성
       ctx.drawImage(canvas, 0, 0);
 
       const img = document.createElement('img');
@@ -97,26 +112,64 @@ window.addEventListener('beforeprint', () => {
       _printImgs.push({ img, canvas });
     } catch (e) { /* CORS 등 오류 무시 */ }
   });
+}
+
+/**
+ * beforeprint 폴백:
+ * window.print() 직접 호출 시 (위험성평가 등) 여기서 캡처
+ * handlePrintWithCharts 경유 시에는 이미 캡처 완료 → 건너뛰기
+ */
+window.addEventListener('beforeprint', () => {
+  document.body.classList.add('is-printing');
+  if (!_capturedByHandler) {
+    // 직접 window.print() 호출 시: Chart.js 색상 변경 + 캡처
+    if (typeof Chart !== 'undefined') {
+      Chart.defaults.color = '#1a1a1a';
+      Chart.defaults.borderColor = '#9ca3af';
+      _origDatalabelsColors.clear();
+      _origChartDPRs.clear();
+      try {
+        Object.values(Chart.instances).forEach(chart => {
+          const dl = chart.config?.options?.plugins?.datalabels;
+          if (dl) {
+            _origDatalabelsColors.set(chart.id, dl.color);
+            dl.color = '#1a1a1a';
+          }
+          _origChartDPRs.set(chart.id, chart.currentDevicePixelRatio);
+          chart.options.devicePixelRatio = 3;
+          chart.update('none');
+        });
+      } catch (e) { /* 무시 */ }
+    }
+    captureCanvasesForPrint();
+  }
 });
 
 window.addEventListener('afterprint', () => {
   document.body.classList.remove('is-printing');
+  _capturedByHandler = false;
 
-  // Chart.js 색상 복원
+  // Chart.js 색상 + 해상도 복원
   if (typeof Chart !== 'undefined') {
     Chart.defaults.color = '#9CA3AF';
     Chart.defaults.borderColor = '#374151';
     try {
       Object.values(Chart.instances).forEach(chart => {
+        // 데이터라벨 색상 복원
         const dl = chart.config?.options?.plugins?.datalabels;
         if (dl && _origDatalabelsColors.has(chart.id)) {
           dl.color = _origDatalabelsColors.get(chart.id);
+        }
+        // 해상도 복원
+        if (_origChartDPRs.has(chart.id)) {
+          delete chart.options.devicePixelRatio;
         }
         chart.update('none');
       });
     } catch (e) { /* 무시 */ }
   }
   _origDatalabelsColors.clear();
+  _origChartDPRs.clear();
 
   // 삽입한 이미지 제거
   _printImgs.forEach(({ img }) => img.remove());
