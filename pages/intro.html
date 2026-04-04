@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>SIF 건설재해 위험성평가 - 시스템 소개</title>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="../css/style.css">
   <style>
@@ -91,6 +92,9 @@
       font-weight: 900; font-size: 1rem; flex-shrink: 0;
     }
 
+    /* 한국어 폰트 */
+    body, button, input, textarea { font-family: 'Noto Sans KR', sans-serif; }
+
     /* main 패딩 제거 */
     #content { padding: 0 !important; }
   </style>
@@ -121,11 +125,11 @@
         </div>
 
         <div class="reveal d200">
-          <p class="text-lg text-blue-100/75 max-w-xl mx-auto leading-relaxed mb-1.5">
-            발전소 · 건설공사 현장의 위험성평가 <strong class="text-white/90">검토 · 생성</strong>을 지원합니다
+          <p class="text-lg text-blue-100/90 max-w-xl mx-auto leading-relaxed mb-1.5">
+            발전소 · 건설공사 현장의 위험성평가 <strong class="text-white">검토 · 생성</strong>을 지원합니다
           </p>
-          <p class="text-sm text-gray-400 max-w-md mx-auto">
-            '공정 → 기인물 → 재해형태'의 다차원 분석 지원
+          <p class="text-sm text-gray-300 max-w-md mx-auto">
+            공정 → 기인물 → 재해형태, 다차원 연계 분석
           </p>
         </div>
 
@@ -202,13 +206,11 @@
           <div class="space-y-7">
             <div class="reveal space-y-4">
               <p class="text-gray-100 leading-relaxed text-lg font-medium">
-                분당발전본부 위험성평가 지원시스템은<br>
-                건설공사와 발전소 현장의 위험성평가 품질을 높이기 위한<br>
+                발전소·건설현장 위험성평가의 검토와 생성을 지원하는<br>
                 <strong class="text-white font-bold">데이터과학 기반 웹 시스템</strong>입니다.
               </p>
-              <p class="text-gray-400 text-base leading-relaxed">
-                검토 단계에서는 누락된 위험요인을 점검하고, 작성 단계에서는 공정별 주요 기인물과 재해형태를 참고할 수 있어
-                보다 체계적이고 내실 있는 위험성평가 수립을 지원합니다.
+              <p class="text-gray-300 text-base leading-relaxed">
+                누락 위험요인 점검부터 공정별 기인물·재해형태 참고까지,<br>체계적이고 내실 있는 위험성평가를 지원합니다.
               </p>
             </div>
 
@@ -287,7 +289,7 @@
             <div class="tl-dot bg-blue-900/60 border-2 border-blue-600 text-blue-300">1</div>
             <div class="flex-1 rounded-2xl border border-gray-800 bg-gray-900/70 p-6">
               <p class="text-white font-bold text-base mb-2">문제 인식 — 위험성평가 검토의 한계</p>
-              <p class="text-sm text-gray-400 leading-relaxed">2025년 건설공사 발주자 역할을 수행하는 안전 담당자로서, 시공사 위험성평가 검토 과정에서 공정·기인물·재해형태를 체계적으로 연계해 확인할 수 있는 참고자료가 부족하다는 한계를 체감하였습니다.</p>
+              <p class="text-sm text-gray-300 leading-relaxed">시공사 위험성평가 검토 시, 공정·기인물·재해형태를 체계적으로 연계해 확인할 수 있는 참고자료가 부족하다는 한계를 체감했습니다.</p>
             </div>
           </div>
 
@@ -295,7 +297,7 @@
             <div class="tl-dot bg-amber-900/60 border-2 border-amber-600 text-amber-300">2</div>
             <div class="flex-1 rounded-2xl border border-gray-800 bg-gray-900/70 p-6">
               <p class="text-white font-bold text-base mb-2">해결의 실마리 — KOSHA SIF 자료 발견</p>
-              <p class="text-sm text-gray-400 leading-relaxed">이후 한국산업안전보건공단의 SIF(Serious Injuries and Fatalities) 자료에서 <span class="text-blue-300">12개 공종, 49개 작업명, 113개 단위작업명</span>, <span class="text-amber-300">58개 기인물</span>이 체계적으로 정의되어 있음을 확인하였고, 이를 위험성평가 지원에 활용할 수 있는 가능성을 발견하였습니다.</p>
+              <p class="text-sm text-gray-300 leading-relaxed">한국산업안전보건공단 SIF 자료에서 <span class="text-blue-300">12개 공종·49개 작업명·113개 단위작업명</span>, <span class="text-amber-300">58개 기인물</span>이 체계적으로 정의되어 있음을 확인하고, 위험성평가 지원에 활용할 가능성을 발견했습니다.</p>
             </div>
           </div>
 
@@ -303,7 +305,7 @@
             <div class="tl-dot bg-emerald-900/60 border-2 border-emerald-600 text-emerald-300">3</div>
             <div class="flex-1 rounded-2xl border border-gray-800 bg-gray-900/70 p-6">
               <p class="text-white font-bold text-base mb-2">데이터 확보 — 로우데이터 기반 구조화</p>
-              <p class="text-sm text-gray-400 leading-relaxed">한국산업안전보건공단에 비상업적 활용 목적의 로우데이터를 직접 요청하여 확보하였으며, 기인물 정보와 사고사례 데이터를 바탕으로 <strong class="text-white">텍스트마이닝</strong>을 적용해 재해유형과 재해형태를 신규 항목으로 추출·구조화하였습니다.</p>
+              <p class="text-sm text-gray-300 leading-relaxed">공단에 로우데이터를 직접 요청해 확보하고, <strong class="text-white">텍스트마이닝</strong>을 적용해 재해유형과 재해형태를 신규 항목으로 추출·구조화했습니다.</p>
             </div>
           </div>
 
@@ -311,7 +313,7 @@
             <div class="tl-dot bg-purple-900/60 border-2 border-purple-600 text-purple-300">4</div>
             <div class="flex-1 rounded-2xl border border-gray-800 bg-gray-900/70 p-6">
               <p class="text-white font-bold text-base mb-2">웹 시스템 구축 — 공개형 안전 플랫폼으로 확장</p>
-              <p class="text-sm text-gray-400 leading-relaxed">기존에 배포되던 자료를 웹 기반 시스템으로 구현하여 본부 구성원의 활용성을 높였으며, 나아가 <strong class="text-white">대한민국 국민 누구나 무료로 활용할 수 있는 위험성평가 지원 플랫폼</strong>으로 확장함으로써 중대재해 예방에 기여하고자 하였습니다.</p>
+              <p class="text-sm text-gray-300 leading-relaxed">기존 PDF·엑셀 자료를 웹으로 전환하고, <strong class="text-white">국민 누구나 무료로 활용 가능한 위험성평가 플랫폼</strong>으로 확장해 중대재해 예방에 기여합니다.</p>
             </div>
           </div>
 
@@ -339,7 +341,7 @@
               <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
             </div>
             <p class="text-white font-bold text-sm mb-2">공신력 있는 기관 자료</p>
-            <p class="text-xs text-gray-400 leading-relaxed">산업안전보건 분야 최고의 권위를 자랑하는 한국산업안전보건공단 자료를 기반으로 높은 신뢰성을 보장합니다</p>
+            <p class="text-xs text-gray-300 leading-relaxed">한국산업안전보건공단이 구축한 자료 기반으로, 높은 신뢰성과 활용 가치를 보장합니다</p>
           </div>
 
           <div class="reveal d100 hov-card rounded-2xl border border-gray-800 bg-gray-950/70 p-6">
@@ -347,7 +349,7 @@
               <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h7"/></svg>
             </div>
             <p class="text-white font-bold text-sm mb-2">공정의 체계적 분류</p>
-            <p class="text-xs text-gray-400 leading-relaxed">공종·작업명·단위작업명 수준까지 체계적으로 분류된 우수한 로우데이터로, 위험성평가 공정의 기준자료로 활용할 수 있습니다</p>
+            <p class="text-xs text-gray-300 leading-relaxed">공종·작업명·단위작업명까지 3단계로 분류된 로우데이터, 위험성평가 기준자료로 바로 활용 가능</p>
           </div>
 
           <div class="reveal d200 hov-card rounded-2xl border border-gray-800 bg-gray-950/70 p-6">
@@ -355,7 +357,7 @@
               <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
             </div>
             <p class="text-white font-bold text-sm mb-2">기인물 정보 제공</p>
-            <p class="text-xs text-gray-400 leading-relaxed">각 공정의 주요 기인물(위험원)이 정리되어 작업별 위험요인을 구조적으로 파악할 수 있습니다</p>
+            <p class="text-xs text-gray-300 leading-relaxed">공정별 주요 기인물(위험원)이 정리되어 작업별 위험요인을 구조적으로 파악할 수 있습니다</p>
           </div>
 
           <div class="reveal d100 hov-card rounded-2xl border border-gray-800 bg-gray-950/70 p-6">
@@ -363,7 +365,7 @@
               <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 18.657A8 8 0 016.343 7.343S7 9 9 10c0-2 .5-5 2.986-7C14 5 16.09 5.777 17.656 7.343A7.975 7.975 0 0120 13a7.975 7.975 0 01-2.343 5.657z"/></svg>
             </div>
             <p class="text-white font-bold text-sm mb-2">사고사례 기반 접근</p>
-            <p class="text-xs text-gray-400 leading-relaxed">실제 사고사례를 바탕으로 구성되어 어떤 위험이 현실적으로 발생할 수 있는지 이해하는 데 도움이 됩니다</p>
+            <p class="text-xs text-gray-300 leading-relaxed">실제 사고사례 기반으로 구성되어 현장의 위험을 현실적으로 이해할 수 있습니다</p>
           </div>
 
           <div class="reveal d200 hov-card rounded-2xl border border-gray-800 bg-gray-950/70 p-6">
@@ -371,7 +373,7 @@
               <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2M9 12h6m-6 4h6"/></svg>
             </div>
             <p class="text-white font-bold text-sm mb-2">개선대책 정보 포함</p>
-            <p class="text-xs text-gray-400 leading-relaxed">사고사례별 개선대책이 함께 포함되어 단순 위험 인식을 넘어 실질적 예방대책 수립까지 연결됩니다</p>
+            <p class="text-xs text-gray-300 leading-relaxed">사고사례별 개선대책 포함으로, 위험요인 파악에서 실질적 예방대책 수립까지 바로 연계됩니다</p>
           </div>
 
           <div class="reveal d300 hov-card rounded-2xl border border-gray-800 bg-gray-950/70 p-6">
@@ -379,7 +381,7 @@
               <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0"/></svg>
             </div>
             <p class="text-white font-bold text-sm mb-2">경험을 뛰어넘는 통합적 이해</p>
-            <p class="text-xs text-gray-400 leading-relaxed">전기, 기계, 화학, 건축, 토목 등 전공 분야의 경계를 넘어, 폭넓은 위험 인식 역량을 갖출 수 있도록 돕습니다</p>
+            <p class="text-xs text-gray-300 leading-relaxed">전기·기계·화학·건축·토목 등 다양한 분야의 위험정보를 통해 전공·경험의 경계를 넘어 폭넓은 위험 인식이 가능합니다</p>
           </div>
 
         </div>
@@ -408,7 +410,7 @@
               <span class="text-xs bg-amber-600/70 text-amber-100 px-2.5 py-1 rounded-full font-semibold">신규 추가</span>
             </div>
             <p class="text-white font-bold mb-2">재해유형 · 재해형태 신규 열 생성</p>
-            <p class="text-xs text-gray-400 leading-relaxed">기인물·사고사례 데이터 분석과 재해유발요인 문장의 텍스트마이닝을 통해 재해유형·재해형태 정보를 신규 열로 추가하였습니다</p>
+            <p class="text-xs text-gray-300 leading-relaxed">텍스트마이닝으로 재해유형·재해형태 정보를 신규 열로 추가해 다차원 분석이 가능합니다</p>
           </div>
 
           <div class="reveal d100 hov-card rounded-2xl border border-gray-800 bg-gradient-to-br from-gray-900 to-gray-950 p-6">
@@ -419,7 +421,7 @@
               <span class="text-xs bg-blue-600/70 text-blue-100 px-2.5 py-1 rounded-full font-semibold">실무 최적화</span>
             </div>
             <p class="text-white font-bold mb-2">위험성평가 실무 활용성 강화</p>
-            <p class="text-xs text-gray-400 leading-relaxed">단순한 참고자료 수준을 넘어, 위험성평가 검토·생성 과정에서 누락된 공정·기인물·재해형태를 즉시 식별할 수 있도록 구조화했습니다</p>
+            <p class="text-xs text-gray-300 leading-relaxed">검토·생성 과정에서 누락된 공정·기인물·재해형태를 즉시 식별할 수 있도록 구조화했습니다</p>
           </div>
 
           <div class="reveal d100 hov-card rounded-2xl border border-gray-800 bg-gradient-to-br from-gray-900 to-gray-950 p-6">
@@ -430,7 +432,7 @@
               <span class="text-xs bg-emerald-600/70 text-emerald-100 px-2.5 py-1 rounded-full font-semibold">웹 전환</span>
             </div>
             <p class="text-white font-bold mb-2">웹 기반 서비스로 접근성 확대</p>
-            <p class="text-xs text-gray-400 leading-relaxed">PDF·매크로 엑셀 중심 자료를 웹으로 전환해, 시간·장소 제약 없이 현장 실무자와 협력업체, 안전담당자 누구나 활용할 수 있도록 했습니다</p>
+            <p class="text-xs text-gray-300 leading-relaxed">PDF·엑셀 자료를 웹으로 전환해 시간·장소 제약 없이 현장 실무자·협력업체·안전담당자 누구나 활용 가능</p>
           </div>
 
           <div class="reveal d200 hov-card rounded-2xl border border-gray-800 bg-gradient-to-br from-gray-900 to-gray-950 p-6">
@@ -441,7 +443,7 @@
               <span class="text-xs bg-purple-600/70 text-purple-100 px-2.5 py-1 rounded-full font-semibold">공개 플랫폼</span>
             </div>
             <p class="text-white font-bold mb-2">공공적 활용 가치 확대</p>
-            <p class="text-xs text-gray-400 leading-relaxed">분당발전본부를 넘어, 대한민국 국민 누구나 활용 가능한 AI 위험성평가 플랫폼으로 확장함으로써 국가 중대재해 감소에 기여합니다</p>
+            <p class="text-xs text-gray-300 leading-relaxed">대한민국 국민 누구나 활용 가능한 AI 위험성평가 플랫폼으로 확장해 국가 중대재해 감소에 기여합니다</p>
           </div>
 
         </div>
@@ -535,7 +537,7 @@
             </div>
             <h4 class="text-white font-bold mb-1.5">대시보드</h4>
             <p class="text-xs text-gray-500 mb-3">전체 재해 현황 종합 대시보드</p>
-            <ul class="text-xs text-gray-600 space-y-1.5">
+            <ul class="text-xs text-gray-400 space-y-1.5">
               <li class="flex gap-1.5 items-start"><span class="text-blue-500 mt-0.5">•</span>요약 카드 + 공종별 드릴다운 차트</li>
               <li class="flex gap-1.5 items-start"><span class="text-blue-500 mt-0.5">•</span>기인물 Top10 · 공종×재해형태 히트맵</li>
             </ul>
@@ -548,7 +550,7 @@
             </div>
             <h4 class="text-white font-bold mb-1.5">공정조회 '고위험공정을 알려주세요'</h4>
             <p class="text-xs text-gray-500 mb-3">공정별 다빈도 사고사망 기인물, 재해형태 확인</p>
-            <ul class="text-xs text-gray-600 space-y-1.5">
+            <ul class="text-xs text-gray-400 space-y-1.5">
               <li class="flex gap-1.5 items-start"><span class="text-cyan-500 mt-0.5">•</span>5단계 Cascading 필터</li>
               <li class="flex gap-1.5 items-start"><span class="text-cyan-500 mt-0.5">•</span>사고건수 차트 + 도넛 + 엑셀 다운로드</li>
             </ul>
@@ -561,7 +563,7 @@
             </div>
             <h4 class="text-white font-bold mb-1.5">기인물조회 '굴착기도 떨어짐 사고가?'</h4>
             <p class="text-xs text-gray-500 mb-3">기인물별 주요 재해형태 + 사용공정 확인 </p>
-            <ul class="text-xs text-gray-600 space-y-1.5">
+            <ul class="text-xs text-gray-400 space-y-1.5">
               <li class="flex gap-1.5 items-start"><span class="text-amber-500 mt-0.5">•</span>작업유형 → 12대 기인물 역방향 필터</li>
               <li class="flex gap-1.5 items-start"><span class="text-amber-500 mt-0.5">•</span>공종별·재해형태별 분포 차트</li>
             </ul>
@@ -574,7 +576,7 @@
             </div>
             <h4 class="text-white font-bold mb-1.5">재해형태 분석 '떨어짐재해 근절 방법?'</h4>
             <p class="text-xs text-gray-500 mb-3">'떨어짐, 깔림 등' 재해형태별 위험요인 심층 분석</p>
-            <ul class="text-xs text-gray-600 space-y-1.5">
+            <ul class="text-xs text-gray-400 space-y-1.5">
               <li class="flex gap-1.5 items-start"><span class="text-red-500 mt-0.5">•</span>다차원 연계 필터</li>
               <li class="flex gap-1.5 items-start"><span class="text-red-500 mt-0.5">•</span>재해형태별·기인물별·공종별 차트</li>
             </ul>
@@ -587,7 +589,7 @@
             </div>
             <h4 class="text-white font-bold mb-1.5">위험성평가 '공정별 주요 위험요인과 대책?'</h4>
             <p class="text-xs text-gray-500 mb-3">공정별 주요재해사례와 감소대책 특화</p>
-            <ul class="text-xs text-gray-600 space-y-1.5">
+            <ul class="text-xs text-gray-400 space-y-1.5">
               <li class="flex gap-1.5 items-start"><span class="text-purple-500 mt-0.5">•</span>3단계 위자드 + Top10 위험요인 카드</li>
               <li class="flex gap-1.5 items-start"><span class="text-purple-500 mt-0.5">•</span>재해사례·감소대책 통합 + 인쇄 지원</li>
             </ul>
@@ -600,7 +602,7 @@
             </div>
             <h4 class="text-white font-bold mb-1.5">통계분석 '데이터과학 기반의 시각화 분석'</h4>
             <p class="text-xs text-gray-500 mb-3">심층 통계 분석 및 보고서 작성 참고</p>
-            <ul class="text-xs text-gray-600 space-y-1.5">
+            <ul class="text-xs text-gray-400 space-y-1.5">
               <li class="flex gap-1.5 items-start"><span class="text-emerald-500 mt-0.5">•</span>6개 탭 · 차트↔테이블 토글</li>
               <li class="flex gap-1.5 items-start"><span class="text-emerald-500 mt-0.5">•</span>히트맵 · 스택드 바 · 엑셀 다운로드</li>
             </ul>
