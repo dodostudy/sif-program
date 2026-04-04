@@ -13,118 +13,443 @@
   <main id="content" class="p-4 lg:p-6">
     <div id="page-header"></div>
 
-    <!-- 히어로: 시스템 소개 -->
-    <div class="chart-container mb-6">
-      <div class="flex flex-col md:flex-row items-center gap-6 py-4">
+    <!-- 섹션 1: 히어로 -->
+    <div class="chart-container mb-4">
+      <div class="flex flex-col md:flex-row items-center gap-6 py-2">
         <img src="../images/logo.png" alt="행복플러스+ 분당" class="w-20 h-20 object-contain flex-shrink-0">
-        <div class="text-center md:text-left">
-          <h2 class="text-2xl font-bold text-white mb-2">분당발전본부 위험성평가 지원 시스템</h2>
-          <p class="text-sm text-blue-300 font-medium mb-3">행복플러스+ 분당발전본부 안전관리실 (실장 : 심병철)</p>
-          <div class="flex flex-wrap gap-3 justify-center md:justify-start">
-            <span class="text-xs bg-blue-900/40 text-blue-300 px-3 py-1 rounded-full border border-blue-800">산업재해 고위험요인 (2013~2021년)</span>
-            <span class="text-xs bg-red-900/40 text-red-300 px-3 py-1 rounded-full border border-red-800">사망/중상 재해사례 2,574건</span>
-            <span class="text-xs bg-gray-800 text-gray-300 px-3 py-1 rounded-full border border-gray-700">출처: 한국산업안전보건공단 SIF 자료</span>
+        <div class="text-center md:text-left flex-1">
+          <p class="text-xs text-blue-400 font-medium uppercase tracking-widest mb-1">행복플러스+ 분당발전본부 안전관리실</p>
+          <h2 class="text-2xl lg:text-3xl font-black text-white mb-2">위험성평가 지원시스템</h2>
+          <p class="text-sm text-gray-300 leading-relaxed max-w-2xl">
+            건설공사 및 발전소 현장의 <strong class="text-white">위험성평가 검토 및 생성</strong>을 지원하는 웹 기반 분석 플랫폼입니다.
+            공정, 기인물, 재해형태를 입체적으로 조회하고 실무에 직접 활용할 수 있도록 설계되었습니다.
+          </p>
+          <div class="flex flex-wrap gap-2 justify-center md:justify-start mt-3">
+            <span class="text-xs bg-blue-900/40 text-blue-300 px-3 py-1 rounded-full border border-blue-800">위험성평가 검토 지원</span>
+            <span class="text-xs bg-emerald-900/40 text-emerald-300 px-3 py-1 rounded-full border border-emerald-800">위험성평가 생성 지원</span>
+            <span class="text-xs bg-amber-900/40 text-amber-300 px-3 py-1 rounded-full border border-amber-800">TBM · 안전교육 활용</span>
+            <span class="text-xs bg-gray-800 text-gray-400 px-3 py-1 rounded-full border border-gray-700">출처: 한국산업안전보건공단 SIF</span>
           </div>
         </div>
       </div>
     </div>
 
-    <!-- 제작 배경 -->
+    <!-- 섹션 2: 데이터 수치 Showcase -->
+    <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-6">
+      <div class="chart-container text-center py-5">
+        <p class="text-3xl lg:text-4xl font-black text-white mb-1">2,574</p>
+        <p class="text-xs text-gray-400 leading-snug">사망·중상<br>재해 사례</p>
+        <span class="mt-2 inline-block text-xs bg-red-900/40 text-red-300 px-2 py-0.5 rounded-full border border-red-800">2019~2021년</span>
+      </div>
+      <div class="chart-container text-center py-5">
+        <p class="text-3xl lg:text-4xl font-black text-blue-400 mb-1">12</p>
+        <p class="text-xs text-gray-400 leading-snug">건설<br>공종</p>
+        <span class="mt-2 inline-block text-xs bg-blue-900/40 text-blue-300 px-2 py-0.5 rounded-full border border-blue-800">49개 작업명</span>
+      </div>
+      <div class="chart-container text-center py-5">
+        <p class="text-3xl lg:text-4xl font-black text-amber-400 mb-1">58</p>
+        <p class="text-xs text-gray-400 leading-snug">주요<br>기인물</p>
+        <span class="mt-2 inline-block text-xs bg-amber-900/40 text-amber-300 px-2 py-0.5 rounded-full border border-amber-800">32개 분류</span>
+      </div>
+      <div class="chart-container text-center py-5">
+        <p class="text-3xl lg:text-4xl font-black text-emerald-400 mb-1">20</p>
+        <p class="text-xs text-gray-400 leading-snug">재해<br>형태</p>
+        <span class="mt-2 inline-block text-xs bg-emerald-900/40 text-emerald-300 px-2 py-0.5 rounded-full border border-emerald-800">유형 분류</span>
+      </div>
+    </div>
+
+    <!-- 섹션 3: 시스템 개요 -->
     <div class="chart-container mb-6">
       <h3 class="text-lg font-bold text-white mb-4 flex items-center gap-2">
         <span class="w-1.5 h-6 bg-blue-500 rounded-full inline-block"></span>
+        시스템 개요
+      </h3>
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div class="space-y-3 text-sm text-gray-300 leading-relaxed">
+          <p>
+            분당본부 위험성평가 지원시스템은 <strong class="text-white">건설공사 및 발전소 현장의 위험성평가 검토 및 생성을 지원하기 위해 개발된 웹 기반 시스템</strong>입니다.
+          </p>
+          <p>
+            행복을 더하는 분당발전본부 안전관리실에서 기획·개발하였으며, 공정, 기인물, 재해형태를 보다 입체적이고 체계적으로 확인하고 활용할 수 있도록 구성하였습니다.
+          </p>
+          <p>
+            이 시스템은 위험성평가서의 <strong class="text-blue-300">검토 단계에서는 누락된 위험요인을 확인</strong>하고,
+            <strong class="text-emerald-300">작성·생성 단계에서는 공정별 주요 기인물과 재해형태를 참고</strong>하여 보다 내실 있는 위험성평가를 수립할 수 있도록 지원합니다.
+          </p>
+          <p class="text-gray-400 text-xs">
+            또한 작업 전 안전조치, 위험성평가 보완 요청, TBM 및 안전교육 등 실질적인 현장 안전관리 활동에 직접 활용할 수 있도록 설계되었습니다.
+          </p>
+        </div>
+        <div class="space-y-2">
+          <p class="text-xs text-gray-500 uppercase tracking-wide font-medium mb-3">주요 활용 시나리오</p>
+          <div class="flex items-start gap-3">
+            <div class="w-7 h-7 rounded-full bg-blue-500/20 border border-blue-500/50 flex items-center justify-center flex-shrink-0 mt-0.5">
+              <svg class="w-3.5 h-3.5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+            </div>
+            <div>
+              <p class="text-white font-medium text-sm">위험성평가 검토</p>
+              <p class="text-xs text-gray-400 mt-0.5">누락된 공정, 기인물, 재해형태를 확인하여 시공사에 보완 요청</p>
+            </div>
+          </div>
+          <div class="flex items-start gap-3">
+            <div class="w-7 h-7 rounded-full bg-emerald-500/20 border border-emerald-500/50 flex items-center justify-center flex-shrink-0 mt-0.5">
+              <svg class="w-3.5 h-3.5 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+            </div>
+            <div>
+              <p class="text-white font-medium text-sm">위험성평가 생성·작성</p>
+              <p class="text-xs text-gray-400 mt-0.5">공정별 주요 기인물과 재해형태를 참고하여 체계적인 위험성평가 작성</p>
+            </div>
+          </div>
+          <div class="flex items-start gap-3">
+            <div class="w-7 h-7 rounded-full bg-amber-500/20 border border-amber-500/50 flex items-center justify-center flex-shrink-0 mt-0.5">
+              <svg class="w-3.5 h-3.5 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+            </div>
+            <div>
+              <p class="text-white font-medium text-sm">TBM 및 안전교육</p>
+              <p class="text-xs text-gray-400 mt-0.5">작업 공정별 주요 위험요인과 재해형태를 교육자료로 활용</p>
+            </div>
+          </div>
+          <div class="flex items-start gap-3">
+            <div class="w-7 h-7 rounded-full bg-red-500/20 border border-red-500/50 flex items-center justify-center flex-shrink-0 mt-0.5">
+              <svg class="w-3.5 h-3.5 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+            </div>
+            <div>
+              <p class="text-white font-medium text-sm">작업 전 안전조치</p>
+              <p class="text-xs text-gray-400 mt-0.5">기인물별 위험특성을 확인하여 실효적인 사전 안전조치 이행 요구</p>
+            </div>
+          </div>
+          <div class="flex items-start gap-3">
+            <div class="w-7 h-7 rounded-full bg-purple-500/20 border border-purple-500/50 flex items-center justify-center flex-shrink-0 mt-0.5">
+              <svg class="w-3.5 h-3.5 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+            </div>
+            <div>
+              <p class="text-white font-medium text-sm">문서 첨부 및 기록관리</p>
+              <p class="text-xs text-gray-400 mt-0.5">테이블을 엑셀로 다운로드하여 TBM 자료, 검토자료 등에 첨부</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 섹션 4: 제작 배경 -->
+    <div class="chart-container mb-6">
+      <h3 class="text-lg font-bold text-white mb-4 flex items-center gap-2">
+        <span class="w-1.5 h-6 bg-indigo-500 rounded-full inline-block"></span>
         제작 배경
       </h3>
       <div class="space-y-4 text-sm text-gray-300 leading-relaxed">
         <p>
-          건설안전을 담당하면서 시공사가 제출한 <strong class="text-white">위험성평가를 검토</strong>하는 과정에서 한계를 느꼈습니다.
-          전기공학 전공자로서 <strong class="text-white">토목·건축·기계·전기</strong>를 아우르는 건설공사 전반에 대한 현장 경험이 부족했기 때문입니다.
+          분당본부 위험성평가 지원시스템은 <strong class="text-white">건설공사 발주자 역할을 수행하는 안전 담당자가 시공사가 제출한 위험성평가를 검토하는 과정에서 느낀 현실적 어려움</strong>에서 출발하였습니다.
         </p>
+        <!-- 3요소 핵심 카드 -->
         <div class="bg-gray-900/50 border border-gray-800 rounded-lg p-4">
-          <p class="text-xs text-gray-500 uppercase tracking-wide mb-3 font-medium">위험성평가 검토를 위해 알아야 할 3가지</p>
-          <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
-            <div class="flex items-start gap-2">
-              <span class="text-blue-400 font-bold text-lg leading-none mt-0.5">1</span>
+          <p class="text-xs text-gray-500 uppercase tracking-wide mb-3 font-medium">위험성평가를 제대로 검토하기 위해 알아야 할 3가지</p>
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div class="flex items-start gap-3">
+              <span class="text-blue-400 font-black text-2xl leading-none mt-0.5">1</span>
               <div>
-                <p class="text-white font-medium">공정</p>
+                <p class="text-white font-bold">공정</p>
                 <p class="text-xs text-gray-400 mt-0.5">어떤 작업이 이루어지는가</p>
               </div>
             </div>
-            <div class="flex items-start gap-2">
-              <span class="text-amber-400 font-bold text-lg leading-none mt-0.5">2</span>
+            <div class="flex items-start gap-3">
+              <span class="text-amber-400 font-black text-2xl leading-none mt-0.5">2</span>
               <div>
-                <p class="text-white font-medium">기인물</p>
-                <p class="text-xs text-gray-400 mt-0.5">해당 공정에서 어떤 위험원이 있는가</p>
+                <p class="text-white font-bold">기인물</p>
+                <p class="text-xs text-gray-400 mt-0.5">해당 공정에서 어떤 위험원(위험원)이 있는가</p>
               </div>
             </div>
-            <div class="flex items-start gap-2">
-              <span class="text-red-400 font-bold text-lg leading-none mt-0.5">3</span>
+            <div class="flex items-start gap-3">
+              <span class="text-red-400 font-black text-2xl leading-none mt-0.5">3</span>
               <div>
-                <p class="text-white font-medium">재해형태</p>
+                <p class="text-white font-bold">재해형태</p>
                 <p class="text-xs text-gray-400 mt-0.5">기인물로 인해 어떤 사고가 발생하는가</p>
               </div>
             </div>
           </div>
         </div>
         <p>
-          그러던 중 한국산업안전보건공단의 <strong class="text-white">SIF(Serious Injuries and Fatalities)</strong> 자료를 알게 되었습니다.
-          SIF 자료에는 건설공사 전체 공정의 체계적 분류(<strong class="text-blue-300">12개 공종 → 49개 작업명 → 113개 단위작업명</strong>),
-          공정별 주요 기인물(<strong class="text-amber-300">58개 기인물, 32개 분류</strong>),
-          기인물별 재해형태(<strong class="text-red-300">20개 재해형태</strong>)가 체계적으로 정의되어 있었습니다.
+          건설공사는 토목, 건축, 기계, 전기 등 다양한 분야가 복합적으로 연결되어 있어, 특정 전공이나 경험만으로는 공정 전반의 위험을 종합적으로 바라보는 데 한계가 있습니다. 이러한 문제를 해결하는 과정에서 한국산업안전보건공단의 <strong class="text-white">SIF(Serious Injuries and Fatalities) 자료</strong>를 접하게 되었습니다.
         </p>
         <p>
-          이를 <strong class="text-white">웹 기반 시스템</strong>으로 재구성하여, 건설현장 누구나 쉽게 활용할 수 있도록 개발하였습니다.
+          SIF 자료에는 건설공사 전반의 공정 분류 체계(<strong class="text-blue-300">12개 공종 → 49개 작업명 → 113개 단위작업명</strong>)와 주요 기인물(<strong class="text-amber-300">58개, 32개 분류</strong>), 사고사례, 개선대책이 체계적으로 정리되어 있었습니다.
+          기존 배포 자료는 PDF와 매크로 엑셀 형태여서 실무 활용에 제약이 있었기에, 안전보건공단에 <strong class="text-white">비상업적 활용 목적의 로우데이터를 직접 요청하여 확보</strong>하고 자체 개발에 착수하였습니다.
         </p>
-      </div>
-    </div>
-
-    <!-- 활용 방법 -->
-    <div class="chart-container mb-6">
-      <h3 class="text-lg font-bold text-white mb-4 flex items-center gap-2">
-        <span class="w-1.5 h-6 bg-emerald-500 rounded-full inline-block"></span>
-        활용 방법
-      </h3>
-      <div class="space-y-3 text-sm text-gray-300">
-        <p>기존 SIF 자료는 PDF와 매크로 기반 Excel로 배포되어 현장에서 즉시 활용하기 어려웠습니다. 본 시스템은 이를 웹으로 재구성하여 다음과 같이 활용할 수 있습니다.</p>
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mt-3">
-          <div class="bg-gray-900/50 border border-gray-800 rounded-lg p-3 flex items-start gap-3">
-            <span class="text-2xl flex-shrink-0">🔍</span>
-            <div>
-              <p class="text-white font-medium text-sm">다차원 조회</p>
-              <p class="text-xs text-gray-400 mt-1">공정 → 기인물 → 재해형태를 다양한 방향으로 빠르게 조회</p>
-            </div>
-          </div>
-          <div class="bg-gray-900/50 border border-gray-800 rounded-lg p-3 flex items-start gap-3">
-            <span class="text-2xl flex-shrink-0">📥</span>
-            <div>
-              <p class="text-white font-medium text-sm">엑셀 다운로드</p>
-              <p class="text-xs text-gray-400 mt-1">모든 재해사례 테이블을 엑셀(CSV)로 다운로드하여 보고서에 활용</p>
-            </div>
-          </div>
-          <div class="bg-gray-900/50 border border-gray-800 rounded-lg p-3 flex items-start gap-3">
-            <span class="text-2xl flex-shrink-0">📋</span>
-            <div>
-              <p class="text-white font-medium text-sm">TBM / 위험성평가 활용</p>
-              <p class="text-xs text-gray-400 mt-1">다운로드한 재해사례를 TBM 자료나 위험성평가 후면에 덧붙여 안전교육 강화</p>
-            </div>
-          </div>
-          <div class="bg-gray-900/50 border border-gray-800 rounded-lg p-3 flex items-start gap-3">
-            <span class="text-2xl flex-shrink-0">🖨️</span>
-            <div>
-              <p class="text-white font-medium text-sm">인쇄 / PDF 저장</p>
-              <p class="text-xs text-gray-400 mt-1">현재 화면을 그대로 인쇄하거나 PDF로 저장하여 현장 게시</p>
-            </div>
-          </div>
-        </div>
-        <div class="bg-blue-900/20 border border-blue-800/50 rounded-lg p-4 mt-4">
-          <p class="text-blue-300 text-sm font-medium">
-            실효적인 안전대책 수립과 이행을 유도하고, 구체적인 재해사례와 감소대책을 통해 안전교육을 강화하는 것이 본 시스템의 궁극적인 목표입니다.
+        <div class="bg-indigo-900/20 border border-indigo-800/50 rounded-lg p-4">
+          <p class="text-indigo-300 text-sm">
+            개발 과정에서 기인물 정보와 사고사례 데이터를 분석하고, 재해유발요인 문장에 <strong>텍스트마이닝을 적용하여 재해유형과 재해형태를 신규 열로 생성</strong>하였습니다.
+            초기 엑셀 형태에서 누구나 쉽게 사용할 수 있는 웹 기반 시스템으로 확장하였으며, 나아가 <strong>대한민국 국민 누구나 활용 가능한 안전지원 플랫폼</strong>으로 발전하는 것을 지향합니다.
           </p>
         </div>
       </div>
     </div>
 
-    <!-- 페이지별 기능 안내 -->
+    <!-- 섹션 5: SIF 자료의 강점 -->
+    <div class="chart-container mb-6">
+      <h3 class="text-lg font-bold text-white mb-1 flex items-center gap-2">
+        <span class="w-1.5 h-6 bg-emerald-500 rounded-full inline-block"></span>
+        기존 SIF 자료의 강점
+      </h3>
+      <p class="text-xs text-gray-500 mb-4 ml-4">국내 안전 분야 최고 권위 기관인 한국산업안전보건공단이 구축한 체계적인 안전 기초자료</p>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div class="flex items-start gap-3">
+          <div class="w-7 h-7 rounded-full bg-emerald-500/20 border border-emerald-500/50 flex items-center justify-center flex-shrink-0 mt-0.5">
+            <svg class="w-3.5 h-3.5 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+          </div>
+          <div>
+            <p class="text-white font-medium text-sm">공신력 있는 기관 자료</p>
+            <p class="text-xs text-gray-400 mt-0.5 leading-relaxed">산업안전보건 분야를 대표하는 한국산업안전보건공단 자료를 기반으로 하여 신뢰성과 활용도가 높습니다.</p>
+          </div>
+        </div>
+        <div class="flex items-start gap-3">
+          <div class="w-7 h-7 rounded-full bg-emerald-500/20 border border-emerald-500/50 flex items-center justify-center flex-shrink-0 mt-0.5">
+            <svg class="w-3.5 h-3.5 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+          </div>
+          <div>
+            <p class="text-white font-medium text-sm">공정 중심의 체계적 분류</p>
+            <p class="text-xs text-gray-400 mt-0.5 leading-relaxed">건설공사 전반을 공종·작업명·단위작업명 수준으로 분류하여 위험성평가 검토 및 생성 시 기준자료로 활용하기에 적합합니다.</p>
+          </div>
+        </div>
+        <div class="flex items-start gap-3">
+          <div class="w-7 h-7 rounded-full bg-emerald-500/20 border border-emerald-500/50 flex items-center justify-center flex-shrink-0 mt-0.5">
+            <svg class="w-3.5 h-3.5 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+          </div>
+          <div>
+            <p class="text-white font-medium text-sm">기인물 정보 제공</p>
+            <p class="text-xs text-gray-400 mt-0.5 leading-relaxed">각 공정에서 주요하게 관리해야 할 기인물(위험원)이 정리되어 작업별 위험요인을 구조적으로 파악할 수 있습니다.</p>
+          </div>
+        </div>
+        <div class="flex items-start gap-3">
+          <div class="w-7 h-7 rounded-full bg-emerald-500/20 border border-emerald-500/50 flex items-center justify-center flex-shrink-0 mt-0.5">
+            <svg class="w-3.5 h-3.5 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+          </div>
+          <div>
+            <p class="text-white font-medium text-sm">사고사례 기반 접근</p>
+            <p class="text-xs text-gray-400 mt-0.5 leading-relaxed">실제 사고사례를 바탕으로 구성되어 현장에서 어떤 위험이 현실적으로 발생할 수 있는지 이해하는 데 도움이 됩니다.</p>
+          </div>
+        </div>
+        <div class="flex items-start gap-3">
+          <div class="w-7 h-7 rounded-full bg-emerald-500/20 border border-emerald-500/50 flex items-center justify-center flex-shrink-0 mt-0.5">
+            <svg class="w-3.5 h-3.5 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+          </div>
+          <div>
+            <p class="text-white font-medium text-sm">개선대책 정보 포함</p>
+            <p class="text-xs text-gray-400 mt-0.5 leading-relaxed">사고사례에 대한 개선대책이 함께 포함되어 단순한 위험 인식을 넘어 실질적인 예방대책 수립까지 연결할 수 있습니다.</p>
+          </div>
+        </div>
+        <div class="flex items-start gap-3">
+          <div class="w-7 h-7 rounded-full bg-emerald-500/20 border border-emerald-500/50 flex items-center justify-center flex-shrink-0 mt-0.5">
+            <svg class="w-3.5 h-3.5 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+          </div>
+          <div>
+            <p class="text-white font-medium text-sm">전공을 넘어서는 통합적 안전 이해</p>
+            <p class="text-xs text-gray-400 mt-0.5 leading-relaxed">특정 전공에 관계없이 건설공사 전반의 위험을 체계적으로 이해할 수 있습니다. 전공의 경계를 넘어 위험을 보는 눈을 높여주는 학습형·실무형 자료입니다.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 섹션 6: 분당본부 차별점 -->
+    <div class="chart-container mb-6">
+      <h3 class="text-lg font-bold text-white mb-1 flex items-center gap-2">
+        <span class="w-1.5 h-6 bg-amber-500 rounded-full inline-block"></span>
+        분당본부 SIF 시스템의 차별점
+      </h3>
+      <p class="text-xs text-gray-500 mb-4 ml-4">기존 SIF 자료의 강점을 유지하면서 위험성평가 실무에 더 직접적으로 활용할 수 있도록 데이터와 서비스를 확장·고도화</p>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+
+        <div class="bg-gray-900/50 border border-gray-800 rounded-lg p-4">
+          <div class="flex items-start justify-between gap-2 mb-2">
+            <div class="flex items-center gap-2">
+              <div class="w-8 h-8 rounded-lg bg-amber-900/50 border border-amber-800 flex items-center justify-center flex-shrink-0">
+                <svg class="w-4 h-4 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+              </div>
+              <p class="text-white font-bold text-sm">재해유형·재해형태 신규 열 생성</p>
+            </div>
+            <span class="text-xs bg-amber-600/80 text-amber-100 px-2 py-0.5 rounded-full font-medium whitespace-nowrap flex-shrink-0">신규 추가</span>
+          </div>
+          <p class="text-xs text-gray-400 leading-relaxed">기인물·사고사례 데이터를 분석하여 재해유형 항목을 새롭게 구성하고, 재해유발요인 문장을 텍스트마이닝하여 재해형태 정보를 별도 열로 추가하였습니다.</p>
+        </div>
+
+        <div class="bg-gray-900/50 border border-gray-800 rounded-lg p-4">
+          <div class="flex items-start justify-between gap-2 mb-2">
+            <div class="flex items-center gap-2">
+              <div class="w-8 h-8 rounded-lg bg-blue-900/50 border border-blue-800 flex items-center justify-center flex-shrink-0">
+                <svg class="w-4 h-4 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+              </div>
+              <p class="text-white font-bold text-sm">위험성평가 실무 활용성 강화</p>
+            </div>
+            <span class="text-xs bg-blue-600/80 text-blue-100 px-2 py-0.5 rounded-full font-medium whitespace-nowrap flex-shrink-0">실무 최적화</span>
+          </div>
+          <p class="text-xs text-gray-400 leading-relaxed">참고자료 성격이 강했던 기존 SIF 자료에서 나아가, 위험성평가 검토 및 생성 과정에서 누락된 공정·기인물·재해형태를 보다 쉽게 확인할 수 있도록 구조화하였습니다.</p>
+        </div>
+
+        <div class="bg-gray-900/50 border border-gray-800 rounded-lg p-4">
+          <div class="flex items-start justify-between gap-2 mb-2">
+            <div class="flex items-center gap-2">
+              <div class="w-8 h-8 rounded-lg bg-emerald-900/50 border border-emerald-800 flex items-center justify-center flex-shrink-0">
+                <svg class="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9"/></svg>
+              </div>
+              <p class="text-white font-bold text-sm">웹 기반 서비스로 접근성 확대</p>
+            </div>
+            <span class="text-xs bg-emerald-600/80 text-emerald-100 px-2 py-0.5 rounded-full font-medium whitespace-nowrap flex-shrink-0">웹 전환</span>
+          </div>
+          <p class="text-xs text-gray-400 leading-relaxed">기존 PDF·매크로 엑셀 중심 자료를 웹사이트로 구현하여 시간·장소의 제약 없이 현장 실무자, 협력업체, 안전관리 담당자 누구나 즉시 활용할 수 있도록 하였습니다.</p>
+        </div>
+
+        <div class="bg-gray-900/50 border border-gray-800 rounded-lg p-4">
+          <div class="flex items-start justify-between gap-2 mb-2">
+            <div class="flex items-center gap-2">
+              <div class="w-8 h-8 rounded-lg bg-purple-900/50 border border-purple-800 flex items-center justify-center flex-shrink-0">
+                <svg class="w-4 h-4 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+              </div>
+              <p class="text-white font-bold text-sm">공공적 활용 가치 확대</p>
+            </div>
+            <span class="text-xs bg-purple-600/80 text-purple-100 px-2 py-0.5 rounded-full font-medium whitespace-nowrap flex-shrink-0">공개 플랫폼</span>
+          </div>
+          <p class="text-xs text-gray-400 leading-relaxed">특정 조직 내부 활용에 그치지 않고, 대한민국 국민 누구나 활용 가능한 안전지원 플랫폼으로 확장하여 궁극적으로 국가 산업재해 감소에 기여하는 것을 지향합니다.</p>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- 섹션 7: 개발 목적 -->
+    <div class="chart-container mb-6">
+      <h3 class="text-lg font-bold text-white mb-1 flex items-center gap-2">
+        <span class="w-1.5 h-6 bg-purple-500 rounded-full inline-block"></span>
+        개발 목적
+      </h3>
+      <p class="text-xs text-gray-500 mb-4 ml-4">단순 자료 조회를 넘어, 위험성평가의 검토·생성 품질을 높이고 현장 안전관리의 실효성을 강화하는 것</p>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+        <div class="flex items-start gap-3">
+          <div class="w-7 h-7 rounded-full bg-purple-500/20 border border-purple-500/50 flex items-center justify-center flex-shrink-0 mt-0.5">
+            <svg class="w-3.5 h-3.5 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+          </div>
+          <p class="text-sm text-gray-300 mt-0.5">위험성평가 검토 시 <strong class="text-white">누락된 공정, 기인물, 재해형태</strong> 확인</p>
+        </div>
+        <div class="flex items-start gap-3">
+          <div class="w-7 h-7 rounded-full bg-purple-500/20 border border-purple-500/50 flex items-center justify-center flex-shrink-0 mt-0.5">
+            <svg class="w-3.5 h-3.5 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+          </div>
+          <p class="text-sm text-gray-300 mt-0.5">위험성평가 생성 시 <strong class="text-white">공정별 주요 위험요인을 체계적으로 반영</strong></p>
+        </div>
+        <div class="flex items-start gap-3">
+          <div class="w-7 h-7 rounded-full bg-purple-500/20 border border-purple-500/50 flex items-center justify-center flex-shrink-0 mt-0.5">
+            <svg class="w-3.5 h-3.5 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+          </div>
+          <p class="text-sm text-gray-300 mt-0.5">시공사 제출 위험성평가서의 <strong class="text-white">보완 필요사항 도출</strong></p>
+        </div>
+        <div class="flex items-start gap-3">
+          <div class="w-7 h-7 rounded-full bg-purple-500/20 border border-purple-500/50 flex items-center justify-center flex-shrink-0 mt-0.5">
+            <svg class="w-3.5 h-3.5 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+          </div>
+          <p class="text-sm text-gray-300 mt-0.5">공정별·기인물별 재해형태 기반의 <strong class="text-white">실질적 안전대책 검토 및 수립 지원</strong></p>
+        </div>
+        <div class="flex items-start gap-3">
+          <div class="w-7 h-7 rounded-full bg-purple-500/20 border border-purple-500/50 flex items-center justify-center flex-shrink-0 mt-0.5">
+            <svg class="w-3.5 h-3.5 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+          </div>
+          <p class="text-sm text-gray-300 mt-0.5">TBM 및 안전교육 시 반복 활용 가능한 <strong class="text-white">현장 중심 자료 제공</strong></p>
+        </div>
+        <div class="flex items-start gap-3">
+          <div class="w-7 h-7 rounded-full bg-purple-500/20 border border-purple-500/50 flex items-center justify-center flex-shrink-0 mt-0.5">
+            <svg class="w-3.5 h-3.5 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+          </div>
+          <p class="text-sm text-gray-300 mt-0.5">안전활동, 안전작업검토회의, 입회기준 개선 등 <strong class="text-white">실무 활용 기반 마련</strong></p>
+        </div>
+        <div class="flex items-start gap-3 md:col-span-2">
+          <div class="w-7 h-7 rounded-full bg-purple-500/20 border border-purple-500/50 flex items-center justify-center flex-shrink-0 mt-0.5">
+            <svg class="w-3.5 h-3.5 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+          </div>
+          <p class="text-sm text-gray-300 mt-0.5">대국민 안전활용 기반을 마련하여 <strong class="text-white">산업재해 예방 문화 확산에 기여</strong></p>
+        </div>
+      </div>
+    </div>
+
+    <!-- 섹션 8: 시스템 활용 효과 -->
+    <div class="chart-container mb-6">
+      <h3 class="text-lg font-bold text-white mb-4 flex items-center gap-2">
+        <span class="w-1.5 h-6 bg-cyan-500 rounded-full inline-block"></span>
+        시스템 활용 효과
+      </h3>
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+        <div class="bg-gray-900/50 border border-gray-800 rounded-lg p-4 flex items-start gap-3">
+          <span class="text-2xl flex-shrink-0">🔍</span>
+          <div>
+            <p class="text-white font-medium text-sm">위험성평가 검토</p>
+            <p class="text-xs text-gray-400 mt-1 leading-relaxed">누락된 공정·기인물·재해형태를 확인하여 시공사에 보완을 요청할 수 있습니다.</p>
+          </div>
+        </div>
+        <div class="bg-gray-900/50 border border-gray-800 rounded-lg p-4 flex items-start gap-3">
+          <span class="text-2xl flex-shrink-0">📝</span>
+          <div>
+            <p class="text-white font-medium text-sm">위험성평가 생성·작성</p>
+            <p class="text-xs text-gray-400 mt-1 leading-relaxed">공정별 주요 기인물과 재해형태를 참고하여 체계적이고 실효적인 위험성평가를 작성합니다.</p>
+          </div>
+        </div>
+        <div class="bg-gray-900/50 border border-gray-800 rounded-lg p-4 flex items-start gap-3">
+          <span class="text-2xl flex-shrink-0">📋</span>
+          <div>
+            <p class="text-white font-medium text-sm">TBM 및 안전교육</p>
+            <p class="text-xs text-gray-400 mt-1 leading-relaxed">작업 공정별 주요 위험요인과 재해형태를 교육자료로 활용합니다.</p>
+          </div>
+        </div>
+        <div class="bg-gray-900/50 border border-gray-800 rounded-lg p-4 flex items-start gap-3">
+          <span class="text-2xl flex-shrink-0">🛡️</span>
+          <div>
+            <p class="text-white font-medium text-sm">작업 전 안전조치 검토</p>
+            <p class="text-xs text-gray-400 mt-1 leading-relaxed">기인물별 위험특성을 확인하여 실효적인 사전 안전조치 이행을 요구합니다.</p>
+          </div>
+        </div>
+        <div class="bg-gray-900/50 border border-gray-800 rounded-lg p-4 flex items-start gap-3 md:col-span-2 lg:col-span-1">
+          <span class="text-2xl flex-shrink-0">📥</span>
+          <div>
+            <p class="text-white font-medium text-sm">문서 첨부 및 기록관리</p>
+            <p class="text-xs text-gray-400 mt-1 leading-relaxed">각 테이블을 엑셀로 다운로드하여 TBM 자료·위험성평가 검토자료·교육자료에 첨부합니다.</p>
+          </div>
+        </div>
+      </div>
+      <div class="mt-4 bg-cyan-900/20 border border-cyan-800/50 rounded-lg p-3">
+        <p class="text-xs text-cyan-300">
+          건설사업현장에서는 <strong>공정조회 중심으로</strong>, 발전소 경상발전 업무에서는 <strong>기인물 및 재해형태 중심으로</strong> 활용할 수 있도록 구성하여 현장 특성에 따라 유연하게 사용할 수 있습니다.
+        </p>
+      </div>
+    </div>
+
+    <!-- 섹션 9: AI GPTs 안전누리 -->
+    <div class="mb-6 rounded-xl border border-blue-700/50 p-5" style="background: linear-gradient(135deg, rgba(30,58,138,0.35) 0%, rgba(17,24,39,0.9) 100%);">
+      <div class="flex flex-col md:flex-row md:items-center gap-4">
+        <div class="flex-1">
+          <div class="flex items-center gap-2 mb-2">
+            <span class="w-1.5 h-6 bg-blue-400 rounded-full flex-shrink-0"></span>
+            <h3 class="text-lg font-bold text-white">AI GPTs 안전누리</h3>
+            <span class="text-xs bg-blue-600 text-white px-2 py-0.5 rounded-full font-medium">분당본부 제작·배포</span>
+          </div>
+          <p class="text-sm text-gray-300 leading-relaxed mb-1">
+            위험성평가 작성에 어려움이 있을 때 활용할 수 있도록, 본부에서 직접 제작·배포한 <strong class="text-blue-300">AI 위험성평가 보조도구</strong>입니다.
+          </p>
+          <p class="text-xs text-gray-400">
+            ChatGPT 기반 GPTs 서비스로, 위험성평가 작성 시 AI를 활용하여 위험요인 도출 및 안전대책 수립을 지원합니다.
+          </p>
+        </div>
+        <div class="flex flex-col sm:flex-row md:flex-col gap-2 flex-shrink-0">
+          <a href="https://chatgpt.com/g/g-68d9ea4687d881919dc5d8c7aa65c776-bundang-anjeonnuri-koen-for-wiheomseongpyeongga"
+             target="_blank" rel="noopener noreferrer"
+             class="flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-500 text-white text-sm font-medium px-4 py-2.5 rounded-lg transition-colors">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+            GPTs 안전누리 바로가기
+          </a>
+          <a href="https://app.guidde.com/share/playbooks/hr8GgLUK3uJ3MgnkuecH9V?origin=WsIqNikVeiZSE6b1baGljoCN5EH3"
+             target="_blank" rel="noopener noreferrer"
+             class="flex items-center justify-center gap-2 bg-gray-700 hover:bg-gray-600 text-gray-200 text-sm font-medium px-4 py-2.5 rounded-lg transition-colors border border-gray-600">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+            활용방법 교육영상 보기
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <!-- 섹션 10: 페이지별 기능 안내 -->
     <div class="mb-6">
       <h3 class="text-lg font-bold text-white mb-4 flex items-center gap-2">
         <span class="w-1.5 h-6 bg-amber-500 rounded-full inline-block"></span>
@@ -243,13 +568,33 @@
       </div>
     </div>
 
-    <!-- 하단 안내 -->
+    <!-- 섹션 11: 기대 효과 -->
+    <div class="chart-container mb-6">
+      <h3 class="text-lg font-bold text-white mb-1 flex items-center gap-2">
+        <span class="w-1.5 h-6 bg-rose-500 rounded-full inline-block"></span>
+        기대 효과
+      </h3>
+      <p class="text-xs text-gray-500 mb-4 ml-4">단순한 조회 도구를 넘어, 위험성평가 검토·생성의 정확도를 높이고 현장 안전활동의 질을 개선하는 실무형 플랫폼</p>
+      <div class="flex flex-wrap gap-2">
+        <span class="text-xs bg-blue-900/40 text-blue-300 px-3 py-1.5 rounded-lg border border-blue-800">위험성평가 검토 수준 향상</span>
+        <span class="text-xs bg-blue-900/40 text-blue-300 px-3 py-1.5 rounded-lg border border-blue-800">위험성평가 생성 품질 향상</span>
+        <span class="text-xs bg-amber-900/40 text-amber-300 px-3 py-1.5 rounded-lg border border-amber-800">공정별 위험요인 누락 방지</span>
+        <span class="text-xs bg-amber-900/40 text-amber-300 px-3 py-1.5 rounded-lg border border-amber-800">시공사 보완요청 근거 명확화</span>
+        <span class="text-xs bg-emerald-900/40 text-emerald-300 px-3 py-1.5 rounded-lg border border-emerald-800">TBM · 안전교육 실효성 강화</span>
+        <span class="text-xs bg-emerald-900/40 text-emerald-300 px-3 py-1.5 rounded-lg border border-emerald-800">현장 안전조치 이행력 향상</span>
+        <span class="text-xs bg-red-900/40 text-red-300 px-3 py-1.5 rounded-lg border border-red-800">산업재해 · 중대재해 예방 기여</span>
+        <span class="text-xs bg-purple-900/40 text-purple-300 px-3 py-1.5 rounded-lg border border-purple-800">국가 산업재해 감소에 기여</span>
+      </div>
+    </div>
+
+    <!-- 섹션 12: 하단 안내 -->
     <div class="chart-container">
       <div class="text-center py-2">
-        <p class="text-xs text-gray-500 mb-1">데이터 출처: 한국산업안전보건공단 | 산업재해 고위험요인 (2013~2021년)</p>
+        <p class="text-xs text-gray-500 mb-1">데이터 출처: 한국산업안전보건공단 | 산업재해 고위험요인 (2019~2021년)</p>
         <p class="text-xs text-amber-400 font-medium">상업적 이용 및 내용에 대한 변경 금지</p>
       </div>
     </div>
+
   </main>
 
   <script src="../js/components.js"></script>
