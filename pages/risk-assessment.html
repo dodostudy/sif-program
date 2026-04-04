@@ -330,8 +330,22 @@
       </div>`;
 
       if (isGrouped) {
-        // 그룹별 열방향 레이아웃 — CSS columns (신문 칼럼식, 가로 스크롤 없음)
-        html += `<div class="columns-2 md:columns-3 lg:columns-5 gap-2 mb-4">`;
+        // 그룹별 색상 맵
+        const GROUP_COLORS = {
+          '고소':          { border: '#3B82F6', text: '#93C5FD' },
+          '중장비':        { border: '#F59E0B', text: '#FCD34D' },
+          '굴착':          { border: '#D97706', text: '#FDE68A' },
+          '전기':          { border: '#EAB308', text: '#FEF08A' },
+          '중량물':        { border: '#6B7280', text: '#D1D5DB' },
+          '화기':          { border: '#EF4444', text: '#FCA5A5' },
+          '밀폐':          { border: '#8B5CF6', text: '#C4B5FD' },
+          '일반':          { border: '#10B981', text: '#6EE7B7' },
+          '폭염/원인미상': { border: '#F97316', text: '#FDBA74' },
+          '화학물질':      { border: '#84CC16', text: '#BEF264' },
+        };
+
+        // 5열 그리드 — 행/열 균형, 가로 스크롤 없음
+        html += `<div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3 mb-5">`;
 
         const workTypes = Object.keys(WORK_TYPE_MAP);
         workTypes.forEach(type => {
@@ -342,10 +356,14 @@
 
           // 건수 내림차순 정렬
           const sorted = validCauses.sort((a, b) => getCauseCount(b, type) - getCauseCount(a, type));
+          const color = GROUP_COLORS[type] || { border: '#4B5563', text: '#9CA3AF' };
 
-          html += `<div class="bg-gray-900/60 border border-gray-800 rounded-lg p-2.5 break-inside-avoid mb-2">
-            <div class="text-xs font-semibold text-blue-400 mb-2 pb-1.5 border-b border-gray-700/60">${type}</div>
-            <div class="space-y-1 flex-1">`;
+          html += `<div class="bg-gray-900/60 border border-gray-800 rounded-xl p-3" style="border-top: 2px solid ${color.border}">
+            <div class="text-xs font-bold mb-3 pb-2 border-b border-gray-700/60 flex items-center gap-1.5" style="color:${color.text}">
+              <span style="display:inline-block;width:6px;height:6px;border-radius:50%;background:${color.border};flex-shrink:0"></span>
+              ${type}
+            </div>
+            <div class="space-y-1.5">`;
 
           sorted.forEach(cause => {
             const count = getCauseCount(cause, type);
