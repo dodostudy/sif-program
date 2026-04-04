@@ -330,8 +330,8 @@
       </div>`;
 
       if (isGrouped) {
-        // 그룹별 열방향 레이아웃 — 가로 스크롤로 한 줄에 모두 표시
-        html += `<div class="flex gap-2 mb-4 overflow-x-auto pb-2">`;
+        // 그룹별 열방향 레이아웃 — CSS columns (신문 칼럼식, 가로 스크롤 없음)
+        html += `<div class="columns-2 md:columns-3 lg:columns-5 gap-2 mb-4">`;
 
         const workTypes = Object.keys(WORK_TYPE_MAP);
         workTypes.forEach(type => {
@@ -343,7 +343,7 @@
           // 건수 내림차순 정렬
           const sorted = validCauses.sort((a, b) => getCauseCount(b, type) - getCauseCount(a, type));
 
-          html += `<div class="bg-gray-900/60 border border-gray-800 rounded-lg p-2.5 flex-shrink-0 flex flex-col" style="min-width:130px">
+          html += `<div class="bg-gray-900/60 border border-gray-800 rounded-lg p-2.5 break-inside-avoid mb-2">
             <div class="text-xs font-semibold text-blue-400 mb-2 pb-1.5 border-b border-gray-700/60">${type}</div>
             <div class="space-y-1 flex-1">`;
 
