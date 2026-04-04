@@ -49,20 +49,26 @@ function formatPercent(value, total) {
   return (value / total * 100).toFixed(1) + '%';
 }
 
+/** 필터 값 매칭 (단일값 또는 배열 지원) */
+function matchFilter(filterVal, recordVal) {
+  if (!filterVal) return true;
+  if (Array.isArray(filterVal)) return filterVal.includes(recordVal);
+  return recordVal === filterVal;
+}
+
 /** DB 레코드 필터링 */
 function filterDB(records, filters) {
   return records.filter(r => {
     if (filters.koen === true && !r.KOEN공정) return false;
     if (filters.koen === false && r.KOEN공정) return false;
-    if (filters['공종'] && r['공종'] !== filters['공종']) return false;
-    if (filters['작업명'] && r['작업명'] !== filters['작업명']) return false;
-    if (filters['단위작업명'] && r['단위작업명'] !== filters['단위작업명']) return false;
-    if (filters['기인물'] && r['기인물'] !== filters['기인물']) return false;
-    if (filters['기인물분류'] && r['기인물분류'] !== filters['기인물분류']) return false;
+    if (!matchFilter(filters['공종'], r['공종'])) return false;
+    if (!matchFilter(filters['작업명'], r['작업명'])) return false;
+    if (!matchFilter(filters['단위작업명'], r['단위작업명'])) return false;
+    if (!matchFilter(filters['기인물'], r['기인물'])) return false;
+    if (!matchFilter(filters['기인물분류'], r['기인물분류'])) return false;
     if (filters['12대기인물'] === true && !r['12대기인물']) return false;
-    if (filters['재해형태'] && r['재해형태'] !== filters['재해형태']) return false;
+    if (!matchFilter(filters['재해형태'], r['재해형태'])) return false;
     if (filters['작업유형'] && typeof filters['작업유형'] === 'object') {
-      // 작업유형 필터: 해당 유형에 속하는 기인물 목록으로 필터링
       if (!filters['작업유형'].includes(r['기인물'])) return false;
     }
     return true;

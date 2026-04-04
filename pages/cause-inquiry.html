@@ -14,7 +14,7 @@
     @media (max-width: 767px) {
       .filter-bar { flex-direction: column; gap: 0.5rem; }
       .filter-group { width: 100%; }
-      .filter-group select { width: 100%; min-width: 0; }
+      .filter-group select, .ms-dropdown { width: 100%; min-width: 0; }
       .filter-group label { min-width: auto; }
       #btn-reset { width: 100%; }
     }
@@ -30,7 +30,7 @@
     <div class="filter-bar mb-4">
       <div class="filter-group">
         <label>작업유형</label>
-        <select id="filter-worktype"></select>
+        <div id="ms-worktype"></div>
       </div>
       <div class="filter-group">
         <label>12대 기인물</label>
@@ -41,7 +41,7 @@
       </div>
       <div class="filter-group">
         <label>기인물</label>
-        <select id="filter-cause"></select>
+        <div id="ms-cause"></div>
       </div>
       <button id="btn-reset" class="px-4 py-2 bg-gray-700 hover:bg-gray-600 text-sm rounded-lg transition-colors">초기화</button>
     </div>
@@ -94,6 +94,7 @@
   <script src="../js/filter-manager.js"></script>
   <script src="../js/chart-manager.js"></script>
   <script src="../js/utils.js"></script>
+  <script src="../js/multi-select.js"></script>
   <script src="../js/components.js"></script>
   <script src="../js/app.js"></script>
 
@@ -120,8 +121,37 @@
 
     let allData = [];
     let dropdownRef = {};
-    // 전체 기인물별 건수 맵 (정렬용, 초기화 후 고정)
     let causeCountMap = {};
+
+    // 멀티셀렉트 인스턴스
+    const msWorkType = new MultiSelect({
+      containerId: 'ms-worktype',
+      placeholder: '전체',
+      showCounts: true,
+      onChange: (values) => {
+        if (!values || values.length === 0) {
+          isMilpeActive = false;
+          fm.set('작업유형', null);
+          return;
+        }
+        isMilpeActive = values.includes('밀폐');
+        // 선택된 유형들의 기인물 합집합
+        const allCauses = [];
+        values.forEach(type => {
+          if (type !== '밀폐' && WORK_TYPE_MAP[type]) {
+            allCauses.push(...WORK_TYPE_MAP[type]);
+          }
+        });
+        fm.set('작업유형', allCauses.length > 0 ? [...new Set(allCauses)] : null);
+      }
+    });
+
+    const msCause = new MultiSelect({
+      containerId: 'ms-cause',
+      placeholder: '기인물 선택',
+      showCounts: true,
+      onChange: (values) => fm.set('기인물', values)
+    });
 
     async function init() {
       renderPageHeader('기인물조회', '기인물 기준 역방향 조회 - 해당 기인물이 어떤 공정에서 위험한지 분석');
@@ -139,100 +169,54 @@
       renderResults();
     }
 
-    // 건수 내림차순으로 정렬된 기인물 목록 생성
-    function sortCausesByCount(causeList) {
-      return [...causeList].sort((a, b) => (causeCountMap[b] || 0) - (causeCountMap[a] || 0));
-    }
-
-    // 기인물 드롭다운 (건수 포함) 채우기
-    function populateCauseDropdown(selectId, causeList, placeholder) {
-      const select = document.getElementById(selectId);
-      if (!select) return;
-      const currentValue = select.value;
-      const sorted = sortCausesByCount(causeList);
-      select.innerHTML = `<option value="">${placeholder}</option>`;
-      sorted.forEach(c => {
-        const option = document.createElement('option');
-        option.value = c;
-        option.textContent = `${c} (${causeCountMap[c] || 0}건)`;
-        select.appendChild(option);
-      });
-      if (currentValue && causeList.includes(currentValue)) {
-        select.value = currentValue;
-      }
-    }
-
     function setupFilters() {
       const allCauses = (dropdownRef['기인물목록'] || []);
-      const is12List = dropdownRef['12대기인물'] || [];
-
-      // 밀폐: 재해형태 '산소결핍 질식' 건수 사전 계산
       const milpeCount = allData.filter(r => r['재해형태'] === '산소결핍 질식').length;
 
-      // 작업유형 드롭다운 채우기
-      const workTypeSelect = document.getElementById('filter-worktype');
-      workTypeSelect.innerHTML = '<option value="">전체</option>';
-      Object.keys(WORK_TYPE_MAP).forEach(type => {
+      // 작업유형 멀티셀렉트 옵션
+      const workTypeOptions = Object.keys(WORK_TYPE_MAP).map(type => {
         const causeList = WORK_TYPE_MAP[type];
         const count = causeList === null
-          ? milpeCount // 밀폐: 재해형태 기준
+          ? milpeCount
           : (causeList || []).reduce((sum, c) => sum + (causeCountMap[c] || 0), 0);
-        const opt = document.createElement('option');
-        opt.value = type;
-        opt.textContent = `${type} (${count}건)`;
-        workTypeSelect.appendChild(opt);
+        return { value: type, label: type, count: count };
       });
+      msWorkType.setOptions(workTypeOptions);
 
-      // 초기 기인물 드롭다운
-      populateCauseDropdown('filter-cause', allCauses, '기인물 선택');
+      // 초기 기인물 멀티셀렉트
+      updateCauseDropdown();
 
-      // 작업유형 필터
-      workTypeSelect.addEventListener('change', (e) => {
-        const type = e.target.value;
-        if (type === '밀폐') {
-          // 밀폐: 재해형태 기준 특수 필터
-          isMilpeActive = true;
-          fm.set('작업유형', null);
-        } else if (type && WORK_TYPE_MAP[type]) {
-          isMilpeActive = false;
-          fm.set('작업유형', WORK_TYPE_MAP[type]);
-        } else {
-          isMilpeActive = false;
-          fm.set('작업유형', null);
-        }
-      });
-
+      // 12대기인물 토글
       document.getElementById('filter-12').addEventListener('change', (e) => {
         fm.set('12대기인물', e.target.value === 'true' ? true : null);
       });
 
-      document.getElementById('filter-cause').addEventListener('change', (e) => {
-        fm.set('기인물', e.target.value);
-      });
-
-      // 작업유형 변경 시 기인물 드롭다운 갱신
-      fm.subscribe('작업유형', (val) => {
+      // 작업유형 변경 시 기인물 갱신
+      fm.subscribe('작업유형', () => {
         updateCauseDropdown();
-        document.getElementById('filter-cause').value = '';
+        msCause.clear();
       });
 
-      // 12대 기인물 선택 시 기인물 드롭다운 갱신
-      fm.subscribe('12대기인물', (val) => {
+      // 12대 기인물 선택 시 기인물 갱신
+      fm.subscribe('12대기인물', () => {
         updateCauseDropdown();
-        document.getElementById('filter-cause').value = '';
+        msCause.clear();
       });
 
+      // 초기화
       document.getElementById('btn-reset').addEventListener('click', () => {
         fm.reset();
         isMilpeActive = false;
-        document.querySelectorAll('.filter-bar select').forEach(s => s.value = '');
-        populateCauseDropdown('filter-cause', allCauses, '기인물 선택');
+        document.getElementById('filter-12').value = '';
+        msWorkType.clear();
+        msCause.clear();
+        msWorkType.setOptions(workTypeOptions);
+        updateCauseDropdown();
       });
 
       fm.onDataChange(() => renderResults());
     }
 
-    // 상위 필터 조합에 따라 기인물 드롭다운 범위 제한
     function updateCauseDropdown() {
       const allCauses = dropdownRef['기인물목록'] || [];
       const is12List = dropdownRef['12대기인물'] || [];
@@ -242,7 +226,6 @@
       let candidates = [...allCauses];
 
       if (isMilpeActive) {
-        // 밀폐: 산소결핍 질식 건에 실제로 등장하는 기인물만 표시
         const milpeCauses = [...new Set(
           allData.filter(r => r['재해형태'] === '산소결핍 질식').map(r => r['기인물']).filter(Boolean)
         )];
@@ -251,19 +234,22 @@
         candidates = candidates.filter(c => workTypeVal.includes(c));
       }
 
-      // 12대 기인물 필터 적용
       if (is12Val === true) {
         candidates = candidates.filter(c => is12List.includes(c));
       }
 
-      populateCauseDropdown('filter-cause', candidates, '기인물 선택');
+      const sorted = [...candidates].sort((a, b) => (causeCountMap[b] || 0) - (causeCountMap[a] || 0));
+      msCause.setOptions(sorted.map(c => ({
+        value: c,
+        label: c,
+        count: causeCountMap[c] || 0
+      })));
     }
 
     function renderResults() {
       const filters = fm.getAll();
       let filtered = filterDB(allData, filters);
 
-      // 밀폐 특수 필터: 재해형태 = 산소결핍 질식
       if (isMilpeActive) {
         filtered = filtered.filter(r => r['재해형태'] === '산소결핍 질식');
       }
@@ -285,18 +271,27 @@
       }
       summary.classList.remove('hidden');
 
-      // 전체 순위 계산
-      const allAgg = aggregateBy(allData, '기인물');
-      const sorted = topN(allAgg, 'count', allAgg.length);
-      const rank = sorted.findIndex(a => a.key === selectedCause) + 1;
-      const is12 = (dropdownRef['12대기인물'] || []).includes(selectedCause);
+      const causeList = Array.isArray(selectedCause) ? selectedCause : [selectedCause];
 
-      document.getElementById('cause-name').textContent = selectedCause;
-      document.getElementById('cause-count').textContent = formatNumber(data.length) + '건';
-      document.getElementById('cause-rank').textContent = rank ? `${rank}위 / ${sorted.length}개` : '-';
-      document.getElementById('cause-badge-12').innerHTML = is12
-        ? '<span class="badge-12">12대 기인물 (중점관리대상)</span>'
-        : '';
+      if (causeList.length === 1) {
+        const cause = causeList[0];
+        const allAgg = aggregateBy(allData, '기인물');
+        const sorted = topN(allAgg, 'count', allAgg.length);
+        const rank = sorted.findIndex(a => a.key === cause) + 1;
+        const is12 = (dropdownRef['12대기인물'] || []).includes(cause);
+
+        document.getElementById('cause-name').textContent = cause;
+        document.getElementById('cause-count').textContent = formatNumber(data.length) + '건';
+        document.getElementById('cause-rank').textContent = rank ? `${rank}위 / ${sorted.length}개` : '-';
+        document.getElementById('cause-badge-12').innerHTML = is12
+          ? '<span class="badge-12">12대 기인물 (중점관리대상)</span>'
+          : '';
+      } else {
+        document.getElementById('cause-name').textContent = `${causeList.length}개 기인물 선택`;
+        document.getElementById('cause-count').textContent = formatNumber(data.length) + '건';
+        document.getElementById('cause-rank').textContent = '-';
+        document.getElementById('cause-badge-12').innerHTML = '';
+      }
     }
 
     function renderByConstructionChart(data) {

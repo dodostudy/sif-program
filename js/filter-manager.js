@@ -19,7 +19,11 @@ class FilterManager {
   }
 
   set(key, value) {
-    this.state[key] = value || null;
+    if (Array.isArray(value) && value.length === 0) {
+      this.state[key] = null;
+    } else {
+      this.state[key] = value || null;
+    }
 
     // 하위 필터 초기화
     if (this.downstreamMap[key]) {

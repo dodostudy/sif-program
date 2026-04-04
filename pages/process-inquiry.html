@@ -28,19 +28,19 @@
       </div>
       <div class="filter-group">
         <label>공종</label>
-        <select id="filter-gongzong"></select>
+        <div id="ms-gongzong"></div>
       </div>
       <div class="filter-group">
         <label>작업명</label>
-        <select id="filter-work"></select>
+        <div id="ms-work"></div>
       </div>
       <div class="filter-group">
         <label>단위작업명</label>
-        <select id="filter-unit-work"></select>
+        <div id="ms-unit-work"></div>
       </div>
       <div class="filter-group">
         <label>기인물</label>
-        <select id="filter-cause"></select>
+        <div id="ms-cause"></div>
       </div>
       <button id="btn-reset" class="px-4 py-2 bg-gray-700 hover:bg-gray-600 text-sm rounded-lg transition-colors">초기화</button>
     </div>
@@ -74,6 +74,7 @@
   <script src="../js/filter-manager.js"></script>
   <script src="../js/chart-manager.js"></script>
   <script src="../js/utils.js"></script>
+  <script src="../js/multi-select.js"></script>
   <script src="../js/components.js"></script>
   <script src="../js/app.js"></script>
 
@@ -86,6 +87,29 @@
 
     let allData = [];
     let dropdownRef = {};
+
+    // 멀티셀렉트 인스턴스
+    const msGongzong = new MultiSelect({
+      containerId: 'ms-gongzong',
+      placeholder: '전체 공종',
+      onChange: (values) => fm.set('공종', values)
+    });
+    const msWork = new MultiSelect({
+      containerId: 'ms-work',
+      placeholder: '작업명 선택',
+      onChange: (values) => fm.set('작업명', values)
+    });
+    const msUnitWork = new MultiSelect({
+      containerId: 'ms-unit-work',
+      placeholder: '단위작업명 선택',
+      onChange: (values) => fm.set('단위작업명', values)
+    });
+    const msCause = new MultiSelect({
+      containerId: 'ms-cause',
+      placeholder: '전체 기인물',
+      showCounts: true,
+      onChange: (values) => fm.set('기인물', values)
+    });
 
     async function init() {
       renderPageHeader('공정조회', 'Excel ③공정조회 시트 기반 - 공정별 재해사례 조회');
@@ -100,22 +124,14 @@
     function setupFilters() {
       const hierarchy = dropdownRef.hierarchy || {};
       const allGongzong = Object.keys(hierarchy);
-      populateDropdown('filter-gongzong', allGongzong, '전체 공종');
-      populateDropdown('filter-work', [], '작업명 선택');
-      populateDropdown('filter-unit-work', [], '단위작업명 선택');
+
+      // 초기 공종 옵션
+      msGongzong.setOptions(allGongzong.map(g => ({ value: g, label: g })));
+      msWork.setOptions([]);
+      msUnitWork.setOptions([]);
 
       // 기인물 전체 목록 (건수 내림차순)
-      const allCauseMap = {};
-      allData.forEach(r => { const c = r['기인물']; if (c) allCauseMap[c] = (allCauseMap[c] || 0) + 1; });
-      const allCausesSorted = Object.entries(allCauseMap).sort((a, b) => b[1] - a[1]);
-      const causeSelect = document.getElementById('filter-cause');
-      causeSelect.innerHTML = '<option value="">전체 기인물</option>';
-      allCausesSorted.forEach(([cause, count]) => {
-        const opt = document.createElement('option');
-        opt.value = cause;
-        opt.textContent = `${cause} (${count}건)`;
-        causeSelect.appendChild(opt);
-      });
+      updateCauseDropdown();
 
       // 발전소 공정 필터
       document.getElementById('filter-koen').addEventListener('change', (e) => {
@@ -123,88 +139,73 @@
         fm.set('koen', val === 'true' ? true : val === 'false' ? false : null);
       });
 
-      // 공종 필터
-      document.getElementById('filter-gongzong').addEventListener('change', (e) => {
-        fm.set('공종', e.target.value);
-      });
-
-      // 작업명 필터
-      document.getElementById('filter-work').addEventListener('change', (e) => {
-        fm.set('작업명', e.target.value);
-      });
-
-      // 단위작업명 필터
-      document.getElementById('filter-unit-work').addEventListener('change', (e) => {
-        fm.set('단위작업명', e.target.value);
-      });
-
-      // 기인물 필터
-      document.getElementById('filter-cause').addEventListener('change', (e) => {
-        fm.set('기인물', e.target.value);
-      });
-
       // 초기화
       document.getElementById('btn-reset').addEventListener('click', () => {
         fm.reset();
         document.getElementById('filter-koen').value = '';
-        document.getElementById('filter-gongzong').value = '';
-        document.getElementById('filter-work').value = '';
-        document.getElementById('filter-unit-work').value = '';
-        document.getElementById('filter-cause').value = '';
-        populateDropdown('filter-gongzong', allGongzong, '전체 공종');
-        populateDropdown('filter-work', [], '작업명 선택');
-        populateDropdown('filter-unit-work', [], '단위작업명 선택');
-        // 기인물 건수순 복원
-        const resetCauseSelect = document.getElementById('filter-cause');
-        resetCauseSelect.innerHTML = '<option value="">전체 기인물</option>';
-        allCausesSorted.forEach(([cause, count]) => {
-          const opt = document.createElement('option');
-          opt.value = cause;
-          opt.textContent = `${cause} (${count}건)`;
-          resetCauseSelect.appendChild(opt);
-        });
+        msGongzong.clear();
+        msWork.clear();
+        msUnitWork.clear();
+        msCause.clear();
+        msGongzong.setOptions(allGongzong.map(g => ({ value: g, label: g })));
+        msWork.setOptions([]);
+        msUnitWork.setOptions([]);
+        updateCauseDropdown();
       });
 
-      // 발전소 공정 필터 변경 시 공종 드롭다운 갱신 (3.1)
+      // 발전소 공정 필터 변경 시 공종 드롭다운 갱신
       fm.subscribe('koen', (val) => {
         if (val === true) {
-          // 발전소 공정 데이터가 있는 공종만 표시
           const koenGongzong = [...new Set(allData.filter(r => r.KOEN공정).map(r => r['공종']))].sort();
-          populateDropdown('filter-gongzong', koenGongzong, '전체 공종');
+          msGongzong.setOptions(koenGongzong.map(g => ({ value: g, label: g })));
         } else {
-          populateDropdown('filter-gongzong', allGongzong, '전체 공종');
+          msGongzong.setOptions(allGongzong.map(g => ({ value: g, label: g })));
         }
-        document.getElementById('filter-gongzong').value = '';
-        document.getElementById('filter-work').value = '';
-        document.getElementById('filter-unit-work').value = '';
+        msGongzong.clear();
+        msWork.clear();
+        msUnitWork.clear();
       });
 
-      // Cascading: 공종 변경 시 작업명 갱신
+      // Cascading: 공종 변경 시 작업명 갱신 (복수 공종 → 합집합)
       fm.subscribe('공종', (val) => {
-        if (val && hierarchy[val]) {
-          const works = Object.keys(hierarchy[val]);
-          populateDropdown('filter-work', works, '전체 작업명');
+        if (val) {
+          const selected = Array.isArray(val) ? val : [val];
+          const works = new Set();
+          selected.forEach(gz => {
+            if (hierarchy[gz]) Object.keys(hierarchy[gz]).forEach(w => works.add(w));
+          });
+          msWork.setOptions([...works].sort().map(w => ({ value: w, label: w })));
         } else {
-          populateDropdown('filter-work', [], '작업명 선택');
+          msWork.setOptions([]);
         }
-        document.getElementById('filter-work').value = '';
-        document.getElementById('filter-unit-work').value = '';
+        msWork.clear();
+        msUnitWork.clear();
         updateCauseDropdown();
       });
 
-      // Cascading: 작업명 변경 시 단위작업명 갱신
+      // Cascading: 작업명 변경 시 단위작업명 갱신 (복수 조합 → 합집합)
       fm.subscribe('작업명', (val) => {
-        const gz = fm.get('공종');
-        if (gz && val && hierarchy[gz] && hierarchy[gz][val]) {
-          populateDropdown('filter-unit-work', hierarchy[gz][val], '전체 단위작업명');
+        const gzVal = fm.get('공종');
+        if (gzVal && val) {
+          const gzList = Array.isArray(gzVal) ? gzVal : [gzVal];
+          const workList = Array.isArray(val) ? val : [val];
+          const units = new Set();
+          gzList.forEach(gz => {
+            workList.forEach(w => {
+              if (hierarchy[gz] && hierarchy[gz][w]) {
+                hierarchy[gz][w].forEach(u => units.add(u));
+              }
+            });
+          });
+          msUnitWork.setOptions([...units].sort().map(u => ({ value: u, label: u })));
         } else {
-          populateDropdown('filter-unit-work', [], '단위작업명 선택');
+          msUnitWork.setOptions([]);
         }
-        document.getElementById('filter-unit-work').value = '';
+        msUnitWork.clear();
         updateCauseDropdown();
       });
 
-      // 단위작업명 변경 시 기인물 갱신 (3.2)
+      // 단위작업명 변경 시 기인물 갱신
       fm.subscribe('단위작업명', () => {
         updateCauseDropdown();
       });
@@ -213,14 +214,13 @@
       fm.onDataChange(() => renderResults());
     }
 
-    // 상위 필터에 따라 기인물 드롭다운 범위 제한 (3.2) + 건수 내림차순 정렬
+    // 상위 필터에 따라 기인물 드롭다운 범위 제한 + 건수 내림차순 정렬
     function updateCauseDropdown() {
       const filters = fm.getAll();
       const filtersWithoutCause = { ...filters };
       delete filtersWithoutCause['기인물'];
       const filtered = filterDB(allData, filtersWithoutCause);
 
-      // 건수 집계 후 내림차순 정렬
       const causeMap = {};
       filtered.forEach(r => {
         const c = r['기인물'];
@@ -228,16 +228,11 @@
       });
       const sorted = Object.entries(causeMap).sort((a, b) => b[1] - a[1]);
 
-      const select = document.getElementById('filter-cause');
-      const current = select.value;
-      select.innerHTML = '<option value="">전체 기인물</option>';
-      sorted.forEach(([cause, count]) => {
-        const opt = document.createElement('option');
-        opt.value = cause;
-        opt.textContent = `${cause} (${count}건)`;
-        select.appendChild(opt);
-      });
-      if (current && causeMap[current]) select.value = current;
+      msCause.setOptions(sorted.map(([cause, count]) => ({
+        value: cause,
+        label: cause,
+        count: count
+      })));
     }
 
     function renderResults() {
@@ -281,7 +276,7 @@
         { key: 'id', label: 'No', width: 40 },
         { key: '기인물', label: '기인물', width: 100, wrap: true },
         { key: '재해형태', label: '재해형태', width: 70 },
-        { key: '재해개요', label: '재해개요', minWidth: 250, wrap: true,
+        { key: '재해개요', label: '재해개��', minWidth: 250, wrap: true,
           format: (v) => `<div class="text-xs text-gray-300">${v || '-'}</div>` },
         { key: '재해유발요인', label: '재해유발요인', minWidth: 200, wrap: true,
           format: (v) => `<div class="text-xs text-gray-300">${v || '-'}</div>` },

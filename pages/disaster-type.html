@@ -38,7 +38,7 @@
       .filter-bar { flex-direction: column; gap: 0.5rem; }
       .filter-row { flex-direction: column; gap: 0.5rem; }
       .filter-group { width: 100%; }
-      .filter-group select { width: 100%; min-width: 0; }
+      .filter-group select, .ms-dropdown { width: 100%; min-width: 0; }
       .filter-group label { min-width: auto; }
       .filter-arrow { display: none; }
       #btn-reset { width: 100%; }
@@ -58,32 +58,32 @@
         <div class="filter-group" id="koen-toggle-wrap"></div>
         <div class="filter-group">
           <label>재해형태</label>
-          <select id="filter-disaster"></select>
+          <div id="ms-disaster"></div>
         </div>
         <div class="filter-group">
           <label>기인물</label>
-          <select id="filter-cause"></select>
+          <div id="ms-cause"></div>
         </div>
       </div>
       <!-- 2행: 공종 → 작업명 → 단위작업명 | 초기화 -->
       <div class="filter-row">
         <div class="filter-group">
           <label>공종</label>
-          <select id="filter-gz"></select>
+          <div id="ms-gz"></div>
         </div>
         <div class="filter-arrow">
           <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
         </div>
         <div class="filter-group">
           <label>작업명</label>
-          <select id="filter-work"></select>
+          <div id="ms-work"></div>
         </div>
         <div class="filter-arrow">
           <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
         </div>
         <div class="filter-group">
           <label>단위작업명</label>
-          <select id="filter-unit"></select>
+          <div id="ms-unit"></div>
         </div>
         <button id="btn-reset" class="px-4 py-2 bg-gray-700 hover:bg-gray-600 text-sm rounded-lg transition-colors" style="margin-left:auto;">초기화</button>
       </div>
@@ -144,6 +144,7 @@
   <script src="../js/filter-manager.js"></script>
   <script src="../js/chart-manager.js"></script>
   <script src="../js/utils.js"></script>
+  <script src="../js/multi-select.js"></script>
   <script src="../js/components.js"></script>
   <script src="../js/app.js"></script>
 
@@ -162,6 +163,38 @@
     let showAllWork = false;
     let currentFiltered = [];
 
+    // 멀티셀렉트 인스턴스
+    const msDisaster = new MultiSelect({
+      containerId: 'ms-disaster',
+      placeholder: '전체 재해형태',
+      showCounts: true,
+      onChange: (values) => fm.set('재해형태', values)
+    });
+    const msCause = new MultiSelect({
+      containerId: 'ms-cause',
+      placeholder: '전체 기인물',
+      showCounts: true,
+      onChange: (values) => fm.set('기인물', values)
+    });
+    const msGz = new MultiSelect({
+      containerId: 'ms-gz',
+      placeholder: '공종 선택',
+      showCounts: true,
+      onChange: (values) => fm.set('공종', values)
+    });
+    const msWork = new MultiSelect({
+      containerId: 'ms-work',
+      placeholder: '작업명 선택',
+      showCounts: true,
+      onChange: (values) => fm.set('작업명', values)
+    });
+    const msUnit = new MultiSelect({
+      containerId: 'ms-unit',
+      placeholder: '단위작업명 선택',
+      showCounts: true,
+      onChange: (values) => fm.set('단위작업명', values)
+    });
+
     async function init() {
       renderPageHeader('재해형태 분석', '재해형태 기준 역방향 조회 - 해당 재해형태가 발생하는 공정·기인물 분석');
 
@@ -178,31 +211,24 @@
       renderResults();
     }
 
+    // 상위 필터 적용 후 데이터 반환 (지정된 키까지만)
+    function getFilteredUpTo(excludeKeys) {
+      const filters = fm.getAll();
+      const partial = {};
+      Object.keys(filters).forEach(k => {
+        if (!excludeKeys.includes(k)) partial[k] = filters[k];
+      });
+      return filterDB(allData, partial);
+    }
+
     function setupFilters() {
       createKoenToggle('koen-toggle-wrap', (val) => fm.set('koen', val));
 
       populateDisasterDropdown();
       populateCauseDropdown();
-      populateDropdown('filter-gz', [], '공종 선택');
-      populateDropdown('filter-work', [], '작업명 선택');
-      populateDropdown('filter-unit', [], '단위작업명 선택');
-
-      // 이벤트 바인딩
-      document.getElementById('filter-disaster').addEventListener('change', (e) => {
-        fm.set('재해형태', e.target.value || null);
-      });
-      document.getElementById('filter-cause').addEventListener('change', (e) => {
-        fm.set('기인물', e.target.value || null);
-      });
-      document.getElementById('filter-gz').addEventListener('change', (e) => {
-        fm.set('공종', e.target.value || null);
-      });
-      document.getElementById('filter-work').addEventListener('change', (e) => {
-        fm.set('작업명', e.target.value || null);
-      });
-      document.getElementById('filter-unit').addEventListener('change', (e) => {
-        fm.set('단위작업명', e.target.value || null);
-      });
+      msGz.setOptions([]);
+      msWork.setOptions([]);
+      msUnit.setOptions([]);
 
       // koen 변경 시 모든 드롭다운 갱신
       fm.subscribe('koen', () => {
@@ -219,10 +245,10 @@
         updateGzDropdown();
         updateWorkDropdown();
         updateUnitDropdown();
-        document.getElementById('filter-cause').value = '';
-        document.getElementById('filter-gz').value = '';
-        document.getElementById('filter-work').value = '';
-        document.getElementById('filter-unit').value = '';
+        msCause.clear();
+        msGz.clear();
+        msWork.clear();
+        msUnit.clear();
       });
 
       // 기인물 변경 시 공종 이하 갱신
@@ -230,23 +256,23 @@
         updateGzDropdown();
         updateWorkDropdown();
         updateUnitDropdown();
-        document.getElementById('filter-gz').value = '';
-        document.getElementById('filter-work').value = '';
-        document.getElementById('filter-unit').value = '';
+        msGz.clear();
+        msWork.clear();
+        msUnit.clear();
       });
 
       // 공종 변경 시 작업명/단위작업명 갱신
       fm.subscribe('공종', () => {
         updateWorkDropdown();
         updateUnitDropdown();
-        document.getElementById('filter-work').value = '';
-        document.getElementById('filter-unit').value = '';
+        msWork.clear();
+        msUnit.clear();
       });
 
       // 작업명 변경 시 단위작업명 갱신
       fm.subscribe('작업명', () => {
         updateUnitDropdown();
-        document.getElementById('filter-unit').value = '';
+        msUnit.clear();
       });
 
       // 초기화
@@ -256,11 +282,11 @@
         showAllWork = false;
         document.getElementById('btn-cause-all').textContent = '전체 보기';
         document.getElementById('btn-work-all').textContent = '전체 보기';
-        document.getElementById('filter-disaster').value = '';
-        document.getElementById('filter-cause').value = '';
-        document.getElementById('filter-gz').value = '';
-        document.getElementById('filter-work').value = '';
-        document.getElementById('filter-unit').value = '';
+        msDisaster.clear();
+        msCause.clear();
+        msGz.clear();
+        msWork.clear();
+        msUnit.clear();
         const koenToggle = document.getElementById('koen-toggle');
         if (koenToggle) {
           koenToggle.checked = false;
@@ -268,15 +294,14 @@
         }
         populateDisasterDropdown();
         populateCauseDropdown();
-        populateDropdown('filter-gz', [], '공종 선택');
-        populateDropdown('filter-work', [], '작업명 선택');
-        populateDropdown('filter-unit', [], '단위작업명 선택');
+        msGz.setOptions([]);
+        msWork.setOptions([]);
+        msUnit.setOptions([]);
       });
 
       fm.onDataChange(() => renderResults());
     }
 
-    // 기본 데이터 필터 (재해형태, 기인물 제외한 상위 필터만 적용)
     function getBaseData() {
       const filters = fm.getAll();
       let data = [...allData];
@@ -289,107 +314,49 @@
       const dtMap = {};
       data.forEach(r => { const dt = r['재해형태']; if (dt) dtMap[dt] = (dtMap[dt] || 0) + 1; });
       const sorted = Object.entries(dtMap).sort((a, b) => b[1] - a[1]);
-
-      const select = document.getElementById('filter-disaster');
-      const current = select.value;
-      select.innerHTML = '<option value="">전체 재해형태</option>';
-      sorted.forEach(([dt, count]) => {
-        const opt = document.createElement('option');
-        opt.value = dt;
-        opt.textContent = `${dt} (${count.toLocaleString()}건)`;
-        select.appendChild(opt);
-      });
-      if (current && dtMap[current]) select.value = current;
+      msDisaster.setOptions(sorted.map(([dt, count]) => ({
+        value: dt, label: dt, count: count
+      })));
     }
 
     function populateCauseDropdown() {
-      const filters = fm.getAll();
-      let data = getBaseData();
-      if (filters['재해형태']) data = data.filter(r => r['재해형태'] === filters['재해형태']);
-
+      const data = getFilteredUpTo(['기인물', '공종', '작업명', '단위작업명']);
       const causeMap = {};
       data.forEach(r => { const c = r['기인물']; if (c) causeMap[c] = (causeMap[c] || 0) + 1; });
       const sorted = Object.entries(causeMap).sort((a, b) => b[1] - a[1]);
-
-      const select = document.getElementById('filter-cause');
-      const current = select.value;
-      select.innerHTML = '<option value="">전체 기인물</option>';
-      sorted.forEach(([cause, count]) => {
-        const opt = document.createElement('option');
-        opt.value = cause;
-        opt.textContent = `${cause} (${count}건)`;
-        select.appendChild(opt);
-      });
-      if (current && causeMap[current]) select.value = current;
+      msCause.setOptions(sorted.map(([cause, count]) => ({
+        value: cause, label: cause, count: count
+      })));
     }
 
     function updateGzDropdown() {
-      const filters = fm.getAll();
-      let data = getBaseData();
-      if (filters['재해형태']) data = data.filter(r => r['재해형태'] === filters['재해형태']);
-      if (filters['기인물']) data = data.filter(r => r['기인물'] === filters['기인물']);
-
+      const data = getFilteredUpTo(['공종', '작업명', '단위작업명']);
       const gzCounts = {};
       data.forEach(r => { const gz = r['공종']; if (gz) gzCounts[gz] = (gzCounts[gz] || 0) + 1; });
       const sorted = Object.entries(gzCounts).sort((a, b) => b[1] - a[1]);
-
-      const select = document.getElementById('filter-gz');
-      const current = select.value;
-      select.innerHTML = '<option value="">공종 선택</option>';
-      sorted.forEach(([gz, count]) => {
-        const opt = document.createElement('option');
-        opt.value = gz;
-        opt.textContent = `${gz.replace(/^\d+\.\s*/, '')} (${count}건)`;
-        select.appendChild(opt);
-      });
-      if (current && gzCounts[current]) select.value = current;
+      msGz.setOptions(sorted.map(([gz, count]) => ({
+        value: gz, label: gz.replace(/^\d+\.\s*/, ''), count: count
+      })));
     }
 
     function updateWorkDropdown() {
-      const filters = fm.getAll();
-      let data = getBaseData();
-      if (filters['재해형태']) data = data.filter(r => r['재해형태'] === filters['재해형태']);
-      if (filters['기인물']) data = data.filter(r => r['기인물'] === filters['기인물']);
-      if (filters['공종']) data = data.filter(r => r['공종'] === filters['공종']);
-
+      const data = getFilteredUpTo(['작업명', '단위작업명']);
       const workCounts = {};
       data.forEach(r => { const w = r['작업명']; if (w) workCounts[w] = (workCounts[w] || 0) + 1; });
       const sorted = Object.entries(workCounts).sort((a, b) => b[1] - a[1]);
-
-      const select = document.getElementById('filter-work');
-      const current = select.value;
-      select.innerHTML = '<option value="">작업명 선택</option>';
-      sorted.forEach(([w, count]) => {
-        const opt = document.createElement('option');
-        opt.value = w;
-        opt.textContent = `${w} (${count}건)`;
-        select.appendChild(opt);
-      });
-      if (current && workCounts[current]) select.value = current;
+      msWork.setOptions(sorted.map(([w, count]) => ({
+        value: w, label: w, count: count
+      })));
     }
 
     function updateUnitDropdown() {
-      const filters = fm.getAll();
-      let data = getBaseData();
-      if (filters['재해형태']) data = data.filter(r => r['재해형태'] === filters['재해형태']);
-      if (filters['기인물']) data = data.filter(r => r['기인물'] === filters['기인물']);
-      if (filters['공종']) data = data.filter(r => r['공종'] === filters['공종']);
-      if (filters['작업명']) data = data.filter(r => r['작업명'] === filters['작업명']);
-
+      const data = getFilteredUpTo(['단위작업명']);
       const unitCounts = {};
       data.forEach(r => { const u = r['단위작업명']; if (u) unitCounts[u] = (unitCounts[u] || 0) + 1; });
       const sorted = Object.entries(unitCounts).sort((a, b) => b[1] - a[1]);
-
-      const select = document.getElementById('filter-unit');
-      const current = select.value;
-      select.innerHTML = '<option value="">단위작업명 선택</option>';
-      sorted.forEach(([u, count]) => {
-        const opt = document.createElement('option');
-        opt.value = u;
-        opt.textContent = `${u} (${count}건)`;
-        select.appendChild(opt);
-      });
-      if (current && unitCounts[current]) select.value = current;
+      msUnit.setOptions(sorted.map(([u, count]) => ({
+        value: u, label: u, count: count
+      })));
     }
 
     function setupToggleButtons() {
@@ -466,7 +433,9 @@
         const gzCount = new Set(data.map(r => r['공종'])).size;
         const causeCount = new Set(data.map(r => r['기인물'])).size;
         const dtCount = new Set(data.map(r => r['재해형태'])).size;
-        const label = selectedDT || (filters['기인물'] ? filters['기인물'] : '선택 조건');
+        const dtLabel = Array.isArray(selectedDT) ? (selectedDT.length === 1 ? selectedDT[0] : `${selectedDT.length}개 재해형태`) : selectedDT;
+        const causeLabel = filters['기인물'] ? (Array.isArray(filters['기인물']) ? (filters['기인물'].length === 1 ? filters['기인물'][0] : `${filters['기인물'].length}개 기인물`) : filters['기인물']) : null;
+        const label = dtLabel || causeLabel || '선택 조건';
         container.innerHTML = `
           <div class="stat-card">
             <p class="text-xs text-gray-500">선택 조건</p>
@@ -526,8 +495,7 @@
             if (elements.length > 0) {
               const idx = elements[0].index;
               const dt = sorted[idx][0];
-              document.getElementById('filter-disaster').value = dt;
-              fm.set('재해형태', dt);
+              msDisaster.setValues([dt]);
             }
           }
         },
