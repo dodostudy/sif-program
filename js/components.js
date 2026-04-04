@@ -5,14 +5,20 @@
 const NAV_ITEMS = [
   { href: '/pages/intro.html', icon: 'info', label: '소개' },
   { href: '/index.html', icon: 'home', label: '대시보드' },
-  { href: '/pages/process-inquiry.html', icon: 'search', label: '공정조회' },
-  { href: '/pages/cause-inquiry.html', icon: 'alert', label: '기인물조회' },
-  { href: '/pages/disaster-type.html', icon: 'flame', label: '재해형태 분석' },
-  { href: '/pages/risk-assessment.html', icon: 'shield', label: '위험성평가' },
+  {
+    group: true, icon: 'magnify', label: '위험성평가 검토',
+    children: [
+      { href: '/pages/process-inquiry.html', icon: 'search', label: '공정 조회' },
+      { href: '/pages/cause-inquiry.html', icon: 'alert', label: '기인물 조회' },
+      { href: '/pages/disaster-type.html', icon: 'flame', label: '재해형태 분석' },
+    ]
+  },
+  { href: '/pages/risk-assessment.html', icon: 'shield', label: '위험성평가 생성' },
   { href: '/pages/statistics.html', icon: 'chart', label: '통계분석' },
 ];
 
 const ICONS = {
+  magnify: `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/></svg>`,
   info: `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>`,
   home: `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>`,
   search: `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>`,
@@ -43,7 +49,39 @@ function renderSidebar() {
   if (!sidebar) return;
 
   const base = getBasePath();
-  const navHtml = NAV_ITEMS.map(item => {
+
+  // 그룹 내 하위 페이지가 현재 활성화되어 있으면 그룹을 열린 상태로 시작
+  function isGroupActive(item) {
+    return item.children && item.children.some(c => isActivePage(c.href));
+  }
+
+  const chevronDown = `<svg class="w-4 h-4 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>`;
+
+  const navHtml = NAV_ITEMS.map((item, idx) => {
+    if (item.group) {
+      const groupOpen = isGroupActive(item);
+      const groupId = `nav-group-${idx}`;
+      const childrenHtml = item.children.map(child => {
+        const active = isActivePage(child.href);
+        const href = base + child.href;
+        return `<a href="${href}" class="flex items-center gap-3 pl-10 pr-4 py-2.5 rounded-lg transition-colors text-sm ${active ? 'bg-blue-600/20 text-blue-400 font-medium' : 'text-gray-500 hover:bg-gray-800 hover:text-gray-300'}">
+          ${ICONS[child.icon]}
+          <span class="sidebar-label">${child.label}</span>
+        </a>`;
+      }).join('');
+
+      return `
+        <button type="button" onclick="toggleNavGroup('${groupId}')"
+          class="w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${groupOpen ? 'text-blue-400 bg-blue-600/10' : 'text-gray-400 hover:bg-gray-800 hover:text-gray-200'}">
+          ${ICONS[item.icon]}
+          <span class="sidebar-label flex-1 text-left">${item.label}</span>
+          <span id="${groupId}-chevron" class="${groupOpen ? 'rotate-0' : '-rotate-90'} transition-transform duration-200">${chevronDown}</span>
+        </button>
+        <div id="${groupId}" class="${groupOpen ? '' : 'hidden'} space-y-0.5 ml-0">
+          ${childrenHtml}
+        </div>`;
+    }
+
     const active = isActivePage(item.href);
     const href = base + item.href;
     return `
@@ -129,6 +167,15 @@ function renderPageHeader(title, subtitle = '', options = {}) {
       </div>
     </div>
   `;
+}
+
+function toggleNavGroup(groupId) {
+  const panel = document.getElementById(groupId);
+  const chevron = document.getElementById(`${groupId}-chevron`);
+  if (!panel) return;
+  const isHidden = panel.classList.contains('hidden');
+  panel.classList.toggle('hidden', !isHidden);
+  if (chevron) chevron.classList.toggle('-rotate-90', !isHidden);
 }
 
 function createKoenToggle(containerId, onChange) {
