@@ -464,6 +464,148 @@ function buildTable(containerId, columns, rows, options = {}) {
   }
 }
 
+/** 체크박스 선택 테이블 (위험성평가 발전업 위자드용) */
+function buildSelectableTable(containerId, columns, rows, options = {}) {
+  const container = document.getElementById(containerId);
+  if (!container) return;
+
+  const { pageSize = 10, currentPage = 1, sortKey = null, sortDir = 'desc',
+          checkedIds = new Set(), onCheckChange = null } = options;
+
+  // 정렬
+  let sortedRows = [...rows];
+  if (sortKey) {
+    sortedRows.sort((a, b) => {
+      const va = a[sortKey] || '';
+      const vb = b[sortKey] || '';
+      const result = typeof va === 'number' ? va - vb : String(va).localeCompare(String(vb), 'ko');
+      return sortDir === 'desc' ? -result : result;
+    });
+  }
+
+  // 페이지네이션
+  const totalPages = Math.ceil(sortedRows.length / pageSize);
+  const page = Math.min(Math.max(currentPage, 1), totalPages || 1);
+  const start = (page - 1) * pageSize;
+  const pageRows = sortedRows.slice(start, start + pageSize);
+
+  const totalCount = formatNumber(rows.length);
+  const checkedCount = checkedIds.size;
+  const pageHint = totalPages > 1 ? ` · ${page}/${totalPages} 페이지` : '';
+
+  let html = `<div class="flex items-center justify-between mb-2">
+    <div class="text-sm text-gray-400">총 ${totalCount}건${pageHint} · <span class="text-blue-400">${checkedCount}건 선택</span></div>
+  </div>`;
+
+  // 전체 행 ID
+  const allIds = rows.map(r => r.id);
+  const allChecked = allIds.length > 0 && allIds.every(id => checkedIds.has(id));
+
+  html += `<div class="overflow-x-auto">
+    <table class="w-full text-sm text-left" style="table-layout:fixed">
+      <colgroup>
+        <col style="width:36px;">
+        ${columns.map(col => {
+          const w = col.width || '';
+          const minW = col.minWidth ? `min-width:${col.minWidth}px;` : '';
+          return `<col style="${w ? `width:${w}px;` : ''}${minW}">`;
+        }).join('')}
+      </colgroup>
+      <thead class="text-xs uppercase bg-gray-800 text-gray-400">
+        <tr>
+          <th class="px-2 py-2 text-center"><input type="checkbox" class="sel-all accent-blue-500" ${allChecked ? 'checked' : ''}></th>
+          ${columns.map(col => `<th class="px-3 py-2 cursor-pointer hover:text-gray-200 whitespace-nowrap" data-sort="${col.key}">${col.label} ${sortKey === col.key ? (sortDir === 'desc' ? '▼' : '▲') : ''}</th>`).join('')}
+        </tr>
+      </thead>
+      <tbody>`;
+
+  pageRows.forEach(row => {
+    const isChecked = checkedIds.has(row.id);
+    const bgClass = isChecked ? 'bg-blue-900/20' : '';
+    html += `<tr class="border-b border-gray-700 hover:bg-gray-800/50 ${bgClass}" data-row-id="${row.id}">`;
+    html += `<td class="px-2 py-2 text-center"><input type="checkbox" class="sel-row accent-blue-500" value="${row.id}" ${isChecked ? 'checked' : ''}></td>`;
+    columns.forEach(col => {
+      let value = row[col.key];
+      if (col.format) value = col.format(value, row);
+      else if (typeof value === 'number') value = formatNumber(value);
+      else value = value || '-';
+      if (col.wrap) {
+        html += `<td class="px-3 py-2" style="word-break:break-word;white-space:pre-wrap;">${value}</td>`;
+      } else {
+        html += `<td class="px-0 py-0" style="overflow:hidden;"><div style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding:0.5rem 0.75rem;">${value}</div></td>`;
+      }
+    });
+    html += `</tr>`;
+  });
+
+  html += `</tbody></table></div>`;
+
+  // 페이지네이션
+  if (totalPages > 1) {
+    html += `<div class="flex items-center justify-center gap-2 mt-3">`;
+    html += `<button class="table-page-btn px-3 py-1 rounded text-sm ${page <= 1 ? 'text-gray-600' : 'text-gray-300 hover:bg-gray-700'}" data-page="${page - 1}" ${page <= 1 ? 'disabled' : ''}>이전</button>`;
+    const startPage = Math.max(1, page - 2);
+    const endPage = Math.min(totalPages, startPage + 4);
+    for (let p = startPage; p <= endPage; p++) {
+      html += `<button class="table-page-btn px-3 py-1 rounded text-sm ${p === page ? 'bg-blue-600 text-white' : 'text-gray-300 hover:bg-gray-700'}" data-page="${p}">${p}</button>`;
+    }
+    html += `<button class="table-page-btn px-3 py-1 rounded text-sm ${page >= totalPages ? 'text-gray-600' : 'text-gray-300 hover:bg-gray-700'}" data-page="${page + 1}" ${page >= totalPages ? 'disabled' : ''}>다음</button>`;
+    html += `</div>`;
+  }
+
+  container.innerHTML = html;
+
+  // 이벤트: 개별 체크박스
+  container.querySelectorAll('.sel-row').forEach(cb => {
+    cb.addEventListener('change', () => {
+      const id = parseInt(cb.value);
+      if (cb.checked) checkedIds.add(id);
+      else checkedIds.delete(id);
+      if (onCheckChange) onCheckChange([...checkedIds]);
+      // 현재 페이지 상태만 반영 (전체 재렌더링 방지)
+      const tr = cb.closest('tr');
+      tr.classList.toggle('bg-blue-900/20', cb.checked);
+      // 전체선택 체크박스 동기화
+      const selAll = container.querySelector('.sel-all');
+      selAll.checked = allIds.every(id => checkedIds.has(id));
+      // 선택 건수 텍스트 업데이트
+      const countEl = container.querySelector('.text-blue-400');
+      if (countEl) countEl.textContent = `${checkedIds.size}건 선택`;
+    });
+  });
+
+  // 이벤트: 전체선택
+  container.querySelector('.sel-all').addEventListener('change', (e) => {
+    const checked = e.target.checked;
+    // 전체 행 (현재 페이지가 아닌 모든 행)
+    allIds.forEach(id => {
+      if (checked) checkedIds.add(id);
+      else checkedIds.delete(id);
+    });
+    if (onCheckChange) onCheckChange([...checkedIds]);
+    buildSelectableTable(containerId, columns, rows, { ...options, checkedIds, currentPage: page });
+  });
+
+  // 정렬 이벤트
+  container.querySelectorAll('th[data-sort]').forEach(th => {
+    th.addEventListener('click', () => {
+      const key = th.dataset.sort;
+      const newDir = (sortKey === key && sortDir === 'desc') ? 'asc' : 'desc';
+      buildSelectableTable(containerId, columns, rows, { ...options, sortKey: key, sortDir: newDir, currentPage: 1, checkedIds });
+    });
+  });
+
+  // 페이지네이션 이벤트
+  container.querySelectorAll('.table-page-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const p = parseInt(btn.dataset.page);
+      if (p >= 1 && p <= totalPages) {
+        buildSelectableTable(containerId, columns, rows, { ...options, currentPage: p, checkedIds });
+      }
+    });
+  });
+}
+
 /** CSV(Excel) 다운로드 */
 function downloadTableAsExcel(columns, rows, filename = '재해사례') {
   // 비밀번호 확인

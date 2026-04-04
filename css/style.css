@@ -487,6 +487,156 @@
   background: rgba(59, 130, 246, 0.15);
 }
 
+/* 진입 카드 (위험성평가) */
+.entry-card {
+  background: linear-gradient(135deg, #1F2937 0%, #111827 100%);
+  border: 1px solid #374151;
+  border-radius: 1rem;
+  padding: 2rem 1.5rem;
+  cursor: pointer;
+  transition: all 0.25s;
+  text-align: center;
+}
+.entry-card:hover {
+  border-color: #3B82F6;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(59, 130, 246, 0.15);
+}
+.entry-card .entry-icon {
+  font-size: 2.5rem;
+  margin-bottom: 0.75rem;
+}
+.entry-card .entry-title {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #ffffff;
+  margin-bottom: 0.25rem;
+}
+.entry-card .entry-desc {
+  font-size: 0.8rem;
+  color: #9CA3AF;
+}
+
+/* 위자드 칩 (기인물/재해형태 선택) */
+.wizard-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  background: #1F2937;
+  border: 1px solid #374151;
+  border-radius: 0.5rem;
+  padding: 0.5rem 0.75rem;
+  cursor: pointer;
+  font-size: 0.8rem;
+  color: #D1D5DB;
+  transition: all 0.15s;
+}
+.wizard-chip:hover {
+  border-color: #60A5FA;
+  background: #1E3A5F;
+}
+.wizard-chip.selected {
+  border-color: #3B82F6;
+  background: rgba(59, 130, 246, 0.15);
+  color: #93C5FD;
+}
+.wizard-chip.completed {
+  border-color: #374151;
+  background: #111827;
+  color: #6B7280;
+  cursor: default;
+  opacity: 0.6;
+}
+.wizard-chip .chip-count {
+  font-size: 0.7rem;
+  color: #6B7280;
+  background: #111827;
+  padding: 0.1rem 0.4rem;
+  border-radius: 0.25rem;
+}
+.wizard-chip.selected .chip-count {
+  background: rgba(59, 130, 246, 0.2);
+  color: #93C5FD;
+}
+
+/* 위자드 체크 목록 */
+.wizard-check-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0.75rem;
+  background: #1F2937;
+  border: 1px solid #374151;
+  border-radius: 0.5rem;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.wizard-check-item:hover {
+  border-color: #4B5563;
+  background: #283548;
+}
+.wizard-check-item input[type="checkbox"] {
+  accent-color: #3B82F6;
+  width: 1rem;
+  height: 1rem;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+.wizard-check-item label {
+  flex: 1;
+  cursor: pointer;
+  font-size: 0.8rem;
+  color: #D1D5DB;
+}
+.wizard-check-item .item-count {
+  font-size: 0.7rem;
+  color: #6B7280;
+}
+
+/* 위자드 스텝 헤더 */
+.wizard-step-header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+.wizard-step-num {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 50%;
+  background: #3B82F6;
+  color: #fff;
+  font-size: 0.8rem;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+.wizard-step-title {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #ffffff;
+}
+.wizard-step-desc {
+  font-size: 0.75rem;
+  color: #9CA3AF;
+}
+
+/* 작업유형 그룹 */
+.work-type-group {
+  margin-bottom: 1rem;
+}
+.work-type-group-title {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #9CA3AF;
+  margin-bottom: 0.5rem;
+  padding-left: 0.25rem;
+  border-left: 3px solid #3B82F6;
+  padding-left: 0.5rem;
+}
+
 /* 스켈레톤 로딩 */
 .skeleton {
   background: linear-gradient(90deg, #1F2937 25%, #374151 50%, #1F2937 75%);
@@ -683,6 +833,15 @@
     right: 10mm;
     font-size: 9px;
     color: #9ca3af !important;
+  }
+
+  /* 위자드 진입/스텝 요소 숨김 */
+  #entry-cards,
+  .wizard-step-header,
+  .wizard-chip,
+  .wizard-check-item,
+  .work-type-group {
+    display: none !important;
   }
 
   /* 구식 print-header (위험성평가 호환) */
