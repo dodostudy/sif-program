@@ -99,7 +99,7 @@ function buildTable(containerId, columns, rows, options = {}) {
   if (!container) return;
 
   const { pageSize = 20, currentPage = 1, sortKey = null, sortDir = 'desc',
-          columnFilters = {}, filterColumns = [] } = options;
+          columnFilters = {}, filterColumns = [], openFilterKey = null } = options;
 
   // 컬럼 필터 적용 (배열 멀티셀렉트 지원)
   let filteredRows = [...rows];
@@ -287,6 +287,12 @@ function buildTable(containerId, columns, rows, options = {}) {
 
   container.innerHTML = html;
 
+  // openFilterKey가 있으면 해당 패널을 즉시 열기
+  if (openFilterKey) {
+    const openMs = container.querySelector(`.tbl-ms[data-filter-key="${openFilterKey}"] .tbl-ms-panel`);
+    if (openMs) openMs.classList.remove('hidden');
+  }
+
   // 컬럼 필터 멀티셀렉트 이벤트
   function collectChecked(panel, filterKey) {
     const checked = [...panel.querySelectorAll('.tbl-ms-option input[type="checkbox"]:checked')].map(cb => cb.value);
@@ -296,7 +302,8 @@ function buildTable(containerId, columns, rows, options = {}) {
     } else {
       delete newFilters[filterKey];
     }
-    buildTable(containerId, columns, rows, { ...options, columnFilters: newFilters, currentPage: 1 });
+    // 현재 열려있는 패널 키를 전달하여 재렌더링 후에도 패널 유지
+    buildTable(containerId, columns, rows, { ...options, columnFilters: newFilters, currentPage: 1, openFilterKey: filterKey });
   }
 
   container.querySelectorAll('.tbl-ms').forEach(ms => {
@@ -321,7 +328,8 @@ function buildTable(containerId, columns, rows, options = {}) {
     // 전체선택
     const btnAll = panel.querySelector('.tbl-ms-btn-all');
     if (btnAll) {
-      btnAll.addEventListener('click', () => {
+      btnAll.addEventListener('click', (e) => {
+        e.stopPropagation();
         panel.querySelectorAll('.tbl-ms-option:not([style*="display: none"]) input[type="checkbox"]').forEach(cb => cb.checked = true);
         collectChecked(panel, filterKey);
       });
@@ -330,7 +338,8 @@ function buildTable(containerId, columns, rows, options = {}) {
     // 선택해제
     const btnClear = panel.querySelector('.tbl-ms-btn-clear');
     if (btnClear) {
-      btnClear.addEventListener('click', () => {
+      btnClear.addEventListener('click', (e) => {
+        e.stopPropagation();
         panel.querySelectorAll('.tbl-ms-option input[type="checkbox"]').forEach(cb => cb.checked = false);
         collectChecked(panel, filterKey);
       });
