@@ -119,7 +119,7 @@ function renderPageHeader(title, subtitle = '') {
       </div>
       <div class="flex items-center gap-3">
         <div class="flex items-center gap-3" id="header-controls"></div>
-        <button onclick="window.print()" class="no-print flex items-center gap-1.5 px-3 py-1.5 bg-gray-800 hover:bg-gray-700 border border-gray-700 hover:border-gray-500 text-sm text-gray-300 hover:text-white rounded-lg transition-colors">
+        <button onclick="handlePrintWithCharts()" class="no-print flex items-center gap-1.5 px-3 py-1.5 bg-gray-800 hover:bg-gray-700 border border-gray-700 hover:border-gray-500 text-sm text-gray-300 hover:text-white rounded-lg transition-colors">
           ${printIcon} 인쇄 / PDF
         </button>
       </div>

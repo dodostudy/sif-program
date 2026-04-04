@@ -177,37 +177,68 @@ function buildTable(containerId, columns, rows, options = {}) {
     html += `</div>`;
   }
 
-  html += `<div class="overflow-x-auto">
-    <table class="w-full text-sm text-left" style="table-layout:fixed">
-      <colgroup>
-        ${columns.map(col => {
-          const w = col.width || '';
-          const minW = col.minWidth ? `min-width:${col.minWidth}px;` : '';
-          return `<col style="${w ? `width:${w}px;` : ''}${minW}">`;
-        }).join('')}
-      </colgroup>
-      <thead class="text-xs uppercase bg-gray-800 text-gray-400">
-        <tr>
-          ${columns.map(col => `<th class="px-3 py-2 cursor-pointer hover:text-gray-200 whitespace-nowrap" data-sort="${col.key}">${col.label} ${sortKey === col.key ? (sortDir === 'desc' ? '▼' : '▲') : ''}</th>`).join('')}
-        </tr>
-      </thead>
-      <tbody>
-  `;
+  const isMobile = window.innerWidth < 768;
 
-  pageRows.forEach((row, i) => {
-    html += `<tr class="border-b border-gray-700 hover:bg-gray-800/50">`;
-    columns.forEach(col => {
-      let value = row[col.key];
-      if (col.format) value = col.format(value, row);
-      else if (typeof value === 'number') value = formatNumber(value);
-      else value = value || '-';
-      const wrapStyle = col.wrap ? 'word-break:break-word;white-space:pre-wrap;' : 'white-space:nowrap;';
-      html += `<td class="px-3 py-2" style="${wrapStyle}" title="${String(row[col.key] || '').replace(/"/g, '&quot;')}">${value}</td>`;
+  if (isMobile) {
+    // 모바일: 카드 뷰
+    if (pageRows.length === 0) {
+      html += `<div class="text-center text-gray-500 py-8 text-sm">조회 결과가 없습니다.</div>`;
+    } else {
+      html += `<div class="flex flex-col gap-2">`;
+      pageRows.forEach(row => {
+        html += `<div class="bg-gray-800/70 rounded-lg p-3 border border-gray-700">`;
+        columns.forEach((col, ci) => {
+          let value = row[col.key];
+          if (col.format) value = col.format(value, row);
+          else if (typeof value === 'number') value = formatNumber(value);
+          else value = value || '-';
+          const isLast = ci === columns.length - 1;
+          const isHighlight = ['재해형태', '기인물', '공종', '작업명'].includes(col.key);
+          html += `<div class="flex gap-2 py-1.5 ${isLast ? '' : 'border-b border-gray-700/60'}">
+            <span class="text-xs text-gray-500 flex-shrink-0" style="min-width:5rem">${col.label}</span>
+            <span class="text-xs ${isHighlight ? 'text-white font-semibold' : 'text-gray-300'} flex-1" style="word-break:break-word">${value}</span>
+          </div>`;
+        });
+        html += `</div>`;
+      });
+      html += `</div>`;
+    }
+  } else {
+    // 데스크탑: 테이블 뷰
+    html += `<div class="overflow-x-auto">
+      <table class="w-full text-sm text-left" style="table-layout:fixed">
+        <colgroup>
+          ${columns.map(col => {
+            const w = col.width || '';
+            const minW = col.minWidth ? `min-width:${col.minWidth}px;` : '';
+            return `<col style="${w ? `width:${w}px;` : ''}${minW}">`;
+          }).join('')}
+        </colgroup>
+        <thead class="text-xs uppercase bg-gray-800 text-gray-400">
+          <tr>
+            ${columns.map(col => `<th class="px-3 py-2 cursor-pointer hover:text-gray-200 whitespace-nowrap" data-sort="${col.key}">${col.label} ${sortKey === col.key ? (sortDir === 'desc' ? '▼' : '▲') : ''}</th>`).join('')}
+          </tr>
+        </thead>
+        <tbody>
+    `;
+
+    pageRows.forEach(row => {
+      html += `<tr class="border-b border-gray-700 hover:bg-gray-800/50">`;
+      columns.forEach(col => {
+        let value = row[col.key];
+        if (col.format) value = col.format(value, row);
+        else if (typeof value === 'number') value = formatNumber(value);
+        else value = value || '-';
+        const wrapStyle = col.wrap
+          ? 'word-break:break-word;white-space:pre-wrap;'
+          : 'white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:0;';
+        html += `<td class="px-3 py-2" style="${wrapStyle}" title="${String(row[col.key] || '').replace(/"/g, '&quot;')}">${value}</td>`;
+      });
+      html += `</tr>`;
     });
-    html += `</tr>`;
-  });
 
-  html += `</tbody></table></div>`;
+    html += `</tbody></table></div>`;
+  }
 
   // 페이지네이션 버튼
   if (totalPages > 1) {
@@ -274,6 +305,14 @@ function buildTable(containerId, columns, rows, options = {}) {
 
 /** CSV(Excel) 다운로드 */
 function downloadTableAsExcel(columns, rows, filename = '재해사례') {
+  // 비밀번호 확인
+  const pw = prompt('다운로드 비밀번호를 입력하세요:');
+  if (pw === null) return; // 취소
+  if (pw !== '6112') {
+    alert('비밀번호가 올바르지 않습니다.');
+    return;
+  }
+
   const headers = columns.map(col => `"${col.label}"`).join(',');
   const data = rows.map(row =>
     columns.map(col => {

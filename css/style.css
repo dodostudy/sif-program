@@ -284,12 +284,20 @@
     page-break-inside: avoid;
   }
 
-  /* 모든 텍스트 어두운 색 */
-  h1, h2, h3, h4, h5, h6 {
+  /* 모든 텍스트 어두운 색 - TailwindCSS 색상 클래스 덮어쓰기 포함 */
+  h1, h2, h3, h4, h5, h6,
+  [class*="text-gray-"],
+  [class*="text-white"],
+  [class*="text-blue-"],
+  [class*="text-amber-"],
+  [class*="text-red-"],
+  [class*="text-purple-"],
+  [class*="text-emerald-"],
+  [class*="text-green-"] {
     color: #111111 !important;
   }
   p, span, div, td, th, label {
-    color: #333333 !important;
+    color: #222222 !important;
   }
 
   /* 인쇄용 페이지 제목 */
@@ -313,6 +321,8 @@
     width: 100% !important;
     height: auto !important;
     max-width: 100%;
+    border: 1px solid #e5e7eb;
+    border-radius: 4px;
   }
 
   /* 히트맵 테이블 배경색 출력 */

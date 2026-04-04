@@ -36,23 +36,48 @@ document.addEventListener('DOMContentLoaded', () => {
    인쇄 / PDF 지원: canvas → 흰 배경 이미지 변환
    ===================================================== */
 let _printImgs = [];
+// 인쇄 전 각 차트의 원래 datalabels 색상 보존용
+let _origDatalabelsColors = new Map();
+
+/**
+ * 인쇄 버튼 핸들러:
+ * 차트 색상을 먼저 인쇄용으로 변경 → 렌더링 완료 후 window.print()
+ * (beforeprint에서 바로 캡처하면 첫 번째 클릭 시 차트가 아직 업데이트 안 된 상태로 캡처됨)
+ */
+function handlePrintWithCharts() {
+  if (typeof Chart !== 'undefined') {
+    // 축/범례 레이블을 인쇄용 어두운 색으로
+    Chart.defaults.color = '#1a1a1a';
+    Chart.defaults.borderColor = '#9ca3af';
+
+    _origDatalabelsColors.clear();
+    try {
+      Object.values(Chart.instances).forEach(chart => {
+        const dl = chart.config?.options?.plugins?.datalabels;
+        if (dl) {
+          // 원래 색상 저장 후 검은색으로 변경
+          // (도넛 차트 등에서 '#fff'이면 흰 배경에 안 보임)
+          _origDatalabelsColors.set(chart.id, dl.color);
+          dl.color = '#1a1a1a';
+        }
+        chart.update();
+      });
+    } catch (e) { /* 무시 */ }
+  }
+  // 렌더링 완료 후 인쇄
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => {
+      setTimeout(() => window.print(), 150);
+    });
+  });
+}
 
 window.addEventListener('beforeprint', () => {
   document.body.classList.add('is-printing');
 
-  // 1) Chart.js 축 라벨/범례 텍스트를 인쇄용 어두운 색으로 변경
-  if (typeof Chart !== 'undefined') {
-    Chart.defaults.color = '#1f2937';
-    Chart.defaults.borderColor = '#9ca3af';
-    try {
-      Object.values(Chart.instances).forEach(chart => chart.update('none'));
-    } catch (e) { /* 무시 */ }
-  }
-
-  // 2) 각 canvas를 오프스크린 canvas에 흰 배경으로 합성 → <img> 로 변환
+  // canvas → 흰 배경 합성 이미지로 변환
   _printImgs = [];
   document.querySelectorAll('canvas').forEach(canvas => {
-    if (!canvas.offsetParent && !document.body.classList.contains('is-printing')) return;
     if (canvas.width === 0 || canvas.height === 0) return;
     try {
       const off = document.createElement('canvas');
@@ -80,9 +105,16 @@ window.addEventListener('afterprint', () => {
     Chart.defaults.color = '#9CA3AF';
     Chart.defaults.borderColor = '#374151';
     try {
-      Object.values(Chart.instances).forEach(chart => chart.update('none'));
+      Object.values(Chart.instances).forEach(chart => {
+        const dl = chart.config?.options?.plugins?.datalabels;
+        if (dl && _origDatalabelsColors.has(chart.id)) {
+          dl.color = _origDatalabelsColors.get(chart.id);
+        }
+        chart.update('none');
+      });
     } catch (e) { /* 무시 */ }
   }
+  _origDatalabelsColors.clear();
 
   // 삽입한 이미지 제거
   _printImgs.forEach(({ img }) => img.remove());

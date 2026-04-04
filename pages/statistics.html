@@ -217,6 +217,10 @@
         <h3 class="text-sm font-semibold text-gray-300 mb-3">공종 x 재해형태 교차분석</h3>
         <div id="heatmap-gz-disaster" class="overflow-x-auto" style="max-height:450px"></div>
       </div>
+      <div class="chart-container mb-4">
+        <h3 class="text-sm font-semibold text-gray-300 mb-3">작업명 x 재해형태 교차분석</h3>
+        <div id="heatmap-work-disaster" class="overflow-x-auto" style="max-height:450px"></div>
+      </div>
       <div class="chart-container">
         <h3 class="text-sm font-semibold text-gray-300 mb-3">재해형태 × 공종 × 기인물 Top 20 조합</h3>
         <div id="top20-combo-table"></div>
@@ -933,6 +937,7 @@
       renderHeatmap1(minCount);
       renderHeatmap2(minCount);
       renderHeatmap3(minCount);
+      renderHeatmap4(minCount);
       renderTop20Combo();
     }
 
@@ -993,15 +998,19 @@
     // 7.4 공종 x 재해형태 히트맵
     function renderHeatmap3(minCount) {
       const gzList = [...new Set(dbData.map(r => r['공종']))].sort();
+
+      // 재해형태별 총합이 minCount 이상인 것만 표시
       const dtTotal = {};
-      dbData.forEach(r => { dtTotal[r['재해형태']] = (dtTotal[r['재해형태']] || 0) + 1; });
-      const disasterTypes = Object.entries(dtTotal).sort((a,b)=>b[1]-a[1]).map(a=>a[0]);
+      dbData.forEach(r => { if (r['재해형태']) dtTotal[r['재해형태']] = (dtTotal[r['재해형태']] || 0) + 1; });
+      const disasterTypes = Object.entries(dtTotal)
+        .filter(([_, v]) => v >= minCount)
+        .sort((a,b)=>b[1]-a[1]).map(a=>a[0]);
 
       const matrix = {};
       let maxVal = 0;
       gzList.forEach(gz => { matrix[gz] = {}; disasterTypes.forEach(dt => { matrix[gz][dt] = 0; }); });
       dbData.forEach(r => {
-        if (r['공종'] && r['재해형태']) {
+        if (r['공종'] && r['재해형태'] && disasterTypes.includes(r['재해형태'])) {
           matrix[r['공종']][r['재해형태']]++;
           maxVal = Math.max(maxVal, matrix[r['공종']][r['재해형태']]);
         }
@@ -1009,6 +1018,42 @@
 
       document.getElementById('heatmap-gz-disaster').innerHTML = buildHeatmapHTML(
         gzList.map(g => ({ key: g, label: g.replace(/^\d+\.\s*/, '') })),
+        disasterTypes.map(dt => ({ key: dt, label: dt })),
+        matrix, maxVal, false
+      );
+    }
+
+    // 작업명 x 재해형태 히트맵
+    function renderHeatmap4(minCount) {
+      // 작업명별 총합이 minCount 이상인 것만 표시 (상위 20개)
+      const workTotal = {};
+      dbData.forEach(r => { if (r['작업명']) workTotal[r['작업명']] = (workTotal[r['작업명']] || 0) + 1; });
+      const topWorks = Object.entries(workTotal)
+        .filter(([_, v]) => v >= minCount)
+        .sort((a, b) => b[1] - a[1]).slice(0, 20).map(a => a[0]);
+
+      // 재해형태는 상위 15개 고정
+      const dtTotal = {};
+      dbData.forEach(r => { if (r['재해형태']) dtTotal[r['재해형태']] = (dtTotal[r['재해형태']] || 0) + 1; });
+      const disasterTypes = Object.entries(dtTotal).sort((a,b)=>b[1]-a[1]).slice(0, 15).map(a=>a[0]);
+
+      const matrix = {};
+      let maxVal = 0;
+      topWorks.forEach(w => { matrix[w] = {}; disasterTypes.forEach(dt => { matrix[w][dt] = 0; }); });
+      dbData.forEach(r => {
+        if (r['작업명'] && r['재해형태'] && topWorks.includes(r['작업명']) && disasterTypes.includes(r['재해형태'])) {
+          matrix[r['작업명']][r['재해형태']]++;
+          maxVal = Math.max(maxVal, matrix[r['작업명']][r['재해형태']]);
+        }
+      });
+
+      const el = document.getElementById('heatmap-work-disaster');
+      if (topWorks.length === 0) {
+        el.innerHTML = `<p class="text-center text-gray-500 py-8 text-sm">최소 ${minCount}건 이상인 작업명이 없습니다.</p>`;
+        return;
+      }
+      el.innerHTML = buildHeatmapHTML(
+        topWorks.map(w => ({ key: w, label: w })),
         disasterTypes.map(dt => ({ key: dt, label: dt })),
         matrix, maxVal, false
       );
