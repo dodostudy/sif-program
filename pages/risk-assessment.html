@@ -187,19 +187,21 @@
     // ===================================================================
     const powerState = {
       koenOnly: true,
-      selectedRows: new Set(),        // 최종 누적된 행 ID
-      currentGiinmuls: new Set(),     // 현재 스텝1에서 선택 중인 기인물들
+      selectedRows: new Set(),
+      currentGiinmuls: new Set(),
+      milpyeCauses: [],               // 산소결핍 질식 기인물 목록 (동적)
       currentJaehae: null,
       currentWork: null,
       processedGiinmuls: [],
       step4CheckedIds: new Set(),
-      viewMode: 'grouped',            // 'grouped' | 'flat'
+      viewMode: 'grouped',
     };
 
     function resetPowerState() {
       powerState.koenOnly = true;
       powerState.selectedRows = new Set();
       powerState.currentGiinmuls = new Set();
+      powerState.milpyeCauses = [];
       powerState.currentJaehae = null;
       powerState.currentWork = null;
       powerState.processedGiinmuls = [];
@@ -209,6 +211,33 @@
 
     function getPowerData() {
       return powerState.koenOnly ? allData.filter(r => r.KOEN공정) : allData;
+    }
+
+    /** 기인물이 속한 작업유형 그룹 반환 */
+    function getGroupForCause(cause) {
+      for (const [type, causes] of Object.entries(WORK_TYPE_MAP)) {
+        if (type === '밀폐') {
+          if (powerState.milpyeCauses.includes(cause)) return '밀폐';
+        } else if (causes && causes.includes(cause)) {
+          return type;
+        }
+      }
+      return null;
+    }
+
+    /** 그룹별 규칙을 적용한 데이터 필터링
+     *  - 밀폐 기인물: 재해형태 = 산소결핍 질식만
+     *  - 일반 기인물: 재해형태 = 산소결핍 질식 제외
+     */
+    function getPowerDataFiltered() {
+      const causes = [...powerState.currentGiinmuls];
+      return getPowerData().filter(r => {
+        if (!causes.includes(r['기인물'])) return false;
+        const group = getGroupForCause(r['기인물']);
+        if (group === '밀폐' && r['재해형태'] !== '산소결핍 질식') return false;
+        if (group === '일반' && r['재해형태'] === '산소결핍 질식') return false;
+        return true;
+      });
     }
 
     function initPower() {
@@ -240,17 +269,32 @@
       updatePowerBreadcrumb('기인물 선택');
       const data = getPowerData();
 
-      // 기인물별 건수
-      const causeMap = {};
-      data.forEach(r => {
-        const c = r['기인물'];
-        if (c) causeMap[c] = (causeMap[c] || 0) + 1;
+      // 밀폐 그룹 기인물 동적 추출 및 상태 저장
+      powerState.milpyeCauses = [...new Set(data.filter(r => r['재해형태'] === '산소결핍 질식').map(r => r['기인물']))];
+      const milpyeCauses = powerState.milpyeCauses;
+
+      // 그룹별 규칙 적용 건수 계산
+      // 밀폐: 산소결핍 질식 레코드만, 일반: 산소결핍 질식 제외
+      function getCauseCount(cause, group) {
+        let filtered = data.filter(r => r['기인물'] === cause);
+        if (group === '밀폐') filtered = filtered.filter(r => r['재해형태'] === '산소결핍 질식');
+        if (group === '일반') filtered = filtered.filter(r => r['재해형태'] !== '산소결핍 질식');
+        return filtered.length;
+      }
+
+      // 각 기인물의 그룹 매핑 및 건수 집계 (다빈도순 전체 뷰 포함)
+      const causeGroupMap = {};
+      Object.entries(WORK_TYPE_MAP).forEach(([type, causes]) => {
+        const list = type === '밀폐' ? milpyeCauses : (causes || []);
+        list.forEach(c => { if (!(c in causeGroupMap)) causeGroupMap[c] = type; });
+      });
+      const causeCountMap = {};
+      Object.entries(causeGroupMap).forEach(([cause, group]) => {
+        const cnt = getCauseCount(cause, group);
+        if (cnt > 0) causeCountMap[cause] = cnt;
       });
 
-      const maxCount = Math.max(...Object.values(causeMap), 1);
-
-      // 밀폐 그룹 기인물 동적 추출
-      const milpyeCauses = [...new Set(data.filter(r => r['재해형태'] === '산소결핍 질식').map(r => r['기인물']))];
+      const maxCount = Math.max(...Object.values(causeCountMap), 1);
 
       const isGrouped = powerState.viewMode === 'grouped';
 
@@ -286,25 +330,25 @@
       </div>`;
 
       if (isGrouped) {
-        // 그룹별 열방향 레이아웃
-        html += `<div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 xl:grid-cols-5 gap-3 mb-4">`;
+        // 그룹별 열방향 레이아웃 — 가로 스크롤로 한 줄에 모두 표시
+        html += `<div class="flex gap-2 mb-4 overflow-x-auto pb-2">`;
 
         const workTypes = Object.keys(WORK_TYPE_MAP);
         workTypes.forEach(type => {
           const causes = type === '밀폐' ? milpyeCauses : (WORK_TYPE_MAP[type] || []);
           if (!causes || causes.length === 0) return;
-          const validCauses = causes.filter(c => causeMap[c] > 0);
+          const validCauses = causes.filter(c => getCauseCount(c, type) > 0);
           if (validCauses.length === 0) return;
 
           // 건수 내림차순 정렬
-          const sorted = validCauses.sort((a, b) => (causeMap[b] || 0) - (causeMap[a] || 0));
+          const sorted = validCauses.sort((a, b) => getCauseCount(b, type) - getCauseCount(a, type));
 
-          html += `<div class="bg-gray-900/60 border border-gray-800 rounded-lg p-2.5">
+          html += `<div class="bg-gray-900/60 border border-gray-800 rounded-lg p-2.5 flex-shrink-0 flex flex-col" style="min-width:130px">
             <div class="text-xs font-semibold text-blue-400 mb-2 pb-1.5 border-b border-gray-700/60">${type}</div>
-            <div class="space-y-1">`;
+            <div class="space-y-1 flex-1">`;
 
           sorted.forEach(cause => {
-            const count = causeMap[cause] || 0;
+            const count = getCauseCount(cause, type);
             const ratio = count / maxCount;
             const isSelected = powerState.currentGiinmuls.has(cause);
             const isProcessed = powerState.processedGiinmuls.includes(cause);
@@ -329,8 +373,8 @@
 
         html += `</div>`;
       } else {
-        // 전체 다빈도순 (건수 기준 내림차순 가로 배열)
-        const sorted = Object.entries(causeMap).sort((a, b) => b[1] - a[1]);
+        // 전체 다빈도순 (그룹별 규칙 적용 건수 기준 내림차순)
+        const sorted = Object.entries(causeCountMap).sort((a, b) => b[1] - a[1]);
         html += `<div class="flex flex-wrap gap-2 mb-4">`;
         sorted.forEach(([cause, count]) => {
           const ratio = count / maxCount;
@@ -394,7 +438,7 @@
       showPowerStep(2);
       const names = [...powerState.currentGiinmuls];
       updatePowerBreadcrumb(`${names.join(', ')} → 재해형태 선택`);
-      const data = getPowerData().filter(r => names.includes(r['기인물']));
+      const data = getPowerDataFiltered();
 
       const typeMap = {};
       data.forEach(r => { const t = r['재해형태']; if (t) typeMap[t] = (typeMap[t] || 0) + 1; });
@@ -450,7 +494,7 @@
       showPowerStep(3);
       const names = [...powerState.currentGiinmuls];
       updatePowerBreadcrumb(`${names.join(', ')} → 작업명 선택`);
-      let data = getPowerData().filter(r => names.includes(r['기인물']));
+      let data = getPowerDataFiltered();
       if (powerState.currentJaehae) data = data.filter(r => powerState.currentJaehae.includes(r['재해형태']));
 
       const workMap = {};
@@ -508,7 +552,7 @@
       const names = [...powerState.currentGiinmuls];
       updatePowerBreadcrumb(`${names.join(', ')} → 재해사례 선택`);
 
-      let data = getPowerData().filter(r => names.includes(r['기인물']));
+      let data = getPowerDataFiltered();
       if (powerState.currentJaehae) data = data.filter(r => powerState.currentJaehae.includes(r['재해형태']));
       if (powerState.currentWork) data = data.filter(r => powerState.currentWork.includes(r['작업명']));
 
