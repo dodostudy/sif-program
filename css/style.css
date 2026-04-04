@@ -637,6 +637,54 @@
   padding-left: 0.5rem;
 }
 
+/* 기인물 칩 (발전업 위자드 Step1 — 열방향 목록) */
+.cause-chip-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.3rem 0.5rem;
+  border-radius: 0.375rem;
+  cursor: pointer;
+  transition: background 0.12s, border-color 0.12s;
+  border: 1px solid transparent;
+  gap: 0.4rem;
+}
+.cause-chip-row:hover { background: #283548; border-color: #3B82F6; }
+.cause-chip-name { font-size: 0.78rem; flex: 1; }
+.cause-chip-count {
+  font-size: 0.7rem;
+  min-width: 1.8rem;
+  text-align: right;
+  flex-shrink: 0;
+}
+.cause-chip-check { font-size: 0.7rem; color: #60A5FA; flex-shrink: 0; }
+
+/* 강도 레벨별 */
+.cause-chip-row-l4 { background: rgba(239,68,68,0.08); border-color: rgba(239,68,68,0.25); }
+.cause-chip-row-l3 { background: rgba(249,115,22,0.07); border-color: rgba(249,115,22,0.2); }
+.cause-chip-row-l2 { background: rgba(234,179,8,0.05); border-color: rgba(234,179,8,0.15); }
+.cause-chip-row-l1 { background: transparent; border-color: transparent; }
+.cause-chip-row-selected { background: rgba(59,130,246,0.18) !important; border-color: #3B82F6 !important; }
+
+/* 기인물 칩 (다빈도순 전체 — 가로 배열) */
+.cause-flat-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.35rem 0.65rem;
+  border-radius: 0.5rem;
+  border: 1px solid #374151;
+  cursor: pointer;
+  font-size: 0.78rem;
+  transition: all 0.12s;
+}
+.cause-flat-chip:hover { border-color: #60A5FA; background: #1E3A5F; }
+.cause-flat-chip-l4 { background: rgba(239,68,68,0.1); border-color: rgba(239,68,68,0.35); color: #fca5a5; }
+.cause-flat-chip-l3 { background: rgba(249,115,22,0.09); border-color: rgba(249,115,22,0.3); color: #fed7aa; }
+.cause-flat-chip-l2 { background: rgba(234,179,8,0.07); border-color: rgba(234,179,8,0.2); color: #fde68a; }
+.cause-flat-chip-l1 { background: #111827; border-color: #1F2937; color: #6B7280; }
+.cause-flat-chip-selected { background: rgba(59,130,246,0.18) !important; border-color: #3B82F6 !important; color: #93C5FD !important; }
+
 /* 스켈레톤 로딩 */
 .skeleton {
   background: linear-gradient(90deg, #1F2937 25%, #374151 50%, #1F2937 75%);

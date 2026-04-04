@@ -19,64 +19,65 @@
     <!-- 인쇄용 헤더 -->
     <div class="print-header" id="print-title"></div>
 
-    <!-- ===== 진입 카드 ===== -->
-    <div id="entry-cards" class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-      <div class="entry-card" onclick="showSection('gpts')">
-        <div class="entry-icon">&#129302;</div>
-        <p class="entry-title">AI GPTs 안전누리</p>
-        <p class="entry-desc">대화형 7단계 위험성평가</p>
-      </div>
-      <div class="entry-card" onclick="showSection('power')">
-        <div class="entry-icon">&#9889;</div>
-        <p class="entry-title">발전업</p>
-        <p class="entry-desc">기인물 기반 위험성평가</p>
-      </div>
-      <div class="entry-card" onclick="showSection('construction')">
-        <div class="entry-icon">&#127959;</div>
-        <p class="entry-title">건설업</p>
-        <p class="entry-desc">공종 기반 위험성평가</p>
+    <!-- ===== GPTs 배너 (항상 표시) ===== -->
+    <div class="no-print mb-5 rounded-2xl border border-blue-700/40 p-5" style="background:linear-gradient(135deg,rgba(15,30,80,.7) 0%,rgba(13,31,92,.5) 100%);backdrop-filter:blur(12px)">
+      <div class="flex flex-col sm:flex-row items-start sm:items-center gap-4">
+        <div class="flex items-center gap-3 flex-shrink-0">
+          <div class="w-10 h-10 rounded-xl bg-blue-600/30 border border-blue-500/40 flex items-center justify-center">
+            <svg class="w-5 h-5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/>
+            </svg>
+          </div>
+          <div>
+            <div class="flex items-center gap-2 mb-0.5">
+              <span class="text-xs font-bold text-blue-300 uppercase tracking-widest">특허출원</span>
+            </div>
+            <p class="text-sm font-black text-white leading-tight">AI GPTs 안전누리</p>
+          </div>
+        </div>
+        <div class="flex-1 min-w-0">
+          <p class="text-sm text-blue-100 leading-tight">대화하듯 질문에 답하면 7단계로 위험성평가가 완성됩니다</p>
+        </div>
+        <div class="flex gap-2 flex-shrink-0">
+          <a href="https://chatgpt.com/g/g-68d9ea4687d881919dc5d8c7aa65c776-bundang-anjeonnuri-koen-for-wiheomseongpyeongga"
+             target="_blank" rel="noopener noreferrer"
+             class="flex items-center gap-1.5 bg-blue-600 hover:bg-blue-500 text-white font-semibold px-4 py-2 rounded-xl text-xs transition-all hover:shadow-lg hover:shadow-blue-900/60 whitespace-nowrap">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+            GPTs 열기
+          </a>
+          <a href="https://app.guidde.com/share/playbooks/hr8GgLUK3uJ3MgnkuecH9V?origin=WsIqNikVeiZSE6b1baGljoCN5EH3"
+             target="_blank" rel="noopener noreferrer"
+             class="flex items-center gap-1.5 border border-white/20 hover:border-white/40 text-gray-300 hover:text-white font-semibold px-4 py-2 rounded-xl text-xs transition-all bg-white/5 hover:bg-white/10 whitespace-nowrap">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+            사용방법
+          </a>
+        </div>
       </div>
     </div>
 
-    <!-- ===== GPTs 섹션 ===== -->
-    <div id="gpts-section" class="hidden">
-      <div class="flex items-center gap-2 mb-4">
-        <button class="px-3 py-1.5 bg-gray-700 hover:bg-gray-600 text-sm rounded-lg" onclick="goHome()">&#8592; 처음으로</button>
-        <span class="text-sm text-gray-400">AI GPTs 안전누리</span>
-      </div>
-      <div class="mb-5 rounded-2xl border border-blue-700/40 p-5" style="background:linear-gradient(135deg,rgba(15,30,80,.7) 0%,rgba(13,31,92,.5) 100%);backdrop-filter:blur(12px)">
-        <div class="flex flex-col sm:flex-row items-start sm:items-center gap-4">
-          <div class="flex items-center gap-3 flex-shrink-0">
-            <div class="w-10 h-10 rounded-xl bg-blue-600/30 border border-blue-500/40 flex items-center justify-center">
-              <svg class="w-5 h-5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/>
-              </svg>
-            </div>
-            <div>
-              <div class="flex items-center gap-2 mb-0.5">
-                <span class="text-xs font-bold text-blue-300 uppercase tracking-widest">특허출원</span>
-              </div>
-              <p class="text-sm font-black text-white leading-tight">AI GPTs 안전누리</p>
-            </div>
+    <!-- ===== 진입 카드 (발전업 / 건설업) ===== -->
+    <div id="entry-cards" class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+      <div class="entry-card" onclick="showSection('power')">
+        <div class="flex items-center gap-3 mb-3">
+          <div class="w-10 h-10 rounded-xl bg-amber-600/20 border border-amber-600/30 flex items-center justify-center flex-shrink-0">
+            <svg class="w-5 h-5 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
+            </svg>
           </div>
-          <div class="flex-1 min-w-0">
-            <p class="text-sm text-blue-100 leading-tight">대화하듯 질문에 답하면 7단계로 위험성평가가 완성됩니다</p>
-          </div>
-          <div class="flex gap-2 flex-shrink-0">
-            <a href="https://chatgpt.com/g/g-68d9ea4687d881919dc5d8c7aa65c776-bundang-anjeonnuri-koen-for-wiheomseongpyeongga"
-               target="_blank" rel="noopener noreferrer"
-               class="flex items-center gap-1.5 bg-blue-600 hover:bg-blue-500 text-white font-semibold px-4 py-2 rounded-xl text-xs transition-all hover:shadow-lg hover:shadow-blue-900/60 whitespace-nowrap">
-              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
-              GPTs 열기
-            </a>
-            <a href="https://app.guidde.com/share/playbooks/hr8GgLUK3uJ3MgnkuecH9V?origin=WsIqNikVeiZSE6b1baGljoCN5EH3"
-               target="_blank" rel="noopener noreferrer"
-               class="flex items-center gap-1.5 border border-white/20 hover:border-white/40 text-gray-300 hover:text-white font-semibold px-4 py-2 rounded-xl text-xs transition-all bg-white/5 hover:bg-white/10 whitespace-nowrap">
-              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-              사용방법
-            </a>
-          </div>
+          <p class="entry-title text-left">발전업</p>
         </div>
+        <p class="entry-desc text-left">기인물 기반 위험성평가 — 발전소 공정에 특화된 위험요인을 기인물별로 분석합니다</p>
+      </div>
+      <div class="entry-card" onclick="showSection('construction')">
+        <div class="flex items-center gap-3 mb-3">
+          <div class="w-10 h-10 rounded-xl bg-emerald-600/20 border border-emerald-600/30 flex items-center justify-center flex-shrink-0">
+            <svg class="w-5 h-5 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-2 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
+            </svg>
+          </div>
+          <p class="entry-title text-left">건설업</p>
+        </div>
+        <p class="entry-desc text-left">공종 기반 위험성평가 — 공종 → 작업명 → 단위작업명 선택으로 재해사례를 조회합니다</p>
       </div>
     </div>
 
@@ -90,15 +91,10 @@
       <!-- 발전소공정 토글 -->
       <div class="mb-4 no-print" id="power-koen-wrap"></div>
 
-      <!-- Step 1: 기인물 선택 -->
       <div id="power-step1"></div>
-      <!-- Step 2: 재해형태 선택 -->
       <div id="power-step2" class="hidden"></div>
-      <!-- Step 3: 작업명 선택 -->
       <div id="power-step3" class="hidden"></div>
-      <!-- Step 4: 재해사례 체크박스 테이블 -->
       <div id="power-step4" class="hidden"></div>
-      <!-- 최종 결과 -->
       <div id="power-result" class="hidden"></div>
     </div>
 
@@ -109,19 +105,16 @@
         <span class="text-sm text-gray-400" id="const-breadcrumb">건설업 위험성평가</span>
       </div>
 
-      <!-- 브레드크럼 -->
       <div class="breadcrumb mb-4 no-print" id="breadcrumb">
         <span class="text-gray-500">공종을 선택하세요</span>
       </div>
 
-      <!-- 위자드 -->
       <div id="const-wizard">
         <div id="const-step1"></div>
         <div id="const-step2" class="hidden"></div>
         <div id="const-step3" class="hidden"></div>
       </div>
 
-      <!-- 결과 영역 -->
       <div id="const-results" class="hidden mt-6">
         <div class="flex items-center justify-between mb-4 no-print">
           <h3 class="text-lg font-semibold text-white">위험성평가 결과</h3>
@@ -131,13 +124,11 @@
           </div>
         </div>
 
-        <!-- 위험요인 카드 -->
         <div class="mb-6">
           <h4 class="text-sm font-semibold text-gray-400 mb-3">주요 위험요인 (기인물 + 재해형태 조합)</h4>
           <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3" id="risk-cards"></div>
         </div>
 
-        <!-- 차트 -->
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-6">
           <div class="chart-container">
             <h4 class="text-sm font-semibold text-gray-300 mb-3">기인물별 사고건수</h4>
@@ -149,7 +140,6 @@
           </div>
         </div>
 
-        <!-- 재해사례 테이블 -->
         <div class="chart-container">
           <h4 class="text-sm font-semibold text-gray-300 mb-3">재해사례 목록</h4>
           <div id="const-case-table"></div>
@@ -170,7 +160,6 @@
     let allData = [];
     let dropdownRef = {};
 
-    // ===== 공통 =====
     async function init() {
       renderPageHeader('위험성평가 지원', '업종 선택 → 위험요인 파악 → 감소대책 확인', { showPrint: false });
       allData = await DataLoader.loadDB();
@@ -179,20 +168,16 @@
 
     function showSection(type) {
       document.getElementById('entry-cards').classList.add('hidden');
-      document.getElementById('gpts-section').classList.toggle('hidden', type !== 'gpts');
       document.getElementById('power-section').classList.toggle('hidden', type !== 'power');
       document.getElementById('construction-section').classList.toggle('hidden', type !== 'construction');
-
       if (type === 'power') initPower();
       if (type === 'construction') initConstruction();
     }
 
     function goHome() {
       document.getElementById('entry-cards').classList.remove('hidden');
-      document.getElementById('gpts-section').classList.add('hidden');
       document.getElementById('power-section').classList.add('hidden');
       document.getElementById('construction-section').classList.add('hidden');
-      // 상태 초기화
       resetPowerState();
       resetConstState();
     }
@@ -202,22 +187,24 @@
     // ===================================================================
     const powerState = {
       koenOnly: true,
-      selectedRows: new Set(),
-      currentGiinmul: null,
+      selectedRows: new Set(),        // 최종 누적된 행 ID
+      currentGiinmuls: new Set(),     // 현재 스텝1에서 선택 중인 기인물들
       currentJaehae: null,
       currentWork: null,
       processedGiinmuls: [],
       step4CheckedIds: new Set(),
+      viewMode: 'grouped',            // 'grouped' | 'flat'
     };
 
     function resetPowerState() {
       powerState.koenOnly = true;
       powerState.selectedRows = new Set();
-      powerState.currentGiinmul = null;
+      powerState.currentGiinmuls = new Set();
       powerState.currentJaehae = null;
       powerState.currentWork = null;
       powerState.processedGiinmuls = [];
       powerState.step4CheckedIds = new Set();
+      powerState.viewMode = 'grouped';
     }
 
     function getPowerData() {
@@ -230,10 +217,9 @@
         powerState.koenOnly = val === true;
         renderPowerStep1();
       });
-      // 초기 토글 ON
       const toggle = document.getElementById('power-koen-wrap-toggle');
       if (toggle) { toggle.checked = true; toggle.dispatchEvent(new Event('change')); }
-      renderPowerStep1();
+      else renderPowerStep1();
     }
 
     function showPowerStep(n) {
@@ -248,7 +234,7 @@
       document.getElementById('power-breadcrumb').textContent = text || '발전업 위험성평가';
     }
 
-    // Step 1: 기인물 선택 (작업유형별 그룹)
+    // ── Step 1: 기인물 선택 (다중 선택, 그룹별/전체 토글) ──────────────
     function renderPowerStep1() {
       showPowerStep(1);
       updatePowerBreadcrumb('기인물 선택');
@@ -261,202 +247,271 @@
         if (c) causeMap[c] = (causeMap[c] || 0) + 1;
       });
 
-      // 밀폐 그룹: 재해형태 '산소결핍 질식' 레코드에서 기인물 추출
+      const maxCount = Math.max(...Object.values(causeMap), 1);
+
+      // 밀폐 그룹 기인물 동적 추출
       const milpyeCauses = [...new Set(data.filter(r => r['재해형태'] === '산소결핍 질식').map(r => r['기인물']))];
+
+      const isGrouped = powerState.viewMode === 'grouped';
 
       let html = `<div class="wizard-step-header">
         <div class="wizard-step-num">1</div>
-        <div><div class="wizard-step-title">기인물 선택</div>
-        <div class="wizard-step-desc">작업유형별로 분류된 기인물 중 하나를 선택하세요</div></div>
+        <div>
+          <div class="wizard-step-title">기인물 선택</div>
+          <div class="wizard-step-desc">기인물을 하나 이상 선택하세요</div>
+        </div>
       </div>`;
 
-      // 이미 평가 완료한 기인물이 있으면 안내
+      // 평가 완료 기인물 안내 + 완료 버튼
       if (powerState.processedGiinmuls.length > 0) {
-        html += `<div class="mb-4 p-3 bg-blue-900/20 border border-blue-800 rounded-lg text-sm text-blue-300">
-          &#10003; 평가 완료: ${powerState.processedGiinmuls.join(', ')}
-          · <span class="text-white font-semibold">${powerState.selectedRows.size}건</span> 누적 선택
-          <button class="ml-3 px-3 py-1 bg-green-700 hover:bg-green-600 text-white text-xs rounded" onclick="showPowerResult()">평가 완료</button>
+        html += `<div class="mb-4 p-3 bg-blue-900/20 border border-blue-800 rounded-lg text-sm text-blue-300 flex items-center gap-3 flex-wrap">
+          <span>&#10003; 평가 완료: <strong class="text-white">${powerState.processedGiinmuls.join(', ')}</strong></span>
+          <span class="text-gray-400">·</span>
+          <span class="text-white font-semibold">${powerState.selectedRows.size}건 누적 선택</span>
+          <button class="ml-auto px-3 py-1 bg-green-700 hover:bg-green-600 text-white text-xs rounded" onclick="showPowerResult()">평가 완료</button>
         </div>`;
       }
 
-      const workTypes = Object.keys(WORK_TYPE_MAP);
-      workTypes.forEach(type => {
-        const causes = type === '밀폐' ? milpyeCauses : (WORK_TYPE_MAP[type] || []);
-        if (!causes || causes.length === 0) return;
+      // 뷰 토글 버튼
+      html += `<div class="flex items-center gap-2 mb-4 no-print">
+        <button onclick="powerState.viewMode='grouped'; renderPowerStep1();"
+          class="px-3 py-1.5 text-xs rounded-lg border transition-colors ${isGrouped ? 'bg-blue-600 border-blue-500 text-white' : 'bg-gray-800 border-gray-700 text-gray-400 hover:border-gray-500'}">
+          작업유형별
+        </button>
+        <button onclick="powerState.viewMode='flat'; renderPowerStep1();"
+          class="px-3 py-1.5 text-xs rounded-lg border transition-colors ${!isGrouped ? 'bg-blue-600 border-blue-500 text-white' : 'bg-gray-800 border-gray-700 text-gray-400 hover:border-gray-500'}">
+          다빈도순 전체
+        </button>
+        ${powerState.currentGiinmuls.size > 0 ? `<span class="ml-2 text-xs text-blue-300"><strong>${powerState.currentGiinmuls.size}개</strong> 선택됨</span>` : ''}
+      </div>`;
 
-        // 이 그룹에 건수가 0인 기인물만이면 스킵
-        const hasCounts = causes.some(c => causeMap[c]);
-        if (!hasCounts) return;
+      if (isGrouped) {
+        // 그룹별 열방향 레이아웃
+        html += `<div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 xl:grid-cols-5 gap-3 mb-4">`;
 
-        html += `<div class="work-type-group">
-          <div class="work-type-group-title">${type}</div>
-          <div class="flex flex-wrap gap-2">`;
+        const workTypes = Object.keys(WORK_TYPE_MAP);
+        workTypes.forEach(type => {
+          const causes = type === '밀폐' ? milpyeCauses : (WORK_TYPE_MAP[type] || []);
+          if (!causes || causes.length === 0) return;
+          const validCauses = causes.filter(c => causeMap[c] > 0);
+          if (validCauses.length === 0) return;
 
-        causes.forEach(cause => {
-          const count = causeMap[cause] || 0;
-          if (count === 0) return;
-          const isProcessed = powerState.processedGiinmuls.includes(cause);
-          const cls = isProcessed ? 'wizard-chip completed' : 'wizard-chip';
-          const onclick = isProcessed ? '' : `onclick="selectPowerGiinmul('${cause.replace(/'/g, "\\'")}')"`;
-          html += `<div class="${cls}" ${onclick}>
-            <span>${cause}</span>
-            <span class="chip-count">${count}건</span>
-            ${isProcessed ? '<span class="text-green-500 text-xs">&#10003;</span>' : ''}
-          </div>`;
+          // 건수 내림차순 정렬
+          const sorted = validCauses.sort((a, b) => (causeMap[b] || 0) - (causeMap[a] || 0));
+
+          html += `<div class="bg-gray-900/60 border border-gray-800 rounded-lg p-2.5">
+            <div class="text-xs font-semibold text-blue-400 mb-2 pb-1.5 border-b border-gray-700/60">${type}</div>
+            <div class="space-y-1">`;
+
+          sorted.forEach(cause => {
+            const count = causeMap[cause] || 0;
+            const ratio = count / maxCount;
+            const isSelected = powerState.currentGiinmuls.has(cause);
+            const isProcessed = powerState.processedGiinmuls.includes(cause);
+            const chipStyle = getCauseChipStyle(ratio, isSelected, isProcessed);
+
+            if (isProcessed) {
+              html += `<div class="cause-chip-row opacity-50 cursor-default" title="${cause} — 평가 완료">
+                <span class="cause-chip-name">${cause}</span>
+                <span class="cause-chip-count text-green-500">&#10003;</span>
+              </div>`;
+            } else {
+              html += `<div class="cause-chip-row ${chipStyle.row}" onclick="togglePowerGiinmul('${cause.replace(/'/g,"\\'")}')">
+                <span class="cause-chip-name ${chipStyle.name}">${cause}</span>
+                <span class="cause-chip-count ${chipStyle.count}">${count}</span>
+                ${isSelected ? '<span class="cause-chip-check">&#10003;</span>' : ''}
+              </div>`;
+            }
+          });
+
+          html += `</div></div>`;
         });
 
-        html += `</div></div>`;
-      });
+        html += `</div>`;
+      } else {
+        // 전체 다빈도순 (건수 기준 내림차순 가로 배열)
+        const sorted = Object.entries(causeMap).sort((a, b) => b[1] - a[1]);
+        html += `<div class="flex flex-wrap gap-2 mb-4">`;
+        sorted.forEach(([cause, count]) => {
+          const ratio = count / maxCount;
+          const isSelected = powerState.currentGiinmuls.has(cause);
+          const isProcessed = powerState.processedGiinmuls.includes(cause);
+          const chipStyle = getCauseChipStyle(ratio, isSelected, isProcessed);
+
+          if (isProcessed) {
+            html += `<div class="cause-flat-chip opacity-50 cursor-default">
+              <span>${cause}</span><span class="text-green-500 text-xs ml-1">&#10003;</span>
+            </div>`;
+          } else {
+            html += `<div class="cause-flat-chip ${chipStyle.flat}" onclick="togglePowerGiinmul('${cause.replace(/'/g,"\\'")}')">
+              <span>${cause}</span>
+              <span class="cause-chip-count ${chipStyle.count}">${count}</span>
+              ${isSelected ? '<span class="text-blue-300 text-xs">&#10003;</span>' : ''}
+            </div>`;
+          }
+        });
+        html += `</div>`;
+      }
+
+      // 하단 버튼
+      const selCount = powerState.currentGiinmuls.size;
+      html += `<div class="flex gap-2 mt-2">
+        <button class="px-5 py-2 bg-blue-600 hover:bg-blue-500 text-sm rounded-lg font-semibold transition-colors ${selCount === 0 ? 'opacity-40 cursor-not-allowed' : ''}"
+          onclick="${selCount > 0 ? 'renderPowerStep2()' : ''}"
+          ${selCount === 0 ? 'disabled' : ''}>
+          다음 → (${selCount}개 선택)
+        </button>
+        ${selCount > 0 ? `<button class="px-3 py-2 text-xs text-gray-500 hover:text-gray-300" onclick="powerState.currentGiinmuls.clear(); renderPowerStep1();">선택 초기화</button>` : ''}
+      </div>`;
 
       document.getElementById('power-step1').innerHTML = html;
     }
 
-    function selectPowerGiinmul(cause) {
-      powerState.currentGiinmul = cause;
-      renderPowerStep2();
+    /** 건수 비율에 따른 칩 스타일 */
+    function getCauseChipStyle(ratio, isSelected, isProcessed) {
+      if (isSelected) {
+        return {
+          row: 'cause-chip-row-selected',
+          flat: 'cause-flat-chip-selected',
+          name: 'font-bold text-white',
+          count: 'text-blue-300 font-bold',
+        };
+      }
+      if (ratio >= 0.6) return { row: 'cause-chip-row-l4', flat: 'cause-flat-chip-l4', name: 'font-bold text-white', count: 'text-red-300 font-bold' };
+      if (ratio >= 0.35) return { row: 'cause-chip-row-l3', flat: 'cause-flat-chip-l3', name: 'font-semibold text-gray-100', count: 'text-orange-300 font-semibold' };
+      if (ratio >= 0.15) return { row: 'cause-chip-row-l2', flat: 'cause-flat-chip-l2', name: 'text-gray-200', count: 'text-yellow-400' };
+      return { row: 'cause-chip-row-l1', flat: 'cause-flat-chip-l1', name: 'text-gray-400', count: 'text-gray-500' };
     }
 
-    // Step 2: 재해형태 선택 (복수)
+    function togglePowerGiinmul(cause) {
+      if (powerState.currentGiinmuls.has(cause)) powerState.currentGiinmuls.delete(cause);
+      else powerState.currentGiinmuls.add(cause);
+      renderPowerStep1();
+    }
+
+    // ── Step 2: 재해형태 선택 ─────────────────────────────────────────
     function renderPowerStep2() {
       showPowerStep(2);
-      updatePowerBreadcrumb(`${powerState.currentGiinmul} → 재해형태 선택`);
-      const data = getPowerData().filter(r => r['기인물'] === powerState.currentGiinmul);
+      const names = [...powerState.currentGiinmuls];
+      updatePowerBreadcrumb(`${names.join(', ')} → 재해형태 선택`);
+      const data = getPowerData().filter(r => names.includes(r['기인물']));
 
       const typeMap = {};
-      data.forEach(r => {
-        const t = r['재해형태'];
-        if (t) typeMap[t] = (typeMap[t] || 0) + 1;
-      });
+      data.forEach(r => { const t = r['재해형태']; if (t) typeMap[t] = (typeMap[t] || 0) + 1; });
       const sorted = Object.entries(typeMap).sort((a, b) => b[1] - a[1]);
 
       let html = `<div class="wizard-step-header">
         <div class="wizard-step-num">2</div>
         <div><div class="wizard-step-title">재해형태 선택</div>
-        <div class="wizard-step-desc">${powerState.currentGiinmul}의 재해형태를 선택하세요 (복수 가능)</div></div>
-      </div>`;
-
-      html += `<div class="space-y-2 max-w-lg" id="power-jaehae-list">`;
-      html += `<div class="wizard-check-item">
-        <input type="checkbox" id="pw-jh-all" checked>
-        <label for="pw-jh-all">전체 (${data.length}건)</label>
-      </div>`;
+        <div class="wizard-step-desc">${names.join(', ')}의 재해형태를 선택하세요 (복수 가능)</div></div>
+      </div>
+      <div class="space-y-2 max-w-lg" id="power-jaehae-list">
+        <div class="wizard-check-item">
+          <input type="checkbox" id="pw-jh-all" checked>
+          <label for="pw-jh-all">전체 (${data.length}건)</label>
+        </div>`;
       sorted.forEach(([type, count], i) => {
         html += `<div class="wizard-check-item">
-          <input type="checkbox" id="pw-jh-${i}" value="${type.replace(/"/g, '&quot;')}" checked>
+          <input type="checkbox" id="pw-jh-${i}" value="${type.replace(/"/g,'&quot;')}" checked>
           <label for="pw-jh-${i}">${type}</label>
           <span class="item-count">${count}건</span>
         </div>`;
       });
-      html += `</div>`;
-
-      html += `<div class="flex gap-2 mt-4">
+      html += `</div>
+      <div class="flex gap-2 mt-4">
         <button class="px-4 py-2 bg-gray-700 hover:bg-gray-600 text-sm rounded-lg" onclick="renderPowerStep1(); showPowerStep(1);">이전</button>
         <button class="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-sm rounded-lg" onclick="powerStep2Next()">다음</button>
       </div>`;
 
       document.getElementById('power-step2').innerHTML = html;
 
-      // 전체 체크박스 로직
       const allCb = document.getElementById('pw-jh-all');
       const list = document.getElementById('power-jaehae-list');
       allCb.addEventListener('change', () => {
-        list.querySelectorAll('input[type="checkbox"]:not(#pw-jh-all)').forEach(cb => { cb.checked = allCb.checked; });
+        list.querySelectorAll('input:not(#pw-jh-all)').forEach(cb => { cb.checked = allCb.checked; });
       });
-      list.querySelectorAll('input[type="checkbox"]:not(#pw-jh-all)').forEach(cb => {
+      list.querySelectorAll('input:not(#pw-jh-all)').forEach(cb => {
         cb.addEventListener('change', () => {
-          const all = list.querySelectorAll('input[type="checkbox"]:not(#pw-jh-all)');
-          const checked = list.querySelectorAll('input[type="checkbox"]:not(#pw-jh-all):checked');
-          allCb.checked = all.length === checked.length;
+          const all = list.querySelectorAll('input:not(#pw-jh-all)');
+          allCb.checked = [...all].every(c => c.checked);
         });
       });
     }
 
     function powerStep2Next() {
       const list = document.getElementById('power-jaehae-list');
-      const checked = [...list.querySelectorAll('input[type="checkbox"]:not(#pw-jh-all):checked')].map(cb => cb.value);
+      const checked = [...list.querySelectorAll('input:not(#pw-jh-all):checked')].map(cb => cb.value);
       powerState.currentJaehae = checked.length > 0 ? checked : null;
       renderPowerStep3();
     }
 
-    // Step 3: 작업명 선택 (복수)
+    // ── Step 3: 작업명 선택 ───────────────────────────────────────────
     function renderPowerStep3() {
       showPowerStep(3);
-      updatePowerBreadcrumb(`${powerState.currentGiinmul} → 작업명 선택`);
-      let data = getPowerData().filter(r => r['기인물'] === powerState.currentGiinmul);
-      if (powerState.currentJaehae) {
-        data = data.filter(r => powerState.currentJaehae.includes(r['재해형태']));
-      }
+      const names = [...powerState.currentGiinmuls];
+      updatePowerBreadcrumb(`${names.join(', ')} → 작업명 선택`);
+      let data = getPowerData().filter(r => names.includes(r['기인물']));
+      if (powerState.currentJaehae) data = data.filter(r => powerState.currentJaehae.includes(r['재해형태']));
 
       const workMap = {};
-      data.forEach(r => {
-        const w = r['작업명'];
-        if (w) workMap[w] = (workMap[w] || 0) + 1;
-      });
+      data.forEach(r => { const w = r['작업명']; if (w) workMap[w] = (workMap[w] || 0) + 1; });
       const sorted = Object.entries(workMap).sort((a, b) => b[1] - a[1]);
 
       let html = `<div class="wizard-step-header">
         <div class="wizard-step-num">3</div>
         <div><div class="wizard-step-title">작업명 선택</div>
         <div class="wizard-step-desc">유사한 작업명을 선택하세요 (복수 가능)</div></div>
-      </div>`;
-
-      html += `<div class="space-y-2 max-w-lg" id="power-work-list">`;
-      html += `<div class="wizard-check-item">
-        <input type="checkbox" id="pw-wk-all" checked>
-        <label for="pw-wk-all">전체 (${data.length}건)</label>
-      </div>`;
+      </div>
+      <div class="space-y-2 max-w-lg" id="power-work-list">
+        <div class="wizard-check-item">
+          <input type="checkbox" id="pw-wk-all" checked>
+          <label for="pw-wk-all">전체 (${data.length}건)</label>
+        </div>`;
       sorted.forEach(([work, count], i) => {
         html += `<div class="wizard-check-item">
-          <input type="checkbox" id="pw-wk-${i}" value="${work.replace(/"/g, '&quot;')}" checked>
+          <input type="checkbox" id="pw-wk-${i}" value="${work.replace(/"/g,'&quot;')}" checked>
           <label for="pw-wk-${i}">${work}</label>
           <span class="item-count">${count}건</span>
         </div>`;
       });
-      html += `</div>`;
-
-      html += `<div class="flex gap-2 mt-4">
+      html += `</div>
+      <div class="flex gap-2 mt-4">
         <button class="px-4 py-2 bg-gray-700 hover:bg-gray-600 text-sm rounded-lg" onclick="renderPowerStep2(); showPowerStep(2);">이전</button>
         <button class="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-sm rounded-lg" onclick="powerStep3Next()">다음</button>
       </div>`;
 
       document.getElementById('power-step3').innerHTML = html;
 
-      // 전체 체크박스 로직
       const allCb = document.getElementById('pw-wk-all');
       const list = document.getElementById('power-work-list');
       allCb.addEventListener('change', () => {
-        list.querySelectorAll('input[type="checkbox"]:not(#pw-wk-all)').forEach(cb => { cb.checked = allCb.checked; });
+        list.querySelectorAll('input:not(#pw-wk-all)').forEach(cb => { cb.checked = allCb.checked; });
       });
-      list.querySelectorAll('input[type="checkbox"]:not(#pw-wk-all)').forEach(cb => {
+      list.querySelectorAll('input:not(#pw-wk-all)').forEach(cb => {
         cb.addEventListener('change', () => {
-          const all = list.querySelectorAll('input[type="checkbox"]:not(#pw-wk-all)');
-          const checked = list.querySelectorAll('input[type="checkbox"]:not(#pw-wk-all):checked');
-          allCb.checked = all.length === checked.length;
+          const all = list.querySelectorAll('input:not(#pw-wk-all)');
+          allCb.checked = [...all].every(c => c.checked);
         });
       });
     }
 
     function powerStep3Next() {
       const list = document.getElementById('power-work-list');
-      const checked = [...list.querySelectorAll('input[type="checkbox"]:not(#pw-wk-all):checked')].map(cb => cb.value);
+      const checked = [...list.querySelectorAll('input:not(#pw-wk-all):checked')].map(cb => cb.value);
       powerState.currentWork = checked.length > 0 ? checked : null;
       renderPowerStep4();
     }
 
-    // Step 4: 재해사례 체크박스 테이블
+    // ── Step 4: 재해사례 체크박스 테이블 ─────────────────────────────
     function renderPowerStep4() {
       showPowerStep(4);
-      updatePowerBreadcrumb(`${powerState.currentGiinmul} → 재해사례 선택`);
+      const names = [...powerState.currentGiinmuls];
+      updatePowerBreadcrumb(`${names.join(', ')} → 재해사례 선택`);
 
-      let data = getPowerData().filter(r => r['기인물'] === powerState.currentGiinmul);
-      if (powerState.currentJaehae) {
-        data = data.filter(r => powerState.currentJaehae.includes(r['재해형태']));
-      }
-      if (powerState.currentWork) {
-        data = data.filter(r => powerState.currentWork.includes(r['작업명']));
-      }
+      let data = getPowerData().filter(r => names.includes(r['기인물']));
+      if (powerState.currentJaehae) data = data.filter(r => powerState.currentJaehae.includes(r['재해형태']));
+      if (powerState.currentWork) data = data.filter(r => powerState.currentWork.includes(r['작업명']));
 
-      // 이미 선택된 행은 체크 상태 유지
       powerState.step4CheckedIds = new Set(data.map(r => r.id));
 
       const columns = [
@@ -473,12 +528,12 @@
         <div class="wizard-step-num">4</div>
         <div><div class="wizard-step-title">재해사례 선택</div>
         <div class="wizard-step-desc">평가에 포함할 사례를 선택하세요 (기본: 전체 선택)</div></div>
-      </div>`;
-      html += `<div id="power-sel-table"></div>`;
-      html += `<div class="flex gap-2 mt-4 no-print">
+      </div>
+      <div id="power-sel-table"></div>
+      <div class="flex gap-2 mt-4 no-print">
         <button class="px-4 py-2 bg-gray-700 hover:bg-gray-600 text-sm rounded-lg" onclick="renderPowerStep3(); showPowerStep(3);">이전</button>
-        <button class="px-4 py-2 bg-amber-600 hover:bg-amber-500 text-sm rounded-lg" onclick="powerAddAndNext()">&#10003; 추가 후 다음 기인물</button>
-        <button class="px-4 py-2 bg-green-600 hover:bg-green-500 text-sm rounded-lg" onclick="powerAddAndFinish()">&#10003; 추가 후 평가 완료</button>
+        <button class="px-4 py-2 bg-amber-600 hover:bg-amber-500 text-sm rounded-lg" onclick="powerAddAndNext()">추가 후 다음 기인물</button>
+        <button class="px-4 py-2 bg-green-600 hover:bg-green-500 text-sm rounded-lg" onclick="powerAddAndFinish()">추가 후 평가 완료</button>
       </div>`;
 
       document.getElementById('power-step4').innerHTML = html;
@@ -491,10 +546,11 @@
     }
 
     function powerAddAndNext() {
-      // 누적
       powerState.step4CheckedIds.forEach(id => powerState.selectedRows.add(id));
-      powerState.processedGiinmuls.push(powerState.currentGiinmul);
-      powerState.currentGiinmul = null;
+      [...powerState.currentGiinmuls].forEach(g => {
+        if (!powerState.processedGiinmuls.includes(g)) powerState.processedGiinmuls.push(g);
+      });
+      powerState.currentGiinmuls.clear();
       powerState.currentJaehae = null;
       powerState.currentWork = null;
       powerState.step4CheckedIds = new Set();
@@ -503,37 +559,31 @@
 
     function powerAddAndFinish() {
       powerState.step4CheckedIds.forEach(id => powerState.selectedRows.add(id));
-      if (!powerState.processedGiinmuls.includes(powerState.currentGiinmul)) {
-        powerState.processedGiinmuls.push(powerState.currentGiinmul);
-      }
+      [...powerState.currentGiinmuls].forEach(g => {
+        if (!powerState.processedGiinmuls.includes(g)) powerState.processedGiinmuls.push(g);
+      });
       showPowerResult();
     }
 
     function showPowerResult() {
-      [1,2,3,4].forEach(i => {
-        document.getElementById(`power-step${i}`).classList.add('hidden');
-      });
+      [1,2,3,4].forEach(i => document.getElementById(`power-step${i}`).classList.add('hidden'));
       document.getElementById('power-result').classList.remove('hidden');
       updatePowerBreadcrumb('평가 결과');
 
       const selectedData = allData.filter(r => powerState.selectedRows.has(r.id));
-
-      // 인쇄 제목
       document.getElementById('print-title').textContent = `발전업 위험성평가 결과 — ${powerState.processedGiinmuls.join(', ')}`;
 
-      let html = `<div class="flex items-center justify-between mb-4 no-print">
-        <h3 class="text-lg font-semibold text-white">평가 결과 (${selectedData.length}건)</h3>
-        <div class="flex gap-2">
-          <button class="px-4 py-2 bg-gray-700 hover:bg-gray-600 text-sm rounded-lg" onclick="initPower()">다시 선택</button>
-          <button class="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-sm rounded-lg" onclick="handlePrintWithCharts()">인쇄 / PDF</button>
+      document.getElementById('power-result').innerHTML = `
+        <div class="flex items-center justify-between mb-4 no-print">
+          <h3 class="text-lg font-semibold text-white">평가 결과 (${selectedData.length}건)</h3>
+          <div class="flex gap-2">
+            <button class="px-4 py-2 bg-gray-700 hover:bg-gray-600 text-sm rounded-lg" onclick="initPower()">다시 선택</button>
+            <button class="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-sm rounded-lg" onclick="handlePrintWithCharts()">인쇄 / PDF</button>
+          </div>
         </div>
-      </div>`;
+        <div id="power-result-table"></div>`;
 
-      html += `<div id="power-result-table"></div>`;
-
-      document.getElementById('power-result').innerHTML = html;
-
-      const columns = [
+      buildTable('power-result-table', [
         { key: 'id', label: 'No', width: 40 },
         { key: '기인물', label: '기인물', width: 90 },
         { key: '재해형태', label: '재해형태', width: 70 },
@@ -544,8 +594,7 @@
           format: (v) => `<div class="text-xs text-gray-300">${v || '-'}</div>` },
         { key: '위험성감소대책', label: '감소대책', minWidth: 200, wrap: true,
           format: (v) => `<div class="text-xs text-gray-300">${v || '-'}</div>` },
-      ];
-      buildTable('power-result-table', columns, selectedData, { pageSize: 20 });
+      ], selectedData, { pageSize: 20 });
     }
 
     // ===================================================================
@@ -577,15 +626,15 @@
       let parts = [];
       if (constState['공종'].length > 0) {
         const names = constState['공종'].map(g => g.replace(/^\d+\.\s*/, ''));
-        parts.push(`<a onclick="showConstStep(1)">${names.length > 2 ? names.slice(0,2).join(', ') + ` 외 ${names.length - 2}개` : names.join(', ')}</a>`);
+        parts.push(`<a onclick="showConstStep(1)">${names.length > 2 ? names.slice(0,2).join(', ') + ` 외 ${names.length-2}개` : names.join(', ')}</a>`);
       }
       if (constState['작업명'].length > 0) {
         const names = constState['작업명'];
-        parts.push(`<a onclick="showConstStep(2)">${names.length > 2 ? names.slice(0,2).join(', ') + ` 외 ${names.length - 2}개` : names.join(', ')}</a>`);
+        parts.push(`<a onclick="showConstStep(2)">${names.length > 2 ? names.slice(0,2).join(', ') + ` 외 ${names.length-2}개` : names.join(', ')}</a>`);
       }
       if (constState['단위작업명'].length > 0) {
         const names = constState['단위작업명'];
-        parts.push(`<span class="text-white font-medium">${names.length > 2 ? names.slice(0,2).join(', ') + ` 외 ${names.length - 2}개` : names.join(', ')}</span>`);
+        parts.push(`<span class="text-white font-medium">${names.length > 2 ? names.slice(0,2).join(', ') + ` 외 ${names.length-2}개` : names.join(', ')}</span>`);
       }
       bc.innerHTML = parts.length
         ? parts.join('<span class="separator">&#8250;</span>')
@@ -599,7 +648,6 @@
       renderConstStep1();
     }
 
-    // Step 1: 공종 선택 (복수)
     function renderConstStep1() {
       showConstStep(1);
       const hierarchy = dropdownRef.hierarchy || {};
@@ -611,25 +659,25 @@
         <div class="wizard-step-num">1</div>
         <div><div class="wizard-step-title">공종 선택</div>
         <div class="wizard-step-desc">하나 이상의 공종을 선택하세요</div></div>
-      </div>`;
-
-      html += `<div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3" id="const-gz-cards">`;
+      </div>
+      <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3" id="const-gz-cards">`;
       gzList.forEach(gz => {
         const shortName = gz.replace(/^\d+\.\s*/, '');
         const count = gzCounts[gz] || 0;
         const isSelected = constState['공종'].includes(gz);
-        html += `<div class="wizard-card ${isSelected ? 'selected' : ''}" data-gz="${gz.replace(/"/g, '&quot;')}" onclick="toggleConstGZ(this, '${gz.replace(/'/g, "\\'")}')">
+        html += `<div class="wizard-card ${isSelected ? 'selected' : ''}" onclick="toggleConstGZ(this, '${gz.replace(/'/g,"\\'")}')">
           <p class="text-sm font-semibold text-white">${shortName}</p>
           <p class="text-xs text-gray-500 mt-1">${formatNumber(count)}건</p>
           ${isSelected ? '<p class="text-xs text-blue-400 mt-1">&#10003; 선택됨</p>' : ''}
         </div>`;
       });
-      html += `</div>`;
-
-      html += `<div class="flex gap-2 mt-4">
-        <button class="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-sm rounded-lg" onclick="constStep1Next()" id="const-step1-next" ${constState['공종'].length === 0 ? 'disabled style="opacity:0.5"' : ''}>다음 (${constState['공종'].length}개 선택)</button>
+      html += `</div>
+      <div class="flex gap-2 mt-4">
+        <button id="const-step1-next" class="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-sm rounded-lg transition-colors ${constState['공종'].length===0?'opacity-40 cursor-not-allowed':''}"
+          onclick="${constState['공종'].length>0?'constStep1Next()':''}" ${constState['공종'].length===0?'disabled':''}>
+          다음 (${constState['공종'].length}개 선택)
+        </button>
       </div>`;
-
       document.getElementById('const-step1').innerHTML = html;
     }
 
@@ -637,25 +685,7 @@
       const idx = constState['공종'].indexOf(gz);
       if (idx >= 0) constState['공종'].splice(idx, 1);
       else constState['공종'].push(gz);
-
-      // UI 즉시 반영
-      el.classList.toggle('selected');
-      const checkText = el.querySelector('.text-blue-400');
-      if (constState['공종'].includes(gz)) {
-        if (!checkText) {
-          const p = document.createElement('p');
-          p.className = 'text-xs text-blue-400 mt-1';
-          p.innerHTML = '&#10003; 선택됨';
-          el.appendChild(p);
-        }
-      } else {
-        if (checkText) checkText.remove();
-      }
-
-      const btn = document.getElementById('const-step1-next');
-      btn.textContent = `다음 (${constState['공종'].length}개 선택)`;
-      btn.disabled = constState['공종'].length === 0;
-      btn.style.opacity = constState['공종'].length === 0 ? '0.5' : '1';
+      renderConstStep1();
     }
 
     function constStep1Next() {
@@ -666,7 +696,6 @@
       renderConstStep2();
     }
 
-    // Step 2: 작업명 선택 (복수)
     function renderConstStep2() {
       showConstStep(2);
       const hierarchy = dropdownRef.hierarchy || {};
@@ -675,8 +704,6 @@
         if (hierarchy[gz]) Object.keys(hierarchy[gz]).forEach(w => works.add(w));
       });
       const workList = [...works].sort();
-
-      // 작업명별 건수
       const workCounts = {};
       allData.filter(r => constState['공종'].includes(r['공종'])).forEach(r => {
         workCounts[r['작업명']] = (workCounts[r['작업명']] || 0) + 1;
@@ -686,25 +713,25 @@
         <div class="wizard-step-num">2</div>
         <div><div class="wizard-step-title">작업명 선택</div>
         <div class="wizard-step-desc">하나 이상의 작업명을 선택하세요</div></div>
-      </div>`;
-
-      html += `<div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3" id="const-work-cards">`;
+      </div>
+      <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3" id="const-work-cards">`;
       workList.forEach(w => {
         const count = workCounts[w] || 0;
         const isSelected = constState['작업명'].includes(w);
-        html += `<div class="wizard-card ${isSelected ? 'selected' : ''}" onclick="toggleConstWork(this, '${w.replace(/'/g, "\\'")}')">
+        html += `<div class="wizard-card ${isSelected?'selected':''}" onclick="toggleConstWork(this,'${w.replace(/'/g,"\\'")}')">
           <p class="text-sm font-semibold text-white">${w}</p>
           <p class="text-xs text-gray-500 mt-1">${formatNumber(count)}건</p>
-          ${isSelected ? '<p class="text-xs text-blue-400 mt-1">&#10003; 선택됨</p>' : ''}
+          ${isSelected?'<p class="text-xs text-blue-400 mt-1">&#10003; 선택됨</p>':''}
         </div>`;
       });
-      html += `</div>`;
-
-      html += `<div class="flex gap-2 mt-4">
+      html += `</div>
+      <div class="flex gap-2 mt-4">
         <button class="px-4 py-2 bg-gray-700 hover:bg-gray-600 text-sm rounded-lg" onclick="renderConstStep1()">이전</button>
-        <button class="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-sm rounded-lg" onclick="constStep2Next()" id="const-step2-next" ${constState['작업명'].length === 0 ? 'disabled style="opacity:0.5"' : ''}>다음 (${constState['작업명'].length}개 선택)</button>
+        <button id="const-step2-next" class="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-sm rounded-lg ${constState['작업명'].length===0?'opacity-40 cursor-not-allowed':''}"
+          onclick="${constState['작업명'].length>0?'constStep2Next()':''}" ${constState['작업명'].length===0?'disabled':''}>
+          다음 (${constState['작업명'].length}개 선택)
+        </button>
       </div>`;
-
       document.getElementById('const-step2').innerHTML = html;
     }
 
@@ -712,24 +739,7 @@
       const idx = constState['작업명'].indexOf(w);
       if (idx >= 0) constState['작업명'].splice(idx, 1);
       else constState['작업명'].push(w);
-
-      el.classList.toggle('selected');
-      const checkText = el.querySelector('.text-blue-400');
-      if (constState['작업명'].includes(w)) {
-        if (!checkText) {
-          const p = document.createElement('p');
-          p.className = 'text-xs text-blue-400 mt-1';
-          p.innerHTML = '&#10003; 선택됨';
-          el.appendChild(p);
-        }
-      } else {
-        if (checkText) checkText.remove();
-      }
-
-      const btn = document.getElementById('const-step2-next');
-      btn.textContent = `다음 (${constState['작업명'].length}개 선택)`;
-      btn.disabled = constState['작업명'].length === 0;
-      btn.style.opacity = constState['작업명'].length === 0 ? '0.5' : '1';
+      renderConstStep2();
     }
 
     function constStep2Next() {
@@ -739,20 +749,16 @@
       renderConstStep3();
     }
 
-    // Step 3: 단위작업명 선택 (복수)
     function renderConstStep3() {
       showConstStep(3);
       const hierarchy = dropdownRef.hierarchy || {};
       const units = new Set();
       constState['공종'].forEach(gz => {
         constState['작업명'].forEach(w => {
-          if (hierarchy[gz] && hierarchy[gz][w]) {
-            hierarchy[gz][w].forEach(u => units.add(u));
-          }
+          if (hierarchy[gz] && hierarchy[gz][w]) hierarchy[gz][w].forEach(u => units.add(u));
         });
       });
       const unitList = [...units].sort();
-
       const unitCounts = {};
       allData.filter(r => constState['공종'].includes(r['공종']) && constState['작업명'].includes(r['작업명'])).forEach(r => {
         unitCounts[r['단위작업명']] = (unitCounts[r['단위작업명']] || 0) + 1;
@@ -762,25 +768,25 @@
         <div class="wizard-step-num">3</div>
         <div><div class="wizard-step-title">단위작업명 선택</div>
         <div class="wizard-step-desc">하나 이상의 단위작업명을 선택하세요</div></div>
-      </div>`;
-
-      html += `<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3" id="const-unit-cards">`;
+      </div>
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3" id="const-unit-cards">`;
       unitList.forEach(u => {
         const count = unitCounts[u] || 0;
         const isSelected = constState['단위작업명'].includes(u);
-        html += `<div class="wizard-card ${isSelected ? 'selected' : ''}" onclick="toggleConstUnit(this, '${u.replace(/'/g, "\\'")}')">
+        html += `<div class="wizard-card ${isSelected?'selected':''}" onclick="toggleConstUnit(this,'${u.replace(/'/g,"\\'")}')">
           <p class="text-sm font-semibold text-white">${u}</p>
           <p class="text-xs text-gray-500 mt-1">${formatNumber(count)}건</p>
-          ${isSelected ? '<p class="text-xs text-blue-400 mt-1">&#10003; 선택됨</p>' : ''}
+          ${isSelected?'<p class="text-xs text-blue-400 mt-1">&#10003; 선택됨</p>':''}
         </div>`;
       });
-      html += `</div>`;
-
-      html += `<div class="flex gap-2 mt-4">
+      html += `</div>
+      <div class="flex gap-2 mt-4">
         <button class="px-4 py-2 bg-gray-700 hover:bg-gray-600 text-sm rounded-lg" onclick="renderConstStep2()">이전</button>
-        <button class="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-sm rounded-lg" onclick="constStep3Next()" id="const-step3-next" ${constState['단위작업명'].length === 0 ? 'disabled style="opacity:0.5"' : ''}>결과 보기 (${constState['단위작업명'].length}개 선택)</button>
+        <button id="const-step3-next" class="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-sm rounded-lg ${constState['단위작업명'].length===0?'opacity-40 cursor-not-allowed':''}"
+          onclick="${constState['단위작업명'].length>0?'constStep3Next()':''}" ${constState['단위작업명'].length===0?'disabled':''}>
+          결과 보기 (${constState['단위작업명'].length}개 선택)
+        </button>
       </div>`;
-
       document.getElementById('const-step3').innerHTML = html;
     }
 
@@ -788,24 +794,7 @@
       const idx = constState['단위작업명'].indexOf(u);
       if (idx >= 0) constState['단위작업명'].splice(idx, 1);
       else constState['단위작업명'].push(u);
-
-      el.classList.toggle('selected');
-      const checkText = el.querySelector('.text-blue-400');
-      if (constState['단위작업명'].includes(u)) {
-        if (!checkText) {
-          const p = document.createElement('p');
-          p.className = 'text-xs text-blue-400 mt-1';
-          p.innerHTML = '&#10003; 선택됨';
-          el.appendChild(p);
-        }
-      } else {
-        if (checkText) checkText.remove();
-      }
-
-      const btn = document.getElementById('const-step3-next');
-      btn.textContent = `결과 보기 (${constState['단위작업명'].length}개 선택)`;
-      btn.disabled = constState['단위작업명'].length === 0;
-      btn.style.opacity = constState['단위작업명'].length === 0 ? '0.5' : '1';
+      renderConstStep3();
     }
 
     function constStep3Next() {
@@ -817,17 +806,13 @@
     function showConstResults() {
       document.getElementById('const-wizard').classList.add('hidden');
       document.getElementById('const-results').classList.remove('hidden');
-
-      const filtered = allData.filter(r => {
-        return constState['공종'].includes(r['공종'])
-          && constState['작업명'].includes(r['작업명'])
-          && constState['단위작업명'].includes(r['단위작업명']);
-      });
-
-      // 인쇄 제목
+      const filtered = allData.filter(r =>
+        constState['공종'].includes(r['공종']) &&
+        constState['작업명'].includes(r['작업명']) &&
+        constState['단위작업명'].includes(r['단위작업명'])
+      );
       const gzNames = constState['공종'].map(g => g.replace(/^\d+\.\s*/, '')).join(', ');
       document.getElementById('print-title').textContent = `건설업 위험성평가 결과 — ${gzNames}`;
-
       renderRiskCards(filtered);
       renderConstCharts(filtered);
       renderConstTable(filtered);
@@ -840,91 +825,59 @@
         if (!combos[key]) combos[key] = { 기인물: r['기인물'], 재해형태: r['재해형태'], count: 0, is12: r['12대기인물'] };
         combos[key].count++;
       });
-
       const sorted = Object.values(combos).sort((a, b) => b.count - a.count).slice(0, 10);
       const total = data.length;
-
       document.getElementById('risk-cards').innerHTML = sorted.map((item, i) => {
         const pct = (item.count / total * 100).toFixed(1);
         let riskClass, riskLabel;
-        if (item.count >= 10 || i === 0) {
-          riskClass = 'border-red-500/50 bg-red-950/30';
-          riskLabel = '<span class="risk-badge high">높음</span>';
-        } else if (item.count >= 5) {
-          riskClass = 'border-amber-500/50 bg-amber-950/30';
-          riskLabel = '<span class="risk-badge medium">중간</span>';
-        } else {
-          riskClass = 'border-green-500/50 bg-green-950/30';
-          riskLabel = '<span class="risk-badge low">낮음</span>';
-        }
-        return `
-          <div class="rounded-lg border ${riskClass} p-4">
-            <div class="flex items-center justify-between mb-2">
-              ${riskLabel}
-              ${item.is12 ? '<span class="badge-12">12대</span>' : ''}
-            </div>
-            <p class="text-sm font-semibold text-white">${item.기인물}</p>
-            <p class="text-xs text-gray-400 mt-1">재해형태: ${item.재해형태}</p>
-            <div class="mt-2 flex items-baseline gap-2">
-              <span class="text-xl font-bold text-white">${item.count}</span>
-              <span class="text-xs text-gray-500">건 (${pct}%)</span>
-            </div>
-          </div>`;
+        if (item.count >= 10 || i === 0) { riskClass = 'border-red-500/50 bg-red-950/30'; riskLabel = '<span class="risk-badge high">높음</span>'; }
+        else if (item.count >= 5) { riskClass = 'border-amber-500/50 bg-amber-950/30'; riskLabel = '<span class="risk-badge medium">중간</span>'; }
+        else { riskClass = 'border-green-500/50 bg-green-950/30'; riskLabel = '<span class="risk-badge low">낮음</span>'; }
+        return `<div class="rounded-lg border ${riskClass} p-4">
+          <div class="flex items-center justify-between mb-2">${riskLabel}${item.is12?'<span class="badge-12">12대</span>':''}</div>
+          <p class="text-sm font-semibold text-white">${item.기인물}</p>
+          <p class="text-xs text-gray-400 mt-1">재해형태: ${item.재해형태}</p>
+          <div class="mt-2 flex items-baseline gap-2">
+            <span class="text-xl font-bold text-white">${item.count}</span>
+            <span class="text-xs text-gray-500">건 (${pct}%)</span>
+          </div>
+        </div>`;
       }).join('');
     }
 
     function renderConstCharts(data) {
       const causeAgg = aggregateBy(data, '기인물');
       const causeSorted = topN(causeAgg, 'count', 8);
-
       cm.create('chart-risk-cause', {
         type: 'bar',
         data: {
           labels: causeSorted.map(a => a.key),
-          datasets: [{
-            data: causeSorted.map(a => a.count),
+          datasets: [{ data: causeSorted.map(a => a.count),
             backgroundColor: causeSorted.map((_, i) => CHART_COLORS.getAlpha(CHART_COLORS.getColor(i), 0.7)),
             borderColor: causeSorted.map((_, i) => CHART_COLORS.getColor(i)),
-            borderWidth: 1, borderRadius: 3,
-          }]
+            borderWidth: 1, borderRadius: 3 }]
         },
-        options: {
-          indexAxis: 'y',
-          plugins: { legend: { display: false } },
-          scales: { x: { grid: { color: '#1F2937' } }, y: { grid: { display: false }, ticks: { font: { size: 10 } } } }
-        }
+        options: { indexAxis: 'y', plugins: { legend: { display: false } },
+          scales: { x: { grid: { color: '#1F2937' } }, y: { grid: { display: false }, ticks: { font: { size: 10 } } } } }
       });
-
       const disasterAgg = aggregateBy(data, '재해형태');
       const disasterSorted = topN(disasterAgg, 'count', 8);
-
       cm.create('chart-risk-disaster', {
         type: 'doughnut',
-        data: {
-          labels: disasterSorted.map(a => a.key),
-          datasets: [{
-            data: disasterSorted.map(a => a.count),
-            backgroundColor: disasterSorted.map((_, i) => CHART_COLORS.getColor(i)),
-            borderWidth: 0,
-          }]
-        },
-        options: {
-          cutout: '50%',
-          plugins: {
-            legend: { position: 'right', labels: { boxWidth: 10, font: { size: 10 } } },
-            datalabels: {
-              display: true, color: '#fff', font: { size: 9, weight: 'bold' },
-              formatter: (value, ctx) => { const t = ctx.dataset.data.reduce((a,b)=>a+b,0); const p=(value/t*100).toFixed(1); return p<5?'':`${value}건\n${p}%`; },
-              textAlign: 'center',
-            }
-          }
-        },
+        data: { labels: disasterSorted.map(a => a.key),
+          datasets: [{ data: disasterSorted.map(a => a.count),
+            backgroundColor: disasterSorted.map((_, i) => CHART_COLORS.getColor(i)), borderWidth: 0 }] },
+        options: { cutout: '50%', plugins: {
+          legend: { position: 'right', labels: { boxWidth: 10, font: { size: 10 } } },
+          datalabels: { display: true, color: '#fff', font: { size: 9, weight: 'bold' },
+            formatter: (value, ctx) => { const t = ctx.dataset.data.reduce((a,b)=>a+b,0); const p=(value/t*100).toFixed(1); return p<5?'':`${value}건\n${p}%`; },
+            textAlign: 'center' } } },
         plugins: [ChartDataLabels]
       });
     }
 
     function renderConstTable(data) {
-      const columns = [
+      buildTable('const-case-table', [
         { key: 'id', label: 'No', width: 40 },
         { key: '기인물', label: '기인물', width: 100, wrap: true },
         { key: '재해형태', label: '재해형태', width: 70 },
@@ -934,11 +887,7 @@
           format: (v) => `<div class="text-xs text-gray-300">${v || '-'}</div>` },
         { key: '위험성감소대책', label: '감소대책', minWidth: 200, wrap: true,
           format: (v) => `<div class="text-xs text-gray-300">${v || '-'}</div>` },
-      ];
-      buildTable('const-case-table', columns, data, {
-        pageSize: 10,
-        filterColumns: ['기인물', '재해형태']
-      });
+      ], data, { pageSize: 10, filterColumns: ['기인물', '재해형태'] });
     }
 
     init();
