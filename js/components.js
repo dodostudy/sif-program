@@ -135,19 +135,22 @@ function createKoenToggle(containerId, onChange) {
   const container = document.getElementById(containerId);
   if (!container) return;
 
+  const toggleId = `${containerId}-toggle`;
+  const labelId = `${containerId}-label`;
+
   container.innerHTML = `
     <div class="flex items-center gap-2 bg-gray-800 rounded-lg px-3 py-2">
       <span class="text-xs text-gray-400">발전소 공정</span>
       <label class="relative inline-flex items-center cursor-pointer">
-        <input type="checkbox" id="koen-toggle" class="sr-only peer">
+        <input type="checkbox" id="${toggleId}" class="sr-only peer">
         <div class="w-9 h-5 bg-gray-600 rounded-full peer peer-checked:bg-blue-600 peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-0.5 after:left-0.5 after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all"></div>
       </label>
-      <span class="text-xs text-gray-400" id="koen-label">전체</span>
+      <span class="text-xs text-gray-400" id="${labelId}">전체</span>
     </div>
   `;
 
-  const toggle = document.getElementById('koen-toggle');
-  const label = document.getElementById('koen-label');
+  const toggle = document.getElementById(toggleId);
+  const label = document.getElementById(labelId);
   toggle.addEventListener('change', () => {
     label.textContent = toggle.checked ? '발전소 공정만' : '전체';
     onChange(toggle.checked ? true : null);

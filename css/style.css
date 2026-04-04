@@ -388,6 +388,32 @@
   font-size: 0.875rem;
 }
 
+/* 키워드 검색 바 */
+.keyword-search-bar {
+  background: #111827;
+  border: 1px solid #1F2937;
+  border-radius: 0.75rem;
+  padding: 0.75rem 1.25rem;
+}
+.keyword-input {
+  width: 100%;
+  background: #1F2937;
+  border: 1px solid #374151;
+  border-radius: 0.5rem;
+  color: #E5E7EB;
+  padding: 0.5rem 0.75rem;
+  font-size: 0.875rem;
+  outline: none;
+  transition: border-color 0.15s;
+}
+.keyword-input:focus {
+  border-color: #3B82F6;
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+}
+.keyword-input::placeholder {
+  color: #6B7280;
+}
+
 /* 탭 */
 .tab-btn {
   padding: 0.5rem 1rem;
@@ -540,6 +566,7 @@
   .table-page-btn,
   .table-filter-reset,
   .tbl-ms,
+  .keyword-search-bar,
   .breadcrumb,
   .tab-btn,
   button.no-print {

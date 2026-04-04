@@ -28,16 +28,20 @@
 
     <!-- 필터 바 -->
     <div class="filter-bar mb-4">
+      <div class="filter-group" id="cause-koen-wrap"></div>
       <div class="filter-group">
         <label>작업유형</label>
         <div id="ms-worktype"></div>
       </div>
       <div class="filter-group">
         <label>12대 기인물</label>
-        <select id="filter-12">
-          <option value="">전체</option>
-          <option value="true">12대 기인물만</option>
-        </select>
+        <div class="flex items-center gap-2 bg-gray-800 rounded-lg px-3 py-2">
+          <label class="relative inline-flex items-center cursor-pointer">
+            <input type="checkbox" id="filter-12-toggle" class="sr-only peer">
+            <div class="w-9 h-5 bg-gray-600 rounded-full peer peer-checked:bg-purple-600 peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-0.5 after:left-0.5 after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all"></div>
+          </label>
+          <span class="text-xs text-gray-400" id="filter-12-label">전체</span>
+        </div>
       </div>
       <div class="filter-group">
         <label>기인물</label>
@@ -45,6 +49,7 @@
       </div>
       <button id="btn-reset" class="px-4 py-2 bg-gray-700 hover:bg-gray-600 text-sm rounded-lg transition-colors">초기화</button>
     </div>
+    <div id="keyword-search-wrap" class="mb-4"></div>
 
     <!-- 선택된 기인물 요약 -->
     <div id="cause-summary" class="mb-4 hidden">
@@ -99,22 +104,10 @@
   <script src="../js/app.js"></script>
 
   <script>
-    // 작업유형 분류 맵
-    const WORK_TYPE_MAP = {
-      '고소': ['비계', '달비계', '이동식비계', '비계(일체형비계)', '말비계', '사다리', '작업발판/가설계단', '리프트', '슬라브단부', '개구부(바닥개구부)', '개구부(기타개구부)', '엘리베이터피트', '철골(철골구조물)', '철골(철골자재)', '지붕(처마,홈통)', '지붕(채광판,선라이트)', '천장(판넬 등 마감재)', '거푸집', '동바리'],
-      '중장비': ['굴착기', '트럭', '이동식크레인', '고정식크레인', '콘크리트펌프카', '지게차', '천공기/항타기', '로울러', '콘크리트믹서', '기타건설장비', '기타건설기계기구', '고소작업대'],
-      '굴착': ['토사', '흙막이가시설', '암석', '기초파일'],
-      '전기': ['충전부', '전주'],
-      '중량물': ['철근콘크리트자재(철근,콘크리트,PC)', '각재(파이프,강관,합판)', '배관'],
-      '화기': ['용접(단)기', '절단기/톱'],
-      '밀폐': null, // 재해형태 '산소결핍 질식' 기준 특수 필터
-      '일반': ['기계설비', '외부마감재', '벽체', '기타구조물', '기타가설구조물', '기타자재(내부마감재,시멘트,마대)', '수목', '교통수단', '방망', '바닥(바닥에 걸려 넘어짐)', '계단', '분류불능', '물'],
-      '폭염/원인미상': ['폭염', '원인미상'],
-      '화학물질': ['화학물질'],
-    };
+    // WORK_TYPE_MAP은 js/utils.js에서 전역 선언됨
 
     const cm = new ChartManager();
-    const fm = new FilterManager(['작업유형', '12대기인물', '기인물']);
+    const fm = new FilterManager(['koen', '작업유형', '12대기인물', '기인물', 'keyword']);
     let isMilpeActive = false; // 밀폐 특수 필터 상태
     fm.setDownstream('작업유형', ['기인물']);
     fm.setDownstream('12대기인물', ['기인물']);
@@ -153,6 +146,8 @@
       onChange: (values) => fm.set('기인물', values)
     });
 
+    let keywordInput = null;
+
     async function init() {
       renderPageHeader('기인물조회', '기인물 기준 역방향 조회 - 해당 기인물이 어떤 공정에서 위험한지 분석');
 
@@ -164,6 +159,12 @@
         const c = r['기인물'];
         if (c) causeCountMap[c] = (causeCountMap[c] || 0) + 1;
       });
+
+      // 발전소 공정 토글
+      createKoenToggle('cause-koen-wrap', (val) => fm.set('koen', val));
+
+      // 키워드 검색
+      keywordInput = createKeywordSearch('keyword-search-wrap', (val) => fm.set('keyword', val));
 
       setupFilters();
       renderResults();
@@ -187,8 +188,9 @@
       updateCauseDropdown();
 
       // 12대기인물 토글
-      document.getElementById('filter-12').addEventListener('change', (e) => {
-        fm.set('12대기인물', e.target.value === 'true' ? true : null);
+      document.getElementById('filter-12-toggle').addEventListener('change', (e) => {
+        document.getElementById('filter-12-label').textContent = e.target.checked ? '12대만' : '전체';
+        fm.set('12대기인물', e.target.checked ? true : null);
       });
 
       // 작업유형 변경 시 기인물 갱신
@@ -203,13 +205,28 @@
         msCause.clear();
       });
 
+      // KOEN 변경 시 기인물 갱신
+      fm.subscribe('koen', () => {
+        causeCountMap = {};
+        const baseData = fm.get('koen') === true ? allData.filter(r => r.KOEN공정) : allData;
+        baseData.forEach(r => { const c = r['기인물']; if (c) causeCountMap[c] = (causeCountMap[c] || 0) + 1; });
+        updateCauseDropdown();
+        msCause.clear();
+      });
+
       // 초기화
       document.getElementById('btn-reset').addEventListener('click', () => {
         fm.reset();
         isMilpeActive = false;
-        document.getElementById('filter-12').value = '';
+        const toggle12 = document.getElementById('filter-12-toggle');
+        if (toggle12) { toggle12.checked = false; document.getElementById('filter-12-label').textContent = '전체'; }
+        const koenToggle = document.getElementById('cause-koen-wrap-toggle');
+        if (koenToggle) { koenToggle.checked = false; document.getElementById('cause-koen-wrap-label').textContent = '전체'; }
+        if (keywordInput) keywordInput.value = '';
         msWorkType.clear();
         msCause.clear();
+        causeCountMap = {};
+        allData.forEach(r => { const c = r['기인물']; if (c) causeCountMap[c] = (causeCountMap[c] || 0) + 1; });
         msWorkType.setOptions(workTypeOptions);
         updateCauseDropdown();
       });

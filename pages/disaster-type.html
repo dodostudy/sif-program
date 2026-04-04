@@ -88,6 +88,7 @@
         <button id="btn-reset" class="px-4 py-2 bg-gray-700 hover:bg-gray-600 text-sm rounded-lg transition-colors" style="margin-left:auto;">초기화</button>
       </div>
     </div>
+    <div id="keyword-search-wrap" class="mb-4"></div>
 
     <!-- 요약 카드 -->
     <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-4" id="summary-cards"></div>
@@ -150,7 +151,8 @@
 
   <script>
     const cm = new ChartManager();
-    const fm = new FilterManager(['koen', '재해형태', '기인물', '공종', '작업명', '단위작업명']);
+    const fm = new FilterManager(['koen', '재해형태', '기인물', '공종', '작업명', '단위작업명', 'keyword']);
+    let keywordInput = null;
     fm.setDownstream('재해형태', ['기인물', '공종', '작업명', '단위작업명']);
     fm.setDownstream('기인물', ['공종', '작업명', '단위작업명']);
     fm.setDownstream('공종', ['작업명', '단위작업명']);
@@ -223,6 +225,7 @@
 
     function setupFilters() {
       createKoenToggle('koen-toggle-wrap', (val) => fm.set('koen', val));
+      keywordInput = createKeywordSearch('keyword-search-wrap', (val) => fm.set('keyword', val));
 
       populateDisasterDropdown();
       populateCauseDropdown();
@@ -287,11 +290,12 @@
         msGz.clear();
         msWork.clear();
         msUnit.clear();
-        const koenToggle = document.getElementById('koen-toggle');
+        const koenToggle = document.getElementById('koen-toggle-wrap-toggle');
         if (koenToggle) {
           koenToggle.checked = false;
-          document.getElementById('koen-label').textContent = '전체';
+          document.getElementById('koen-toggle-wrap-label').textContent = '전체';
         }
+        if (keywordInput) keywordInput.value = '';
         populateDisasterDropdown();
         populateCauseDropdown();
         msGz.setOptions([]);

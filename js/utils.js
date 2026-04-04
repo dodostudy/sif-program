@@ -2,6 +2,20 @@
  * 유틸리티 함수
  */
 
+/** 작업유형별 기인물 분류 맵 (공통 상수) */
+const WORK_TYPE_MAP = {
+  '고소': ['비계', '달비계', '이동식비계', '비계(일체형비계)', '말비계', '사다리', '작업발판/가설계단', '리프트', '슬라브단부', '개구부(바닥개구부)', '개구부(기타개구부)', '엘리베이터피트', '철골(철골구조물)', '철골(철골자재)', '지붕(처마,홈통)', '지붕(채광판,선라이트)', '천장(판넬 등 마감재)', '거푸집', '동바리'],
+  '중장비': ['굴착기', '트럭', '이동식크레인', '고정식크레인', '콘크리트펌프카', '지게차', '천공기/항타기', '로울러', '콘크리트믹서', '기타건설장비', '기타건설기계기구', '고소작업대'],
+  '굴착': ['토사', '흙막이가시설', '암석', '기초파일'],
+  '전기': ['충전부', '전주'],
+  '중량물': ['철근콘크리트자재(철근,콘크리트,PC)', '각재(파이프,강관,합판)', '배관'],
+  '화기': ['용접(단)기', '절단기/톱'],
+  '밀폐': null,
+  '일반': ['기계설비', '외부마감재', '벽체', '기타구조물', '기타가설구조물', '기타자재(내부마감재,시멘트,마대)', '수목', '교통수단', '방망', '바닥(바닥에 걸려 넘어짐)', '계단', '분류불능', '물'],
+  '폭염/원인미상': ['폭염', '원인미상'],
+  '화학물질': ['화학물질'],
+};
+
 /** 그룹별 집계 */
 function aggregateBy(data, groupKey, sumKey = null) {
   const map = {};
@@ -71,6 +85,12 @@ function filterDB(records, filters) {
     if (filters['작업유형'] && typeof filters['작업유형'] === 'object') {
       if (!filters['작업유형'].includes(r['기인물'])) return false;
     }
+    if (filters.keyword) {
+      const kw = filters.keyword.toLowerCase();
+      const match = ['재해개요', '재해유발요인', '위험성감소대책']
+        .some(f => (r[f] || '').toLowerCase().includes(kw));
+      if (!match) return false;
+    }
     return true;
   });
 }
@@ -91,6 +111,22 @@ function populateDropdown(selectId, options, placeholder = '전체') {
   if (currentValue && options.includes(currentValue)) {
     select.value = currentValue;
   }
+}
+
+/** 키워드 검색 입력 생성 */
+function createKeywordSearch(containerId, onInput) {
+  const container = document.getElementById(containerId);
+  if (!container) return null;
+  container.innerHTML = `
+    <div class="keyword-search-bar">
+      <input type="text" class="keyword-input"
+        placeholder="키워드 검색 (재해개요, 유발요인, 감소대책)">
+    </div>`;
+  const input = container.querySelector('input');
+  input.addEventListener('input', debounce(() => {
+    onInput(input.value.trim() || null);
+  }, 300));
+  return input;
 }
 
 /** HTML 테이블 생성 (컬럼 필터 지원) */

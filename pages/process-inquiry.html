@@ -44,6 +44,7 @@
       </div>
       <button id="btn-reset" class="px-4 py-2 bg-gray-700 hover:bg-gray-600 text-sm rounded-lg transition-colors">초기화</button>
     </div>
+    <div id="keyword-search-wrap" class="mb-4"></div>
 
     <!-- 결과 요약 -->
     <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-4" id="result-summary">
@@ -80,13 +81,14 @@
 
   <script>
     const cm = new ChartManager();
-    const fm = new FilterManager(['koen', '공종', '작업명', '단위작업명', '기인물']);
+    const fm = new FilterManager(['koen', '공종', '작업명', '단위작업명', '기인물', 'keyword']);
     fm.setDownstream('공종', ['작업명', '단위작업명', '기인물']);
     fm.setDownstream('작업명', ['단위작업명', '기인물']);
     fm.setDownstream('단위작업명', ['기인물']);
 
     let allData = [];
     let dropdownRef = {};
+    let keywordInput = null;
 
     // 멀티셀렉트 인스턴스
     const msGongzong = new MultiSelect({
@@ -117,6 +119,8 @@
       allData = await DataLoader.loadDB();
       dropdownRef = await DataLoader.loadDropdownRef();
 
+      keywordInput = createKeywordSearch('keyword-search-wrap', (val) => fm.set('keyword', val));
+
       setupFilters();
       renderResults();
     }
@@ -143,6 +147,7 @@
       document.getElementById('btn-reset').addEventListener('click', () => {
         fm.reset();
         document.getElementById('filter-koen').value = '';
+        if (keywordInput) keywordInput.value = '';
         msGongzong.clear();
         msWork.clear();
         msUnitWork.clear();
