@@ -173,13 +173,15 @@ function buildTable(containerId, columns, rows, options = {}) {
       const currentArr = columnFilters[key] || null;
       const selectedCount = Array.isArray(currentArr) ? currentArr.length : 0;
       const triggerText = selectedCount === 0 ? `${label} ▼`
-        : selectedCount === 1 ? (key === '공종' ? currentArr[0].replace(/^\d+\.\s*/, '') : currentArr[0])
+        : selectedCount === 1 ? `${label} (1개)`
         : `${label} (${selectedCount}개)`;
       const hasSelection = selectedCount > 0 ? ' tbl-ms-active' : '';
+      const isOpen = openFilterKey === key;
 
       html += `<div class="tbl-ms" data-filter-key="${key}">`;
       html += `<button type="button" class="tbl-ms-trigger${hasSelection}">${triggerText}</button>`;
-      html += `<div class="tbl-ms-panel hidden">`;
+      html += `<div class="tbl-ms-panel${isOpen ? '' : ' hidden'}">`;
+      html += `<div class="tbl-ms-panel-header"><span class="tbl-ms-panel-title">${label} 선택</span><button type="button" class="tbl-ms-close-btn">✕ 닫기</button></div>`;
       if ((filterOptions[key] || []).length >= 8) {
         html += `<div class="tbl-ms-search"><input type="text" class="tbl-ms-search-input" placeholder="검색..."></div>`;
       }
@@ -287,23 +289,22 @@ function buildTable(containerId, columns, rows, options = {}) {
 
   container.innerHTML = html;
 
-  // openFilterKey가 있으면 해당 패널을 즉시 열기
-  if (openFilterKey) {
-    const openMs = container.querySelector(`.tbl-ms[data-filter-key="${openFilterKey}"] .tbl-ms-panel`);
-    if (openMs) openMs.classList.remove('hidden');
-  }
-
-  // 컬럼 필터 멀티셀렉트 이벤트
-  function collectChecked(panel, filterKey) {
+  // 패널 닫기 공통 함수 (테이블 갱신 후 openFilterKey 없이 재렌더링)
+  function applyAndClose(filterKey) {
+    const ms = container.querySelector(`.tbl-ms[data-filter-key="${filterKey}"]`);
+    if (!ms) return;
+    const panel = ms.querySelector('.tbl-ms-panel');
     const checked = [...panel.querySelectorAll('.tbl-ms-option input[type="checkbox"]:checked')].map(cb => cb.value);
     const newFilters = { ...columnFilters };
-    if (checked.length > 0) {
-      newFilters[filterKey] = checked;
-    } else {
-      delete newFilters[filterKey];
-    }
-    // 현재 열려있는 패널 키를 전달하여 재렌더링 후에도 패널 유지
-    buildTable(containerId, columns, rows, { ...options, columnFilters: newFilters, currentPage: 1, openFilterKey: filterKey });
+    if (checked.length > 0) newFilters[filterKey] = checked;
+    else delete newFilters[filterKey];
+    // openFilterKey 없이 재렌더링 → 패널 닫힌 상태
+    buildTable(containerId, columns, rows, { ...options, columnFilters: newFilters, currentPage: 1 });
+  }
+
+  // 패널 열기 (테이블 재렌더링으로 openFilterKey 포함)
+  function openPanel(filterKey) {
+    buildTable(containerId, columns, rows, { ...options, currentPage: options.currentPage || 1, openFilterKey: filterKey });
   }
 
   container.querySelectorAll('.tbl-ms').forEach(ms => {
@@ -311,18 +312,36 @@ function buildTable(containerId, columns, rows, options = {}) {
     const panel = ms.querySelector('.tbl-ms-panel');
     const filterKey = ms.dataset.filterKey;
 
-    // 트리거 클릭 → 열기/닫기
+    // 트리거 클릭 → 열기 (열려있으면 닫기 적용)
     trigger.addEventListener('click', (e) => {
       e.stopPropagation();
-      const isOpen = !panel.classList.contains('hidden');
-      // 모든 패널 닫기
-      container.querySelectorAll('.tbl-ms-panel').forEach(p => p.classList.add('hidden'));
-      if (!isOpen) panel.classList.remove('hidden');
+      if (!panel.classList.contains('hidden')) {
+        applyAndClose(filterKey);
+      } else {
+        openPanel(filterKey);
+      }
     });
 
-    // 체크박스 변경
+    // 닫기 버튼 → 필터 적용 후 닫기
+    const closeBtn = panel.querySelector('.tbl-ms-close-btn');
+    if (closeBtn) {
+      closeBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        applyAndClose(filterKey);
+      });
+    }
+
+    // 체크박스 변경 → 패널은 유지, 선택 카운트만 트리거에 반영 (실시간 표시)
     panel.querySelectorAll('.tbl-ms-option input[type="checkbox"]').forEach(cb => {
-      cb.addEventListener('change', () => collectChecked(panel, filterKey));
+      cb.addEventListener('change', (e) => {
+        e.stopPropagation();
+        // 트리거 텍스트만 즉시 업데이트 (buildTable 재호출 없음)
+        const col = columns.find(c => c.key === filterKey);
+        const label = col ? col.label : filterKey;
+        const checkedCount = panel.querySelectorAll('.tbl-ms-option input[type="checkbox"]:checked').length;
+        trigger.textContent = checkedCount === 0 ? `${label} ▼` : `${label} (${checkedCount}개)`;
+        trigger.className = 'tbl-ms-trigger' + (checkedCount > 0 ? ' tbl-ms-active' : '');
+      });
     });
 
     // 전체선택
@@ -330,8 +349,7 @@ function buildTable(containerId, columns, rows, options = {}) {
     if (btnAll) {
       btnAll.addEventListener('click', (e) => {
         e.stopPropagation();
-        panel.querySelectorAll('.tbl-ms-option:not([style*="display: none"]) input[type="checkbox"]').forEach(cb => cb.checked = true);
-        collectChecked(panel, filterKey);
+        panel.querySelectorAll('.tbl-ms-option:not([style*="display: none"]) input[type="checkbox"]').forEach(cb => { cb.checked = true; cb.dispatchEvent(new Event('change')); });
       });
     }
 
@@ -340,31 +358,36 @@ function buildTable(containerId, columns, rows, options = {}) {
     if (btnClear) {
       btnClear.addEventListener('click', (e) => {
         e.stopPropagation();
-        panel.querySelectorAll('.tbl-ms-option input[type="checkbox"]').forEach(cb => cb.checked = false);
-        collectChecked(panel, filterKey);
+        panel.querySelectorAll('.tbl-ms-option input[type="checkbox"]').forEach(cb => { cb.checked = false; cb.dispatchEvent(new Event('change')); });
       });
     }
 
     // 검색
     const searchInput = panel.querySelector('.tbl-ms-search-input');
     if (searchInput) {
-      searchInput.addEventListener('input', () => {
+      searchInput.addEventListener('input', (e) => {
+        e.stopPropagation();
         const query = searchInput.value.toLowerCase();
         panel.querySelectorAll('.tbl-ms-option').forEach(opt => {
-          const label = opt.querySelector('.tbl-ms-option-label').textContent.toLowerCase();
-          opt.style.display = label.includes(query) ? '' : 'none';
+          const lbl = opt.querySelector('.tbl-ms-option-label').textContent.toLowerCase();
+          opt.style.display = lbl.includes(query) ? '' : 'none';
         });
       });
     }
+
+    // 패널 내부 클릭은 외부 닫기 방지
+    panel.addEventListener('click', (e) => e.stopPropagation());
   });
 
-  // 패널 외부 클릭 시 닫기
-  const closeTblMs = (e) => {
-    if (!e.target.closest('.tbl-ms')) {
-      container.querySelectorAll('.tbl-ms-panel').forEach(p => p.classList.add('hidden'));
-    }
+  // 외부 클릭 시 모든 열린 패널 적용 후 닫기
+  const closeTblMs = () => {
+    container.querySelectorAll('.tbl-ms').forEach(ms => {
+      const panel = ms.querySelector('.tbl-ms-panel');
+      if (!panel.classList.contains('hidden')) {
+        applyAndClose(ms.dataset.filterKey);
+      }
+    });
   };
-  // 이전 리스너 제거 후 등록 (중복 방지)
   if (container._tblMsClose) document.removeEventListener('click', container._tblMsClose);
   container._tblMsClose = closeTblMs;
   document.addEventListener('click', closeTblMs);

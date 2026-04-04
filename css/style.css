@@ -280,6 +280,33 @@
   min-width: 180px;
   max-width: 280px;
 }
+.tbl-ms-panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.35rem 0.6rem;
+  border-bottom: 1px solid #374151;
+}
+.tbl-ms-panel-title {
+  font-size: 0.7rem;
+  color: #9CA3AF;
+  font-weight: 500;
+}
+.tbl-ms-close-btn {
+  font-size: 0.65rem;
+  color: #6B7280;
+  background: transparent;
+  border: 1px solid #374151;
+  border-radius: 0.25rem;
+  padding: 0.1rem 0.4rem;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.tbl-ms-close-btn:hover {
+  color: #E5E7EB;
+  border-color: #4B5563;
+  background: #374151;
+}
 .tbl-ms-search {
   padding: 0.4rem 0.4rem 0;
 }
