@@ -470,10 +470,17 @@ function buildSelectableTable(containerId, columns, rows, options = {}) {
   if (!container) return;
 
   const { pageSize = 10, currentPage = 1, sortKey = null, sortDir = 'desc',
-          checkedIds = new Set(), onCheckChange = null } = options;
+          checkedIds = new Set(), onCheckChange = null,
+          filterColumns = [], columnFilters = {} } = options;
+
+  // 컬럼 필터 적용 (표시 행만 필터링, checkedIds는 전체 행 기준 유지)
+  let displayRows = [...rows];
+  Object.entries(columnFilters).forEach(([key, val]) => {
+    if (val) displayRows = displayRows.filter(r => String(r[key] || '') === val);
+  });
 
   // 정렬
-  let sortedRows = [...rows];
+  let sortedRows = [...displayRows];
   if (sortKey) {
     sortedRows.sort((a, b) => {
       const va = a[sortKey] || '';
@@ -489,12 +496,42 @@ function buildSelectableTable(containerId, columns, rows, options = {}) {
   const start = (page - 1) * pageSize;
   const pageRows = sortedRows.slice(start, start + pageSize);
 
-  const totalCount = formatNumber(rows.length);
+  const totalCount = formatNumber(displayRows.length);
+  const allCount = formatNumber(rows.length);
   const checkedCount = checkedIds.size;
   const pageHint = totalPages > 1 ? ` · ${page}/${totalPages} 페이지` : '';
+  const filteredHint = displayRows.length !== rows.length ? ` (전체 ${allCount}건)` : '';
 
-  let html = `<div class="flex items-center justify-between mb-2">
-    <div class="text-sm text-gray-400">총 ${totalCount}건${pageHint} · <span class="text-blue-400">${checkedCount}건 선택</span></div>
+  // 필터 옵션 생성 (전체 rows 기준)
+  const filterOptions = {};
+  filterColumns.forEach(key => {
+    const vals = {};
+    rows.forEach(r => { const v = String(r[key] || '').trim(); if (v) vals[v] = (vals[v] || 0) + 1; });
+    filterOptions[key] = Object.entries(vals).sort((a, b) => b[1] - a[1]);
+  });
+
+  let html = '';
+
+  // 컬럼 필터 드롭다운 바
+  if (filterColumns.length > 0) {
+    html += `<div class="flex flex-wrap gap-2 mb-3">`;
+    filterColumns.forEach(key => {
+      const col = columns.find(c => c.key === key);
+      const label = col ? col.label : key;
+      const curVal = columnFilters[key] || '';
+      html += `<div class="flex items-center gap-1.5">
+        <span class="text-xs text-gray-500">${label}</span>
+        <select class="sel-tbl-filter text-xs bg-gray-800 border border-gray-700 text-gray-300 rounded px-2 py-1 cursor-pointer" data-filter-key="${key}">
+          <option value="">전체</option>
+          ${filterOptions[key].map(([v, cnt]) => `<option value="${v.replace(/"/g,'&quot;')}" ${curVal===v?'selected':''}>${v} (${cnt})</option>`).join('')}
+        </select>
+      </div>`;
+    });
+    html += `</div>`;
+  }
+
+  html += `<div class="flex items-center justify-between mb-2">
+    <div class="text-sm text-gray-400">총 ${totalCount}건${filteredHint}${pageHint} · <span class="text-blue-400">${checkedCount}건 선택</span></div>
   </div>`;
 
   // 전체 행 ID
@@ -602,6 +639,17 @@ function buildSelectableTable(containerId, columns, rows, options = {}) {
       if (p >= 1 && p <= totalPages) {
         buildSelectableTable(containerId, columns, rows, { ...options, currentPage: p, checkedIds });
       }
+    });
+  });
+
+  // 컬럼 필터 드롭다운 이벤트
+  container.querySelectorAll('.sel-tbl-filter').forEach(sel => {
+    sel.addEventListener('change', () => {
+      const key = sel.dataset.filterKey;
+      const newFilters = { ...columnFilters };
+      if (sel.value) newFilters[key] = sel.value;
+      else delete newFilters[key];
+      buildSelectableTable(containerId, columns, rows, { ...options, columnFilters: newFilters, currentPage: 1, checkedIds });
     });
   });
 }

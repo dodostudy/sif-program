@@ -463,85 +463,102 @@
           <div class="reveal d300"><p class="text-gray-400 text-sm">각 카드를 클릭하면 해당 분석 페이지로 이동합니다</p></div>
         </div>
 
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+        <div class="space-y-8">
 
-          <a href="../index.html" class="reveal hov-card block rounded-2xl border border-gray-800 bg-gray-950/80 p-6 group">
-            <div class="w-12 h-12 rounded-xl bg-blue-900/50 border border-blue-800 flex items-center justify-center text-blue-400 mb-4 group-hover:bg-blue-800/60 transition-colors">
-              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
-            </div>
-            <h4 class="text-white font-bold mb-1.5">대시보드</h4>
-            <p class="text-xs text-gray-500 mb-3">전체 재해 현황 종합 대시보드</p>
-            <ul class="text-xs text-gray-400 space-y-1.5">
-              <li class="flex gap-1.5 items-start"><span class="text-blue-500 mt-0.5">•</span>요약 카드 + 공종별 드릴다운 차트</li>
-              <li class="flex gap-1.5 items-start"><span class="text-blue-500 mt-0.5">•</span>기인물 Top10 · 공종×재해형태 히트맵</li>
-            </ul>
-            <div class="mt-4 text-xs text-blue-400 font-semibold group-hover:text-blue-300 transition-colors">바로가기 →</div>
-          </a>
+          <!-- 대시보드 -->
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+            <a href="../index.html" class="reveal hov-card block rounded-2xl border border-gray-800 bg-gray-950/80 p-6 group">
+              <div class="w-12 h-12 rounded-xl bg-blue-900/50 border border-blue-800 flex items-center justify-center text-blue-400 mb-4 group-hover:bg-blue-800/60 transition-colors">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
+              </div>
+              <h4 class="text-white font-bold mb-1.5">대시보드</h4>
+              <p class="text-xs text-gray-500 mb-3">전체 재해 현황 종합 대시보드</p>
+              <ul class="text-xs text-gray-400 space-y-1.5">
+                <li class="flex gap-1.5 items-start"><span class="text-blue-500 mt-0.5">•</span>요약 카드 + 공종별 드릴다운 차트</li>
+                <li class="flex gap-1.5 items-start"><span class="text-blue-500 mt-0.5">•</span>기인물 Top10 · 공종×재해형태 히트맵</li>
+              </ul>
+              <div class="mt-4 text-xs text-blue-400 font-semibold group-hover:text-blue-300 transition-colors">바로가기 →</div>
+            </a>
+          </div>
 
-          <a href="process-inquiry.html" class="reveal d100 hov-card block rounded-2xl border border-gray-800 bg-gray-950/80 p-6 group">
-            <div class="w-12 h-12 rounded-xl bg-cyan-900/50 border border-cyan-800 flex items-center justify-center text-cyan-400 mb-4 group-hover:bg-cyan-800/60 transition-colors">
-              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+          <!-- 위험성평가 검토 -->
+          <div class="reveal">
+            <div class="flex items-center gap-3 mb-4">
+              <div class="h-px flex-1 bg-gray-800"></div>
+              <span class="text-sm font-bold text-cyan-300 px-4 py-1.5 rounded-full bg-cyan-900/25 border border-cyan-800/60 flex items-center gap-2">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/></svg>
+                위험성평가 검토
+              </span>
+              <div class="h-px flex-1 bg-gray-800"></div>
             </div>
-            <h4 class="text-white font-bold mb-1.5">공정조회</h4>
-            <p class="text-xs text-gray-500 mb-3">공정별 다빈도 사고사망 기인물, 재해형태 확인</p>
-            <ul class="text-xs text-gray-400 space-y-1.5">
-              <li class="flex gap-1.5 items-start"><span class="text-cyan-500 mt-0.5">•</span>5단계 Cascading 필터</li>
-              <li class="flex gap-1.5 items-start"><span class="text-cyan-500 mt-0.5">•</span>사고건수 차트 + 도넛 + 엑셀 다운로드</li>
-            </ul>
-            <div class="mt-4 text-xs text-blue-400 font-semibold group-hover:text-blue-300 transition-colors">바로가기 →</div>
-          </a>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+              <a href="process-inquiry.html" class="hov-card block rounded-2xl border border-gray-800 bg-gray-950/80 p-6 group">
+                <div class="w-12 h-12 rounded-xl bg-cyan-900/50 border border-cyan-800 flex items-center justify-center text-cyan-400 mb-4 group-hover:bg-cyan-800/60 transition-colors">
+                  <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                </div>
+                <h4 class="text-white font-bold mb-1.5">공정 조회</h4>
+                <p class="text-xs text-gray-500 mb-3">공정별 다빈도 사고사망 기인물, 재해형태 확인</p>
+                <ul class="text-xs text-gray-400 space-y-1.5">
+                  <li class="flex gap-1.5 items-start"><span class="text-cyan-500 mt-0.5">•</span>5단계 Cascading 필터</li>
+                  <li class="flex gap-1.5 items-start"><span class="text-cyan-500 mt-0.5">•</span>사고건수 차트 + 도넛 + 엑셀 다운로드</li>
+                </ul>
+                <div class="mt-4 text-xs text-blue-400 font-semibold group-hover:text-blue-300 transition-colors">바로가기 →</div>
+              </a>
+              <a href="cause-inquiry.html" class="hov-card block rounded-2xl border border-gray-800 bg-gray-950/80 p-6 group">
+                <div class="w-12 h-12 rounded-xl bg-amber-900/50 border border-amber-800 flex items-center justify-center text-amber-400 mb-4 group-hover:bg-amber-800/60 transition-colors">
+                  <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z"/></svg>
+                </div>
+                <h4 class="text-white font-bold mb-1.5">기인물 조회</h4>
+                <p class="text-xs text-gray-500 mb-3">기인물별 주요 재해형태 + 사용공정 확인</p>
+                <ul class="text-xs text-gray-400 space-y-1.5">
+                  <li class="flex gap-1.5 items-start"><span class="text-amber-500 mt-0.5">•</span>작업유형 → 12대 기인물 역방향 필터</li>
+                  <li class="flex gap-1.5 items-start"><span class="text-amber-500 mt-0.5">•</span>공종별·재해형태별 분포 차트</li>
+                </ul>
+                <div class="mt-4 text-xs text-blue-400 font-semibold group-hover:text-blue-300 transition-colors">바로가기 →</div>
+              </a>
+              <a href="disaster-type.html" class="hov-card block rounded-2xl border border-gray-800 bg-gray-950/80 p-6 group">
+                <div class="w-12 h-12 rounded-xl bg-red-900/50 border border-red-800 flex items-center justify-center text-red-400 mb-4 group-hover:bg-red-800/60 transition-colors">
+                  <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 18.657A8 8 0 016.343 7.343S7 9 9 10c0-2 .5-5 2.986-7C14 5 16.09 5.777 17.656 7.343A7.975 7.975 0 0120 13a7.975 7.975 0 01-2.343 5.657z"/></svg>
+                </div>
+                <h4 class="text-white font-bold mb-1.5">재해형태 분석</h4>
+                <p class="text-xs text-gray-500 mb-3">'떨어짐, 깔림 등' 재해형태별 위험요인 심층 분석</p>
+                <ul class="text-xs text-gray-400 space-y-1.5">
+                  <li class="flex gap-1.5 items-start"><span class="text-red-500 mt-0.5">•</span>다차원 연계 필터</li>
+                  <li class="flex gap-1.5 items-start"><span class="text-red-500 mt-0.5">•</span>재해형태별·기인물별·공종별 차트</li>
+                </ul>
+                <div class="mt-4 text-xs text-blue-400 font-semibold group-hover:text-blue-300 transition-colors">바로가기 →</div>
+              </a>
+            </div>
+          </div>
 
-          <a href="cause-inquiry.html" class="reveal d200 hov-card block rounded-2xl border border-gray-800 bg-gray-950/80 p-6 group">
-            <div class="w-12 h-12 rounded-xl bg-amber-900/50 border border-amber-800 flex items-center justify-center text-amber-400 mb-4 group-hover:bg-amber-800/60 transition-colors">
-              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z"/></svg>
-            </div>
-            <h4 class="text-white font-bold mb-1.5">기인물조회</h4>
-            <p class="text-xs text-gray-500 mb-3">기인물별 주요 재해형태 + 사용공정 확인 </p>
-            <ul class="text-xs text-gray-400 space-y-1.5">
-              <li class="flex gap-1.5 items-start"><span class="text-amber-500 mt-0.5">•</span>작업유형 → 12대 기인물 역방향 필터</li>
-              <li class="flex gap-1.5 items-start"><span class="text-amber-500 mt-0.5">•</span>공종별·재해형태별 분포 차트</li>
-            </ul>
-            <div class="mt-4 text-xs text-blue-400 font-semibold group-hover:text-blue-300 transition-colors">바로가기 →</div>
-          </a>
-
-          <a href="disaster-type.html" class="reveal d100 hov-card block rounded-2xl border border-gray-800 bg-gray-950/80 p-6 group">
-            <div class="w-12 h-12 rounded-xl bg-red-900/50 border border-red-800 flex items-center justify-center text-red-400 mb-4 group-hover:bg-red-800/60 transition-colors">
-              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 18.657A8 8 0 016.343 7.343S7 9 9 10c0-2 .5-5 2.986-7C14 5 16.09 5.777 17.656 7.343A7.975 7.975 0 0120 13a7.975 7.975 0 01-2.343 5.657z"/></svg>
-            </div>
-            <h4 class="text-white font-bold mb-1.5">재해형태 분석</h4>
-            <p class="text-xs text-gray-500 mb-3">'떨어짐, 깔림 등' 재해형태별 위험요인 심층 분석</p>
-            <ul class="text-xs text-gray-400 space-y-1.5">
-              <li class="flex gap-1.5 items-start"><span class="text-red-500 mt-0.5">•</span>다차원 연계 필터</li>
-              <li class="flex gap-1.5 items-start"><span class="text-red-500 mt-0.5">•</span>재해형태별·기인물별·공종별 차트</li>
-            </ul>
-            <div class="mt-4 text-xs text-blue-400 font-semibold group-hover:text-blue-300 transition-colors">바로가기 →</div>
-          </a>
-
-          <a href="risk-assessment.html" class="reveal d200 hov-card block rounded-2xl border border-gray-800 bg-gray-950/80 p-6 group">
-            <div class="w-12 h-12 rounded-xl bg-purple-900/50 border border-purple-800 flex items-center justify-center text-purple-400 mb-4 group-hover:bg-purple-800/60 transition-colors">
-              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
-            </div>
-            <h4 class="text-white font-bold mb-1.5">위험성평가</h4>
-            <p class="text-xs text-gray-500 mb-3">공정별 주요재해사례와 감소대책 특화, AI GPTs '안전누리' 지원</p>
-            <ul class="text-xs text-gray-400 space-y-1.5">
-              <li class="flex gap-1.5 items-start"><span class="text-purple-500 mt-0.5">•</span>3단계 위자드 + Top10 위험요인 카드</li>
-              <li class="flex gap-1.5 items-start"><span class="text-purple-500 mt-0.5">•</span>재해사례·감소대책 통합 + 인쇄 지원</li>
-            </ul>
-            <div class="mt-4 text-xs text-blue-400 font-semibold group-hover:text-blue-300 transition-colors">바로가기 →</div>
-          </a>
-
-          <a href="statistics.html" class="reveal d300 hov-card block rounded-2xl border border-gray-800 bg-gray-950/80 p-6 group">
-            <div class="w-12 h-12 rounded-xl bg-emerald-900/50 border border-emerald-800 flex items-center justify-center text-emerald-400 mb-4 group-hover:bg-emerald-800/60 transition-colors">
-              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
-            </div>
-            <h4 class="text-white font-bold mb-1.5">통계분석</h4>
-            <p class="text-xs text-gray-500 mb-3">심층 통계 분석 및 보고서 작성 참고</p>
-            <ul class="text-xs text-gray-400 space-y-1.5">
-              <li class="flex gap-1.5 items-start"><span class="text-emerald-500 mt-0.5">•</span>6개 탭 · 차트↔테이블 토글</li>
-              <li class="flex gap-1.5 items-start"><span class="text-emerald-500 mt-0.5">•</span>히트맵 · 스택드 바 · 엑셀 다운로드</li>
-            </ul>
-            <div class="mt-4 text-xs text-blue-400 font-semibold group-hover:text-blue-300 transition-colors">바로가기 →</div>
-          </a>
+          <!-- 위험성평가 생성 + 통계분석 -->
+          <div class="reveal d100 grid grid-cols-1 md:grid-cols-2 gap-5">
+            <a href="risk-assessment.html" class="hov-card block rounded-2xl border border-purple-800/40 bg-purple-950/20 p-6 group">
+              <div class="w-12 h-12 rounded-xl bg-purple-900/50 border border-purple-800 flex items-center justify-center text-purple-400 mb-4 group-hover:bg-purple-800/60 transition-colors">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+              </div>
+              <h4 class="text-white font-bold mb-1.5">위험성평가 생성</h4>
+              <p class="text-xs text-gray-500 mb-3">발전업·건설업 위험성평가 직접 생성, AI GPTs '안전누리' 연동</p>
+              <ul class="text-xs text-gray-400 space-y-1.5">
+                <li class="flex gap-1.5 items-start"><span class="text-purple-500 mt-0.5">•</span>발전업: 기인물 기반 단계별 위자드</li>
+                <li class="flex gap-1.5 items-start"><span class="text-purple-500 mt-0.5">•</span>건설업: 공종 → 작업명 → 단위작업명 선택</li>
+                <li class="flex gap-1.5 items-start"><span class="text-purple-500 mt-0.5">•</span>재해사례 체크박스 선택 + 인쇄 지원</li>
+              </ul>
+              <div class="mt-4 text-xs text-blue-400 font-semibold group-hover:text-blue-300 transition-colors">바로가기 →</div>
+            </a>
+            <a href="statistics.html" class="hov-card block rounded-2xl border border-gray-800 bg-gray-950/80 p-6 group">
+              <div class="w-12 h-12 rounded-xl bg-emerald-900/50 border border-emerald-800 flex items-center justify-center text-emerald-400 mb-4 group-hover:bg-emerald-800/60 transition-colors">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
+              </div>
+              <h4 class="text-white font-bold mb-1.5">통계분석</h4>
+              <p class="text-xs text-gray-500 mb-3">심층 통계 분석 및 보고서 작성 참고</p>
+              <ul class="text-xs text-gray-400 space-y-1.5">
+                <li class="flex gap-1.5 items-start"><span class="text-emerald-500 mt-0.5">•</span>6개 탭 · 차트↔테이블 토글</li>
+                <li class="flex gap-1.5 items-start"><span class="text-emerald-500 mt-0.5">•</span>히트맵 · 스택드 바 · 엑셀 다운로드</li>
+              </ul>
+              <div class="mt-4 text-xs text-blue-400 font-semibold group-hover:text-blue-300 transition-colors">바로가기 →</div>
+            </a>
+          </div>
 
         </div>
       </div>
