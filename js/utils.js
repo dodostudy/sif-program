@@ -229,10 +229,16 @@ function buildTable(containerId, columns, rows, options = {}) {
         if (col.format) value = col.format(value, row);
         else if (typeof value === 'number') value = formatNumber(value);
         else value = value || '-';
-        const wrapStyle = col.wrap
-          ? 'word-break:break-word;white-space:pre-wrap;'
-          : 'white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:0;';
-        html += `<td class="px-3 py-2" style="${wrapStyle}" title="${String(row[col.key] || '').replace(/"/g, '&quot;')}">${value}</td>`;
+        const titleAttr = `title="${String(row[col.key] || '').replace(/"/g, '&quot;')}"`;
+        if (col.wrap) {
+          // 줄바꿈 허용 컬럼 (재해개요, 감소대책 등)
+          html += `<td class="px-3 py-2" style="word-break:break-word;white-space:pre-wrap;" ${titleAttr}>${value}</td>`;
+        } else {
+          // 고정 너비 컬럼: 내부 div로 overflow 처리 (td 자체의 overflow:hidden은 브라우저 호환 이슈)
+          html += `<td class="px-0 py-0" style="overflow:hidden;" ${titleAttr}>
+            <div style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding:0.5rem 0.75rem;">${value}</div>
+          </td>`;
+        }
       });
       html += `</tr>`;
     });

@@ -60,14 +60,16 @@ function handlePrintWithCharts() {
           _origDatalabelsColors.set(chart.id, dl.color);
           dl.color = '#1a1a1a';
         }
-        chart.update();
+        // 'none': 애니메이션 없이 즉시 재렌더링 (기본 update()는 1000ms 애니메이션이라
+        // setTimeout 150ms 안에 렌더링이 완료되지 않아 첫 번째 클릭 시 차트 누락)
+        chart.update('none');
       });
     } catch (e) { /* 무시 */ }
   }
-  // 렌더링 완료 후 인쇄
+  // 즉시 렌더링된 캔버스를 다음 2프레임에서 캡처하도록 인쇄 실행
   requestAnimationFrame(() => {
     requestAnimationFrame(() => {
-      setTimeout(() => window.print(), 150);
+      window.print();
     });
   });
 }
