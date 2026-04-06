@@ -471,12 +471,14 @@ function buildSelectableTable(containerId, columns, rows, options = {}) {
 
   const { pageSize = 10, currentPage = 1, sortKey = null, sortDir = 'desc',
           checkedIds = new Set(), onCheckChange = null,
-          filterColumns = [], columnFilters = {} } = options;
+          filterColumns = [], columnFilters = {}, openFilterKey = null } = options;
 
-  // 컬럼 필터 적용 (표시 행만 필터링, checkedIds는 전체 행 기준 유지)
+  // 컬럼 필터 적용 — 배열 멀티셀렉트 지원 (표시 행만 필터링, checkedIds는 전체 행 기준 유지)
   let displayRows = [...rows];
   Object.entries(columnFilters).forEach(([key, val]) => {
-    if (val) displayRows = displayRows.filter(r => String(r[key] || '') === val);
+    if (val && val.length > 0) {
+      displayRows = displayRows.filter(r => val.includes(String(r[key] || '').trim()));
+    }
   });
 
   // 정렬
@@ -502,31 +504,60 @@ function buildSelectableTable(containerId, columns, rows, options = {}) {
   const pageHint = totalPages > 1 ? ` · ${page}/${totalPages} 페이지` : '';
   const filteredHint = displayRows.length !== rows.length ? ` (전체 ${allCount}건)` : '';
 
-  // 필터 옵션 생성 (전체 rows 기준)
+  // 필터 옵션 생성 — 연계 필터: 다른 필터 적용 후 가능한 값만 표시
   const filterOptions = {};
   filterColumns.forEach(key => {
     const vals = {};
-    rows.forEach(r => { const v = String(r[key] || '').trim(); if (v) vals[v] = (vals[v] || 0) + 1; });
+    let baseRows = rows;
+    Object.keys(columnFilters).forEach(otherKey => {
+      if (otherKey === key) return;
+      const otherVal = columnFilters[otherKey];
+      if (otherVal && otherVal.length > 0) {
+        baseRows = baseRows.filter(r => otherVal.includes(String(r[otherKey] || '').trim()));
+      }
+    });
+    baseRows.forEach(r => {
+      const v = String(r[key] || '').trim();
+      if (v) vals[v] = (vals[v] || 0) + 1;
+    });
     filterOptions[key] = Object.entries(vals).sort((a, b) => b[1] - a[1]);
   });
 
   let html = '';
 
-  // 컬럼 필터 드롭다운 바
+  // 컬럼 필터 바 (tbl-ms 멀티셀렉트 패널)
   if (filterColumns.length > 0) {
     html += `<div class="flex flex-wrap gap-2 mb-3">`;
     filterColumns.forEach(key => {
       const col = columns.find(c => c.key === key);
       const label = col ? col.label : key;
-      const curVal = columnFilters[key] || '';
-      html += `<div class="flex items-center gap-1.5">
-        <span class="text-xs text-gray-500">${label}</span>
-        <select class="sel-tbl-filter text-xs bg-gray-800 border border-gray-700 text-gray-300 rounded px-2 py-1 cursor-pointer" data-filter-key="${key}">
-          <option value="">전체</option>
-          ${filterOptions[key].map(([v, cnt]) => `<option value="${v.replace(/"/g,'&quot;')}" ${curVal===v?'selected':''}>${v} (${cnt})</option>`).join('')}
-        </select>
-      </div>`;
+      const currentArr = columnFilters[key] || null;
+      const selectedCount = Array.isArray(currentArr) ? currentArr.length : 0;
+      const triggerText = selectedCount === 0 ? `${label} ▼` : `${label} (${selectedCount}개)`;
+      const hasSelection = selectedCount > 0 ? ' tbl-ms-active' : '';
+      const isOpen = openFilterKey === key;
+
+      html += `<div class="tbl-ms" data-filter-key="${key}">`;
+      html += `<button type="button" class="tbl-ms-trigger${hasSelection}">${triggerText}</button>`;
+      html += `<div class="tbl-ms-panel${isOpen ? '' : ' hidden'}">`;
+      html += `<div class="tbl-ms-panel-header"><span class="tbl-ms-panel-title">${label} 선택</span><button type="button" class="tbl-ms-close-btn">✕ 닫기</button></div>`;
+      if ((filterOptions[key] || []).length >= 8) {
+        html += `<div class="tbl-ms-search"><input type="text" class="tbl-ms-search-input" placeholder="검색..."></div>`;
+      }
+      html += `<div class="tbl-ms-options">`;
+      (filterOptions[key] || []).forEach(([val, cnt]) => {
+        const checked = (Array.isArray(currentArr) && currentArr.includes(val)) ? ' checked' : '';
+        const escaped = val.replace(/"/g, '&quot;');
+        html += `<label class="tbl-ms-option"><input type="checkbox" value="${escaped}"${checked}><span class="tbl-ms-option-label">${val}</span><span class="tbl-ms-option-count">(${cnt})</span></label>`;
+      });
+      html += `</div>`;
+      html += `<div class="tbl-ms-actions"><button type="button" class="tbl-ms-btn tbl-ms-btn-all">전체선택</button><button type="button" class="tbl-ms-btn tbl-ms-btn-clear">선택해제</button></div>`;
+      html += `</div></div>`;
     });
+    const hasActiveFilter = Object.values(columnFilters).some(v => v && v.length > 0);
+    if (hasActiveFilter) {
+      html += `<button class="table-filter-reset text-xs text-blue-400 hover:text-blue-300 px-2 py-1 border border-gray-600 rounded">필터 초기화</button>`;
+    }
     html += `</div>`;
   }
 
@@ -534,48 +565,82 @@ function buildSelectableTable(containerId, columns, rows, options = {}) {
     <div class="text-sm text-gray-400">총 ${totalCount}건${filteredHint}${pageHint} · <span class="text-blue-400">${checkedCount}건 선택</span></div>
   </div>`;
 
-  // 전체 행 ID
   const allIds = rows.map(r => r.id);
   const allChecked = allIds.length > 0 && allIds.every(id => checkedIds.has(id));
+  const isMobile = window.innerWidth < 768;
 
-  html += `<div class="overflow-x-auto">
-    <table class="w-full text-sm text-left" style="table-layout:fixed">
-      <colgroup>
-        <col style="width:36px;">
-        ${columns.map(col => {
-          const w = col.width || '';
-          const minW = col.minWidth ? `min-width:${col.minWidth}px;` : '';
-          return `<col style="${w ? `width:${w}px;` : ''}${minW}">`;
-        }).join('')}
-      </colgroup>
-      <thead class="text-xs uppercase bg-gray-800 text-gray-400">
-        <tr>
-          <th class="px-2 py-2 text-center"><input type="checkbox" class="sel-all accent-blue-500" ${allChecked ? 'checked' : ''}></th>
-          ${columns.map(col => `<th class="px-3 py-2 cursor-pointer hover:text-gray-200 whitespace-nowrap" data-sort="${col.key}">${col.label} ${sortKey === col.key ? (sortDir === 'desc' ? '▼' : '▲') : ''}</th>`).join('')}
-        </tr>
-      </thead>
-      <tbody>`;
+  if (isMobile) {
+    // 모바일: 카드 뷰 + 체크박스
+    html += `<div class="flex items-center gap-2 mb-2 px-1">
+      <input type="checkbox" class="sel-all accent-blue-500 w-4 h-4" ${allChecked ? 'checked' : ''}>
+      <span class="text-xs text-gray-400">전체 선택</span>
+    </div>`;
+    if (pageRows.length === 0) {
+      html += `<div class="text-center text-gray-500 py-8 text-sm">조회 결과가 없습니다.</div>`;
+    } else {
+      html += `<div class="flex flex-col gap-2">`;
+      pageRows.forEach(row => {
+        const isChecked = checkedIds.has(row.id);
+        html += `<div class="rounded-lg p-3 border flex gap-3 ${isChecked ? 'bg-blue-900/15 border-blue-600/50' : 'bg-gray-800/70 border-gray-700'}" data-row-id="${row.id}">`;
+        html += `<div class="flex-shrink-0 pt-0.5"><input type="checkbox" class="sel-row accent-blue-500 w-4 h-4" value="${row.id}" ${isChecked ? 'checked' : ''}></div>`;
+        html += `<div class="flex-1 min-w-0">`;
+        columns.forEach((col, ci) => {
+          let value = row[col.key];
+          if (col.format) value = col.format(value, row);
+          else if (typeof value === 'number') value = formatNumber(value);
+          else value = value || '-';
+          const isLast = ci === columns.length - 1;
+          const isHighlight = ['재해형태', '기인물', '작업명'].includes(col.key);
+          html += `<div class="flex gap-2 py-1.5 ${isLast ? '' : 'border-b border-gray-700/60'}">
+            <span class="text-xs text-gray-500 flex-shrink-0" style="min-width:4.5rem">${col.label}</span>
+            <span class="text-xs ${isHighlight ? 'text-white font-semibold' : 'text-gray-300'} flex-1" style="word-break:break-word">${value}</span>
+          </div>`;
+        });
+        html += `</div></div>`;
+      });
+      html += `</div>`;
+    }
+  } else {
+    // 데스크탑: 테이블 뷰
+    html += `<div class="overflow-x-auto">
+      <table class="w-full text-sm text-left" style="table-layout:fixed">
+        <colgroup>
+          <col style="width:36px;">
+          ${columns.map(col => {
+            const w = col.width || '';
+            const minW = col.minWidth ? `min-width:${col.minWidth}px;` : '';
+            return `<col style="${w ? `width:${w}px;` : ''}${minW}">`;
+          }).join('')}
+        </colgroup>
+        <thead class="text-xs uppercase bg-gray-800 text-gray-400">
+          <tr>
+            <th class="px-2 py-2 text-center"><input type="checkbox" class="sel-all accent-blue-500" ${allChecked ? 'checked' : ''}></th>
+            ${columns.map(col => `<th class="px-3 py-2 cursor-pointer hover:text-gray-200 whitespace-nowrap" data-sort="${col.key}">${col.label} ${sortKey === col.key ? (sortDir === 'desc' ? '▼' : '▲') : ''}</th>`).join('')}
+          </tr>
+        </thead>
+        <tbody>`;
 
-  pageRows.forEach(row => {
-    const isChecked = checkedIds.has(row.id);
-    const bgClass = isChecked ? 'bg-blue-900/20' : '';
-    html += `<tr class="border-b border-gray-700 hover:bg-gray-800/50 ${bgClass}" data-row-id="${row.id}">`;
-    html += `<td class="px-2 py-2 text-center"><input type="checkbox" class="sel-row accent-blue-500" value="${row.id}" ${isChecked ? 'checked' : ''}></td>`;
-    columns.forEach(col => {
-      let value = row[col.key];
-      if (col.format) value = col.format(value, row);
-      else if (typeof value === 'number') value = formatNumber(value);
-      else value = value || '-';
-      if (col.wrap) {
-        html += `<td class="px-3 py-2" style="word-break:break-word;white-space:pre-wrap;">${value}</td>`;
-      } else {
-        html += `<td class="px-0 py-0" style="overflow:hidden;"><div style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding:0.5rem 0.75rem;">${value}</div></td>`;
-      }
+    pageRows.forEach(row => {
+      const isChecked = checkedIds.has(row.id);
+      const bgClass = isChecked ? 'bg-blue-900/20' : '';
+      html += `<tr class="border-b border-gray-700 hover:bg-gray-800/50 ${bgClass}" data-row-id="${row.id}">`;
+      html += `<td class="px-2 py-2 text-center"><input type="checkbox" class="sel-row accent-blue-500" value="${row.id}" ${isChecked ? 'checked' : ''}></td>`;
+      columns.forEach(col => {
+        let value = row[col.key];
+        if (col.format) value = col.format(value, row);
+        else if (typeof value === 'number') value = formatNumber(value);
+        else value = value || '-';
+        if (col.wrap) {
+          html += `<td class="px-3 py-2" style="word-break:break-word;white-space:pre-wrap;">${value}</td>`;
+        } else {
+          html += `<td class="px-0 py-0" style="overflow:hidden;"><div style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding:0.5rem 0.75rem;">${value}</div></td>`;
+        }
+      });
+      html += `</tr>`;
     });
-    html += `</tr>`;
-  });
 
-  html += `</tbody></table></div>`;
+    html += `</tbody></table></div>`;
+  }
 
   // 페이지네이션
   if (totalPages > 1) {
@@ -592,6 +657,88 @@ function buildSelectableTable(containerId, columns, rows, options = {}) {
 
   container.innerHTML = html;
 
+  // 패널 닫기 + 필터 적용
+  function applyAndClose(filterKey) {
+    const ms = container.querySelector(`.tbl-ms[data-filter-key="${filterKey}"]`);
+    if (!ms) return;
+    const panel = ms.querySelector('.tbl-ms-panel');
+    const checked = [...panel.querySelectorAll('.tbl-ms-option input[type="checkbox"]:checked')].map(cb => cb.value);
+    const newFilters = { ...columnFilters };
+    if (checked.length > 0) newFilters[filterKey] = checked;
+    else delete newFilters[filterKey];
+    buildSelectableTable(containerId, columns, rows, { ...options, columnFilters: newFilters, currentPage: 1, checkedIds, openFilterKey: null });
+  }
+
+  // 패널 열기
+  function openPanel(filterKey) {
+    buildSelectableTable(containerId, columns, rows, { ...options, currentPage: options.currentPage || 1, checkedIds, openFilterKey: filterKey });
+  }
+
+  // tbl-ms 이벤트
+  container.querySelectorAll('.tbl-ms').forEach(ms => {
+    const trigger = ms.querySelector('.tbl-ms-trigger');
+    const panel = ms.querySelector('.tbl-ms-panel');
+    const filterKey = ms.dataset.filterKey;
+
+    trigger.addEventListener('click', (e) => {
+      e.stopPropagation();
+      if (!panel.classList.contains('hidden')) applyAndClose(filterKey);
+      else openPanel(filterKey);
+    });
+
+    const closeBtn = panel.querySelector('.tbl-ms-close-btn');
+    if (closeBtn) closeBtn.addEventListener('click', (e) => { e.stopPropagation(); applyAndClose(filterKey); });
+
+    panel.querySelectorAll('.tbl-ms-option input[type="checkbox"]').forEach(cb => {
+      cb.addEventListener('change', (e) => {
+        e.stopPropagation();
+        const col = columns.find(c => c.key === filterKey);
+        const label = col ? col.label : filterKey;
+        const cnt = panel.querySelectorAll('.tbl-ms-option input[type="checkbox"]:checked').length;
+        trigger.textContent = cnt === 0 ? `${label} ▼` : `${label} (${cnt}개)`;
+        trigger.className = 'tbl-ms-trigger' + (cnt > 0 ? ' tbl-ms-active' : '');
+      });
+    });
+
+    const btnAll = panel.querySelector('.tbl-ms-btn-all');
+    if (btnAll) btnAll.addEventListener('click', (e) => {
+      e.stopPropagation();
+      panel.querySelectorAll('.tbl-ms-option:not([style*="display: none"]) input[type="checkbox"]').forEach(cb => { cb.checked = true; cb.dispatchEvent(new Event('change')); });
+    });
+
+    const btnClear = panel.querySelector('.tbl-ms-btn-clear');
+    if (btnClear) btnClear.addEventListener('click', (e) => {
+      e.stopPropagation();
+      panel.querySelectorAll('.tbl-ms-option input[type="checkbox"]').forEach(cb => { cb.checked = false; cb.dispatchEvent(new Event('change')); });
+    });
+
+    const searchInput = panel.querySelector('.tbl-ms-search-input');
+    if (searchInput) searchInput.addEventListener('input', (e) => {
+      e.stopPropagation();
+      const query = searchInput.value.toLowerCase();
+      panel.querySelectorAll('.tbl-ms-option').forEach(opt => {
+        opt.style.display = opt.querySelector('.tbl-ms-option-label').textContent.toLowerCase().includes(query) ? '' : 'none';
+      });
+    });
+
+    panel.addEventListener('click', e => e.stopPropagation());
+  });
+
+  // 필터 초기화
+  const resetBtn = container.querySelector('.table-filter-reset');
+  if (resetBtn) resetBtn.addEventListener('click', () => {
+    buildSelectableTable(containerId, columns, rows, { ...options, columnFilters: {}, currentPage: 1, checkedIds });
+  });
+
+  // 외부 클릭 시 열린 패널 닫기
+  document.addEventListener('click', function outsideClick() {
+    container.querySelectorAll('.tbl-ms').forEach(ms => {
+      const panel = ms.querySelector('.tbl-ms-panel');
+      if (panel && !panel.classList.contains('hidden')) applyAndClose(ms.dataset.filterKey);
+    });
+    document.removeEventListener('click', outsideClick);
+  });
+
   // 이벤트: 개별 체크박스
   container.querySelectorAll('.sel-row').forEach(cb => {
     cb.addEventListener('change', () => {
@@ -599,26 +746,27 @@ function buildSelectableTable(containerId, columns, rows, options = {}) {
       if (cb.checked) checkedIds.add(id);
       else checkedIds.delete(id);
       if (onCheckChange) onCheckChange([...checkedIds]);
-      // 현재 페이지 상태만 반영 (전체 재렌더링 방지)
-      const tr = cb.closest('tr');
-      tr.classList.toggle('bg-blue-900/20', cb.checked);
-      // 전체선택 체크박스 동기화
+      // 행 강조만 업데이트 (전체 재렌더링 방지)
+      const rowEl = cb.closest('tr') || cb.closest('[data-row-id]');
+      if (rowEl) {
+        if (rowEl.tagName === 'TR') {
+          rowEl.classList.toggle('bg-blue-900/20', cb.checked);
+        } else {
+          rowEl.className = rowEl.className.replace(/bg-blue-900\/15|bg-gray-800\/70|border-blue-600\/50|border-gray-700/g, '');
+          rowEl.classList.add(...(cb.checked ? ['bg-blue-900/15', 'border-blue-600/50'] : ['bg-gray-800/70', 'border-gray-700']));
+        }
+      }
       const selAll = container.querySelector('.sel-all');
-      selAll.checked = allIds.every(id => checkedIds.has(id));
-      // 선택 건수 텍스트 업데이트
+      if (selAll) selAll.checked = allIds.every(id => checkedIds.has(id));
       const countEl = container.querySelector('.text-blue-400');
       if (countEl) countEl.textContent = `${checkedIds.size}건 선택`;
     });
   });
 
   // 이벤트: 전체선택
-  container.querySelector('.sel-all').addEventListener('change', (e) => {
-    const checked = e.target.checked;
-    // 전체 행 (현재 페이지가 아닌 모든 행)
-    allIds.forEach(id => {
-      if (checked) checkedIds.add(id);
-      else checkedIds.delete(id);
-    });
+  const selAllEl = container.querySelector('.sel-all');
+  if (selAllEl) selAllEl.addEventListener('change', (e) => {
+    allIds.forEach(id => e.target.checked ? checkedIds.add(id) : checkedIds.delete(id));
     if (onCheckChange) onCheckChange([...checkedIds]);
     buildSelectableTable(containerId, columns, rows, { ...options, checkedIds, currentPage: page });
   });
@@ -639,17 +787,6 @@ function buildSelectableTable(containerId, columns, rows, options = {}) {
       if (p >= 1 && p <= totalPages) {
         buildSelectableTable(containerId, columns, rows, { ...options, currentPage: p, checkedIds });
       }
-    });
-  });
-
-  // 컬럼 필터 드롭다운 이벤트
-  container.querySelectorAll('.sel-tbl-filter').forEach(sel => {
-    sel.addEventListener('change', () => {
-      const key = sel.dataset.filterKey;
-      const newFilters = { ...columnFilters };
-      if (sel.value) newFilters[key] = sel.value;
-      else delete newFilters[key];
-      buildSelectableTable(containerId, columns, rows, { ...options, columnFilters: newFilters, currentPage: 1, checkedIds });
     });
   });
 }
