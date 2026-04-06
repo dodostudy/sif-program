@@ -14,7 +14,6 @@ const NAV_ITEMS = [
     ]
   },
   { href: '/pages/risk-assessment.html', icon: 'shield', label: '위험성평가 생성' },
-  { href: '/pages/statistics.html', icon: 'chart', label: '통계분석' },
 ];
 
 const ICONS = {
@@ -202,4 +201,10 @@ function createKoenToggle(containerId, onChange) {
     label.textContent = toggle.checked ? '발전소 공정만' : '전체';
     onChange(toggle.checked ? true : null);
   });
+
+  // 초기화 함수 반환
+  return () => {
+    toggle.checked = false;
+    label.textContent = '전체';
+  };
 }

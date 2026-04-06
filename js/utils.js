@@ -335,7 +335,7 @@ function buildTable(containerId, columns, rows, options = {}) {
     if (checked.length > 0) newFilters[filterKey] = checked;
     else delete newFilters[filterKey];
     // openFilterKey 없이 재렌더링 → 패널 닫힌 상태
-    buildTable(containerId, columns, rows, { ...options, columnFilters: newFilters, currentPage: 1 });
+    buildTable(containerId, columns, rows, { ...options, columnFilters: newFilters, currentPage: 1, openFilterKey: null });
   }
 
   // 패널 열기 (테이블 재렌더링으로 openFilterKey 포함)
