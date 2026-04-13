@@ -2,19 +2,87 @@
  * 앱 초기화 - Chart.js 기본설정 + 공통 컴포넌트 로드
  */
 
+/* =====================================================
+   테마 (다크/라이트) 관리
+   ===================================================== */
+const THEME_COLORS = {
+  dark: {
+    chartText: '#9CA3AF',
+    chartBorder: '#374151',
+    tooltipBg: 'rgba(17, 24, 39, 0.95)',
+    tooltipTitle: '#F9FAFB',
+    tooltipBody: '#D1D5DB',
+    tooltipBorder: '#374151',
+  },
+  light: {
+    chartText: '#374151',
+    chartBorder: '#E5E7EB',
+    tooltipBg: 'rgba(255, 255, 255, 0.95)',
+    tooltipTitle: '#111827',
+    tooltipBody: '#374151',
+    tooltipBorder: '#D1D5DB',
+  }
+};
+
+function applyChartTheme(theme) {
+  if (typeof Chart === 'undefined') return;
+  const c = THEME_COLORS[theme];
+  Chart.defaults.color = c.chartText;
+  Chart.defaults.borderColor = c.chartBorder;
+  Chart.defaults.plugins.tooltip.backgroundColor = c.tooltipBg;
+  Chart.defaults.plugins.tooltip.titleColor = c.tooltipTitle;
+  Chart.defaults.plugins.tooltip.bodyColor = c.tooltipBody;
+  Chart.defaults.plugins.tooltip.borderColor = c.tooltipBorder;
+
+  // 이미 생성된 차트 인스턴스도 업데이트
+  try {
+    Object.values(Chart.instances).forEach(chart => chart.update('none'));
+  } catch (e) { /* 무시 */ }
+}
+
+function getCurrentTheme() {
+  return document.documentElement.classList.contains('light') ? 'light' : 'dark';
+}
+
+function updateThemeToggleUI() {
+  const isLight = getCurrentTheme() === 'light';
+  if (typeof THEME_ICONS !== 'undefined') {
+    const fixedBtn = document.getElementById('theme-toggle-fixed');
+    if (fixedBtn) {
+      fixedBtn.innerHTML = isLight ? THEME_ICONS.moon : THEME_ICONS.sun;
+    }
+  }
+}
+
+function toggleTheme() {
+  const html = document.documentElement;
+  const isCurrentlyLight = html.classList.contains('light');
+  const newTheme = isCurrentlyLight ? 'dark' : 'light';
+
+  html.classList.toggle('light', !isCurrentlyLight);
+  html.classList.toggle('dark', isCurrentlyLight);
+  localStorage.setItem('sif-theme', newTheme);
+
+  applyChartTheme(newTheme);
+  updateThemeToggleUI();
+}
+
 document.addEventListener('DOMContentLoaded', () => {
-  // Chart.js 글로벌 설정 (다크모드)
+  const theme = getCurrentTheme();
+
+  // Chart.js 글로벌 설정
   if (typeof Chart !== 'undefined') {
-    Chart.defaults.color = '#9CA3AF';
-    Chart.defaults.borderColor = '#374151';
+    const c = THEME_COLORS[theme];
+    Chart.defaults.color = c.chartText;
+    Chart.defaults.borderColor = c.chartBorder;
     Chart.defaults.font.family = "'Pretendard', 'Noto Sans KR', sans-serif";
     Chart.defaults.font.size = 12;
     Chart.defaults.plugins.legend.labels.usePointStyle = true;
     Chart.defaults.plugins.legend.labels.padding = 16;
-    Chart.defaults.plugins.tooltip.backgroundColor = 'rgba(17, 24, 39, 0.95)';
-    Chart.defaults.plugins.tooltip.titleColor = '#F9FAFB';
-    Chart.defaults.plugins.tooltip.bodyColor = '#D1D5DB';
-    Chart.defaults.plugins.tooltip.borderColor = '#374151';
+    Chart.defaults.plugins.tooltip.backgroundColor = c.tooltipBg;
+    Chart.defaults.plugins.tooltip.titleColor = c.tooltipTitle;
+    Chart.defaults.plugins.tooltip.bodyColor = c.tooltipBody;
+    Chart.defaults.plugins.tooltip.borderColor = c.tooltipBorder;
     Chart.defaults.plugins.tooltip.borderWidth = 1;
     Chart.defaults.plugins.tooltip.cornerRadius = 8;
     Chart.defaults.plugins.tooltip.padding = 12;
@@ -149,10 +217,11 @@ window.addEventListener('afterprint', () => {
   document.body.classList.remove('is-printing');
   _capturedByHandler = false;
 
-  // Chart.js 색상 + 해상도 복원
+  // Chart.js 색상 + 해상도 복원 (현재 테마에 맞게)
   if (typeof Chart !== 'undefined') {
-    Chart.defaults.color = '#9CA3AF';
-    Chart.defaults.borderColor = '#374151';
+    const c = THEME_COLORS[getCurrentTheme()];
+    Chart.defaults.color = c.chartText;
+    Chart.defaults.borderColor = c.chartBorder;
     try {
       Object.values(Chart.instances).forEach(chart => {
         // 데이터라벨 색상 복원

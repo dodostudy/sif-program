@@ -925,3 +925,599 @@
 .print-header {
   display: none;
 }
+
+/* =====================================================
+   라이트 모드 오버라이드
+   ===================================================== */
+
+/* 테마 토글 버튼 (다크 모드) */
+.theme-toggle-btn {
+  background: #1F2937;
+  border-color: #374151;
+  color: #D1D5DB;
+}
+.theme-toggle-btn:hover {
+  background: #374151;
+  border-color: #4B5563;
+  color: #ffffff;
+}
+
+/* 스크롤바 - 라이트 */
+html.light ::-webkit-scrollbar-track {
+  background: #F3F4F6;
+}
+html.light ::-webkit-scrollbar-thumb {
+  background: #D1D5DB;
+}
+html.light ::-webkit-scrollbar-thumb:hover {
+  background: #9CA3AF;
+}
+
+/* body 배경/텍스트 */
+html.light body {
+  background: #F9FAFB !important;
+  color: #1F2937 !important;
+}
+
+/* 사이드바 */
+html.light #sidebar-panel {
+  background: #ffffff !important;
+  border-color: #E5E7EB !important;
+}
+html.light #sidebar-panel .border-gray-800,
+html.light #sidebar-panel .border-b,
+html.light #sidebar-panel .border-t {
+  border-color: #E5E7EB !important;
+}
+html.light #sidebar-panel h1 {
+  color: #111827 !important;
+}
+html.light #sidebar-panel .text-blue-300 {
+  color: #2563EB !important;
+}
+html.light #sidebar-panel .text-gray-500 {
+  color: #6B7280 !important;
+}
+html.light #sidebar-panel .text-gray-400 {
+  color: #4B5563 !important;
+}
+html.light #sidebar-panel .text-gray-200 {
+  color: #1F2937 !important;
+}
+html.light #sidebar-panel .text-white {
+  color: #111827 !important;
+}
+html.light #sidebar-panel .text-xs.text-amber-300 {
+  color: #D97706 !important;
+}
+html.light #sidebar-panel a:hover,
+html.light #sidebar-panel button:hover {
+  background: #F3F4F6 !important;
+}
+html.light #sidebar-panel a.bg-blue-600\/20,
+html.light #sidebar-panel .bg-blue-600\/10 {
+  background: rgba(59, 130, 246, 0.1) !important;
+}
+html.light #sidebar-panel .text-blue-400 {
+  color: #2563EB !important;
+}
+
+/* 모바일 햄버거 */
+html.light #mobile-menu-btn {
+  background: rgba(255, 255, 255, 0.9) !important;
+  color: #374151 !important;
+}
+
+/* 테마 토글 버튼 - 라이트 */
+html.light .theme-toggle-btn {
+  background: #ffffff;
+  border-color: #D1D5DB;
+  color: #374151;
+}
+html.light .theme-toggle-btn:hover {
+  background: #F3F4F6;
+  border-color: #9CA3AF;
+  color: #111827;
+}
+
+/* 메인 콘텐츠 텍스트 */
+html.light .text-white {
+  color: #111827 !important;
+}
+html.light .text-gray-100 {
+  color: #1F2937 !important;
+}
+html.light .text-gray-200 {
+  color: #374151 !important;
+}
+html.light .text-gray-300 {
+  color: #4B5563 !important;
+}
+html.light .text-gray-400 {
+  color: #6B7280 !important;
+}
+html.light .text-gray-500 {
+  color: #6B7280 !important;
+}
+html.light .text-blue-300 {
+  color: #2563EB !important;
+}
+html.light .text-blue-400 {
+  color: #2563EB !important;
+}
+html.light .text-amber-300 {
+  color: #D97706 !important;
+}
+
+/* 카드 */
+html.light .stat-card {
+  background: #ffffff;
+  border-color: #E5E7EB;
+}
+html.light .stat-card:hover {
+  border-color: #D1D5DB;
+}
+
+/* 차트 컨테이너 */
+html.light .chart-container {
+  background: #ffffff;
+  border-color: #E5E7EB;
+}
+
+/* 필터 바 */
+html.light .filter-bar {
+  background: #ffffff;
+  border-color: #E5E7EB;
+}
+html.light .filter-group label {
+  color: #4B5563;
+}
+html.light .filter-group select {
+  background: #F9FAFB;
+  border-color: #D1D5DB;
+  color: #1F2937;
+}
+html.light .filter-group select:focus {
+  border-color: #3B82F6;
+}
+
+/* 멀티셀렉트 */
+html.light .ms-trigger {
+  background: #F9FAFB;
+  border-color: #D1D5DB;
+  color: #1F2937;
+}
+html.light .ms-trigger:hover {
+  border-color: #9CA3AF;
+}
+html.light .ms-panel {
+  background: #ffffff;
+  border-color: #D1D5DB;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+}
+html.light .ms-search-input {
+  background: #F9FAFB;
+  border-color: #D1D5DB;
+  color: #1F2937;
+}
+html.light .ms-option {
+  color: #374151;
+}
+html.light .ms-option:hover {
+  background: #F3F4F6;
+}
+html.light .ms-option-count {
+  color: #9CA3AF;
+}
+html.light .ms-actions {
+  border-color: #E5E7EB;
+}
+html.light .ms-btn-all,
+html.light .ms-btn-clear {
+  color: #6B7280;
+  border-color: #D1D5DB;
+}
+html.light .ms-btn-all:hover,
+html.light .ms-btn-clear:hover {
+  color: #1F2937;
+  border-color: #9CA3AF;
+  background: #F3F4F6;
+}
+
+/* tbl-ms (테이블 컬럼 필터) */
+html.light .tbl-ms-trigger {
+  background: #F9FAFB;
+  border-color: #D1D5DB;
+  color: #374151;
+}
+html.light .tbl-ms-trigger:hover {
+  border-color: #9CA3AF;
+}
+html.light .tbl-ms-panel {
+  background: #ffffff;
+  border-color: #D1D5DB;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+}
+html.light .tbl-ms-panel-header {
+  border-color: #E5E7EB;
+}
+html.light .tbl-ms-panel-title {
+  color: #6B7280;
+}
+html.light .tbl-ms-search-input {
+  background: #F9FAFB;
+  border-color: #D1D5DB;
+  color: #1F2937;
+}
+html.light .tbl-ms-option {
+  color: #374151;
+}
+html.light .tbl-ms-option:hover {
+  background: #F3F4F6;
+}
+html.light .tbl-ms-actions {
+  border-color: #E5E7EB;
+}
+html.light .tbl-ms-btn {
+  color: #6B7280;
+  border-color: #D1D5DB;
+}
+html.light .tbl-ms-btn:hover {
+  color: #1F2937;
+  border-color: #9CA3AF;
+  background: #F3F4F6;
+}
+
+/* 키워드 검색 */
+html.light .keyword-search-bar {
+  background: #ffffff;
+  border-color: #E5E7EB;
+}
+html.light .keyword-input {
+  background: #F9FAFB;
+  border-color: #D1D5DB;
+  color: #1F2937;
+}
+html.light .keyword-input::placeholder {
+  color: #9CA3AF;
+}
+
+/* 탭 */
+html.light .tab-btn {
+  color: #6B7280;
+}
+html.light .tab-btn:hover {
+  color: #1F2937;
+}
+html.light .tab-btn.active {
+  color: #2563EB;
+  border-bottom-color: #2563EB;
+}
+
+/* 토글 버튼 (범용) */
+html.light .toggle-btn {
+  color: #6B7280;
+  border-color: #D1D5DB;
+}
+html.light .toggle-btn:hover {
+  color: #1F2937;
+  border-color: #9CA3AF;
+}
+
+/* 인쇄 버튼 */
+html.light button[onclick="handlePrintWithCharts()"] {
+  background: #ffffff !important;
+  border-color: #D1D5DB !important;
+  color: #374151 !important;
+}
+html.light button[onclick="handlePrintWithCharts()"]:hover {
+  background: #F3F4F6 !important;
+  border-color: #9CA3AF !important;
+  color: #111827 !important;
+}
+
+/* 배지 */
+html.light .risk-badge.high {
+  background: rgba(239, 68, 68, 0.1);
+  color: #DC2626;
+}
+html.light .risk-badge.medium {
+  background: rgba(245, 158, 11, 0.1);
+  color: #D97706;
+}
+html.light .risk-badge.low {
+  background: rgba(16, 185, 129, 0.1);
+  color: #059669;
+}
+html.light .badge-12 {
+  background: rgba(139, 92, 246, 0.1);
+  color: #7C3AED;
+}
+
+/* 위자드 카드 */
+html.light .wizard-card {
+  background: #ffffff;
+  border-color: #E5E7EB;
+}
+html.light .wizard-card:hover {
+  border-color: #3B82F6;
+  background: #EFF6FF;
+}
+html.light .wizard-card.selected {
+  border-color: #3B82F6;
+  background: #EFF6FF;
+}
+
+/* 진입 카드 */
+html.light .entry-card {
+  background: linear-gradient(135deg, #ffffff 0%, #F9FAFB 100%);
+  border-color: #E5E7EB;
+}
+html.light .entry-card:hover {
+  border-color: #3B82F6;
+  box-shadow: 0 8px 25px rgba(59, 130, 246, 0.1);
+}
+html.light .entry-card .entry-title {
+  color: #111827;
+}
+html.light .entry-card .entry-desc {
+  color: #6B7280;
+}
+
+/* 위자드 칩 */
+html.light .wizard-chip {
+  background: #ffffff;
+  border-color: #E5E7EB;
+  color: #374151;
+}
+html.light .wizard-chip:hover {
+  border-color: #3B82F6;
+  background: #EFF6FF;
+}
+html.light .wizard-chip.selected {
+  border-color: #3B82F6;
+  background: #EFF6FF;
+  color: #2563EB;
+}
+html.light .wizard-chip .chip-count {
+  background: #F3F4F6;
+  color: #6B7280;
+}
+
+/* 위자드 체크 목록 */
+html.light .wizard-check-item {
+  background: #ffffff;
+  border-color: #E5E7EB;
+}
+html.light .wizard-check-item:hover {
+  border-color: #D1D5DB;
+  background: #F9FAFB;
+}
+html.light .wizard-check-item label {
+  color: #374151;
+}
+
+/* 스텝 헤더 */
+html.light .wizard-step-title {
+  color: #111827;
+}
+html.light .wizard-step-desc {
+  color: #6B7280;
+}
+
+/* 기인물 칩 (열방향) */
+html.light .cause-chip-row:hover {
+  background: #EFF6FF;
+}
+html.light .cause-chip-row-l4 {
+  background: rgba(239,68,68,0.06);
+  border-color: rgba(239,68,68,0.2);
+}
+html.light .cause-chip-row-l3 {
+  background: rgba(249,115,22,0.05);
+  border-color: rgba(249,115,22,0.15);
+}
+html.light .cause-chip-row-l2 {
+  background: rgba(234,179,8,0.04);
+  border-color: rgba(234,179,8,0.12);
+}
+
+/* 기인물 칩 (가로) */
+html.light .cause-flat-chip-l1 {
+  background: #F9FAFB;
+  border-color: #E5E7EB;
+  color: #6B7280;
+}
+
+/* 스켈레톤 */
+html.light .skeleton {
+  background: linear-gradient(90deg, #E5E7EB 25%, #F3F4F6 50%, #E5E7EB 75%);
+  background-size: 200% 100%;
+}
+
+/* 브레드크럼 */
+html.light .breadcrumb {
+  color: #6B7280;
+}
+html.light .breadcrumb .separator {
+  color: #D1D5DB;
+}
+
+/* Tailwind 배경 클래스 오버라이드 */
+html.light .bg-gray-950 {
+  background-color: #F9FAFB !important;
+}
+html.light .bg-gray-900 {
+  background-color: #ffffff !important;
+}
+html.light .bg-gray-800 {
+  background-color: #F3F4F6 !important;
+}
+html.light .bg-gray-800\/90 {
+  background-color: rgba(243, 244, 246, 0.9) !important;
+}
+html.light .border-gray-800 {
+  border-color: #E5E7EB !important;
+}
+html.light .border-gray-700 {
+  border-color: #D1D5DB !important;
+}
+html.light .hover\:bg-gray-700:hover {
+  background-color: #E5E7EB !important;
+}
+html.light .hover\:bg-gray-800:hover {
+  background-color: #F3F4F6 !important;
+}
+html.light .hover\:border-gray-500:hover {
+  border-color: #9CA3AF !important;
+}
+html.light .hover\:text-white:hover {
+  color: #111827 !important;
+}
+html.light .hover\:text-gray-200:hover {
+  color: #1F2937 !important;
+}
+html.light .hover\:text-gray-300:hover {
+  color: #374151 !important;
+}
+
+/* KOEN 토글 */
+html.light .bg-gray-600 {
+  background-color: #D1D5DB !important;
+}
+
+/* 테이블 */
+html.light .data-table th {
+  background: #F3F4F6;
+  color: #374151;
+  border-color: #E5E7EB;
+}
+html.light .data-table td {
+  color: #1F2937;
+  border-color: #E5E7EB;
+}
+html.light .data-table tr:hover td {
+  background: #F9FAFB;
+}
+
+/* 블루 배경 변형 */
+html.light .bg-blue-900\/20 {
+  background-color: rgba(219, 234, 254, 0.5) !important;
+}
+html.light .border-blue-800 {
+  border-color: #93C5FD !important;
+}
+
+/* 작업유형 그룹 */
+html.light .work-type-group-title {
+  color: #4B5563;
+}
+
+/* 오버레이 */
+html.light #sidebar-overlay {
+  background: rgba(0, 0, 0, 0.2) !important;
+}
+
+/* ── 소개 페이지 (intro.html) 라이트 모드 ── */
+html.light .hero-bg {
+  background: linear-gradient(135deg, #EFF6FF 0%, #DBEAFE 35%, #C7D2FE 65%, #E0E7FF 100%) !important;
+}
+html.light .hero-bg::before {
+  background:
+    radial-gradient(ellipse at 20% 60%, rgba(59,130,246,.1) 0%, transparent 55%),
+    radial-gradient(ellipse at 80% 20%, rgba(99,102,241,.08) 0%, transparent 50%),
+    radial-gradient(ellipse at 55% 85%, rgba(16,185,129,.06) 0%, transparent 40%) !important;
+}
+html.light .hero-bg::after {
+  background-image:
+    linear-gradient(rgba(0,0,0,.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0,0,0,.03) 1px, transparent 1px) !important;
+}
+html.light .hero-bg .text-blue-100\/90 {
+  color: #1E40AF !important;
+}
+html.light .pill {
+  background: rgba(59,130,246,.08) !important;
+  border-color: rgba(59,130,246,.2) !important;
+  color: #2563EB !important;
+}
+html.light .hov-card:hover {
+  box-shadow: 0 20px 40px rgba(0,0,0,.08) !important;
+}
+
+/* 소개페이지 카드 배경 */
+html.light .bg-gray-900\/60,
+html.light .bg-gray-900\/70,
+html.light .bg-gray-950\/70,
+html.light .bg-gray-950\/80 {
+  background-color: #ffffff !important;
+}
+
+/* 소개페이지 타임라인 카드 */
+html.light .tl-dot {
+  color: inherit;
+}
+
+/* 소개페이지 히어로 버튼 */
+html.light .hero-bg .border-white\/25 {
+  border-color: rgba(59, 130, 246, 0.3) !important;
+  color: #1E40AF !important;
+  background: rgba(59, 130, 246, 0.05) !important;
+}
+html.light .hero-bg .border-white\/25:hover {
+  border-color: rgba(59, 130, 246, 0.5) !important;
+  background: rgba(59, 130, 246, 0.1) !important;
+}
+html.light .hero-bg .bg-white\/5 {
+  background: rgba(59, 130, 246, 0.06) !important;
+  border-color: rgba(59, 130, 246, 0.15) !important;
+}
+html.light .hero-bg .text-white\/35 {
+  color: rgba(30, 64, 175, 0.4) !important;
+}
+
+/* 소개페이지 배지 배경 */
+html.light .bg-red-900\/35 {
+  background-color: rgba(254, 226, 226, 0.6) !important;
+}
+html.light .bg-blue-900\/35 {
+  background-color: rgba(219, 234, 254, 0.6) !important;
+}
+html.light .bg-amber-900\/35 {
+  background-color: rgba(254, 243, 199, 0.6) !important;
+}
+html.light .bg-emerald-900\/35 {
+  background-color: rgba(209, 250, 229, 0.6) !important;
+}
+html.light .text-red-300 {
+  color: #DC2626 !important;
+}
+html.light .text-emerald-300 {
+  color: #059669 !important;
+}
+html.light .text-purple-300 {
+  color: #7C3AED !important;
+}
+html.light .text-cyan-300 {
+  color: #0891B2 !important;
+}
+html.light .text-blue-400,
+html.light .text-blue-300 {
+  color: #2563EB !important;
+}
+html.light .text-amber-400,
+html.light .text-amber-300 {
+  color: #D97706 !important;
+}
+html.light .text-emerald-400 {
+  color: #059669 !important;
+}
+html.light .text-purple-400 {
+  color: #7C3AED !important;
+}
+html.light .text-red-400 {
+  color: #DC2626 !important;
+}
+html.light .text-cyan-400 {
+  color: #0891B2 !important;
+}
