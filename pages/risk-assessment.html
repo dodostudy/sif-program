@@ -375,7 +375,7 @@
             const chipStyle = getCauseChipStyle(ratio, isSelected, isProcessed);
 
             if (isProcessed) {
-              html += `<div class="cause-chip-row opacity-50 cursor-default" title="${cause} — 평가 완료">
+              html += `<div class="cause-chip-row opacity-50 cursor-default" title="${I18n.tCat('기인물',cause)} — ${I18n.t('평가 완료')}">
                 <span class="cause-chip-name">${cause}</span>
                 <span class="cause-chip-count text-green-500">&#10003;</span>
               </div>`;
@@ -457,7 +457,7 @@
     function renderPowerStep2() {
       showPowerStep(2);
       const names = [...powerState.currentGiinmuls];
-      updatePowerBreadcrumb(`${names.join(', ')} → 재해형태 선택`);
+      updatePowerBreadcrumb(`${names.map(n=>I18n.tCat('기인물',n)).join(', ')} → ${I18n.t('재해형태 선택')}`);
       const data = getPowerDataFiltered();
 
       const typeMap = {};
@@ -467,7 +467,7 @@
       let html = `<div class="wizard-step-header">
         <div class="wizard-step-num">2</div>
         <div><div class="wizard-step-title">재해형태 선택</div>
-        <div class="wizard-step-desc">${names.join(', ')}의 재해형태를 선택하세요 (복수 가능)</div></div>
+        <div class="wizard-step-desc">${names.map(n=>I18n.tCat('기인물',n)).join(', ')}${I18n.isEn ? ' — Select accident types (multiple allowed)' : '의 재해형태를 선택하세요 (복수 가능)'}</div></div>
       </div>
       <div class="space-y-2 max-w-lg" id="power-jaehae-list">
         <div class="wizard-check-item">
@@ -513,7 +513,7 @@
     function renderPowerStep3() {
       showPowerStep(3);
       const names = [...powerState.currentGiinmuls];
-      updatePowerBreadcrumb(`${names.join(', ')} → 작업명 선택`);
+      updatePowerBreadcrumb(`${names.map(n=>I18n.tCat('기인물',n)).join(', ')} → ${I18n.t('작업명 선택')}`);
       let data = getPowerDataFiltered();
       if (powerState.currentJaehae) data = data.filter(r => powerState.currentJaehae.includes(r['재해형태']));
 
@@ -570,7 +570,7 @@
     function renderPowerStep4() {
       showPowerStep(4);
       const names = [...powerState.currentGiinmuls];
-      updatePowerBreadcrumb(`${names.join(', ')} → 재해사례 선택`);
+      updatePowerBreadcrumb(`${names.map(n=>I18n.tCat('기인물',n)).join(', ')} → ${I18n.t('재해사례 선택')}`);
 
       let data = getPowerDataFiltered();
       if (powerState.currentJaehae) data = data.filter(r => powerState.currentJaehae.includes(r['재해형태']));
@@ -636,11 +636,11 @@
       updatePowerBreadcrumb('평가 결과');
 
       const selectedData = allData.filter(r => powerState.selectedRows.has(r.id));
-      document.getElementById('print-title').textContent = `발전업 위험성평가 결과 — ${powerState.processedGiinmuls.join(', ')}`;
+      document.getElementById('print-title').textContent = `${I18n.t('발전업 위험성평가 결과')} — ${powerState.processedGiinmuls.map(n=>I18n.tCat('기인물',n)).join(', ')}`;
 
       document.getElementById('power-result').innerHTML = `
         <div class="flex items-center justify-between mb-4 no-print">
-          <h3 class="text-lg font-semibold text-white">평가 결과 (${selectedData.length}건)</h3>
+          <h3 class="text-lg font-semibold text-white">${I18n.t('평가 결과')} (${I18n.cases(selectedData.length)})</h3>
           <div class="flex gap-2">
             <button class="px-4 py-2 bg-gray-700 hover:bg-gray-600 text-sm rounded-lg" onclick="initPower()">다시 선택</button>
             <button class="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-sm rounded-lg" onclick="handlePrintWithCharts()">인쇄 / PDF</button>
@@ -689,17 +689,20 @@
     function updateConstBreadcrumb() {
       const bc = document.getElementById('breadcrumb');
       let parts = [];
+      const _more = (arr) => arr.length > 2
+        ? arr.slice(0,2).join(', ') + (I18n.isEn ? ` +${arr.length-2} more` : ` 외 ${arr.length-2}개`)
+        : arr.join(', ');
       if (constState['공종'].length > 0) {
-        const names = constState['공종'].map(g => g.replace(/^\d+\.\s*/, ''));
-        parts.push(`<a onclick="showConstStep(1)">${names.length > 2 ? names.slice(0,2).join(', ') + ` 외 ${names.length-2}개` : names.join(', ')}</a>`);
+        const names = constState['공종'].map(g => I18n.tCat('공종', g).replace(/^\d+(\.\d+)*\.?\s*/, ''));
+        parts.push(`<a onclick="showConstStep(1)">${_more(names)}</a>`);
       }
       if (constState['작업명'].length > 0) {
-        const names = constState['작업명'];
-        parts.push(`<a onclick="showConstStep(2)">${names.length > 2 ? names.slice(0,2).join(', ') + ` 외 ${names.length-2}개` : names.join(', ')}</a>`);
+        const names = constState['작업명'].map(w => I18n.tCat('작업명', w));
+        parts.push(`<a onclick="showConstStep(2)">${_more(names)}</a>`);
       }
       if (constState['단위작업명'].length > 0) {
-        const names = constState['단위작업명'];
-        parts.push(`<span class="text-white font-medium">${names.length > 2 ? names.slice(0,2).join(', ') + ` 외 ${names.length-2}개` : names.join(', ')}</span>`);
+        const names = constState['단위작업명'].map(u => I18n.tCat('단위작업명', u));
+        parts.push(`<span class="text-white font-medium">${_more(names)}</span>`);
       }
       bc.innerHTML = parts.length
         ? parts.join('<span class="separator">&#8250;</span>')
@@ -876,8 +879,8 @@
         constState['작업명'].includes(r['작업명']) &&
         constState['단위작업명'].includes(r['단위작업명'])
       );
-      const gzNames = constState['공종'].map(g => g.replace(/^\d+\.\s*/, '')).join(', ');
-      document.getElementById('print-title').textContent = `건설업 위험성평가 결과 — ${gzNames}`;
+      const gzNames = constState['공종'].map(g => I18n.tCat('공종', g).replace(/^\d+(\.\d+)*\.?\s*/, '')).join(', ');
+      document.getElementById('print-title').textContent = `${I18n.t('건설업 위험성평가 결과')} — ${gzNames}`;
       renderRiskCards(filtered);
       renderConstCharts(filtered);
       renderConstTable(filtered);
@@ -900,8 +903,8 @@
         else { riskClass = 'border-green-500/50 bg-green-950/30'; riskLabel = '<span class="risk-badge low">낮음</span>'; }
         return `<div class="rounded-lg border ${riskClass} p-4">
           <div class="flex items-center justify-between mb-2">${riskLabel}${item.is12?'<span class="badge-12">12대</span>':''}</div>
-          <p class="text-sm font-semibold text-white">${item.기인물}</p>
-          <p class="text-xs text-gray-400 mt-1">재해형태: ${item.재해형태}</p>
+          <p class="text-sm font-semibold text-white">${I18n.tCat('기인물', item.기인물)}</p>
+          <p class="text-xs text-gray-400 mt-1">${I18n.t('재해형태')}: ${I18n.tCat('재해형태', item.재해형태)}</p>
           <div class="mt-2 flex items-baseline gap-2">
             <span class="text-xl font-bold text-white">${item.count}</span>
             <span class="text-xs text-gray-500">건 (${pct}%)</span>
