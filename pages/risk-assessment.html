@@ -423,7 +423,7 @@
         <button class="px-5 py-2 bg-blue-600 hover:bg-blue-500 text-sm rounded-lg font-semibold transition-colors ${selCount === 0 ? 'opacity-40 cursor-not-allowed' : ''}"
           onclick="${selCount > 0 ? 'renderPowerStep2()' : ''}"
           ${selCount === 0 ? 'disabled' : ''}>
-          다음 → (${selCount}개 선택)
+          ${I18n.isEn ? 'Next' : '다음'} → (${selCount}${I18n.isEn ? ' selected' : '개 선택'})
         </button>
         ${selCount > 0 ? `<button class="px-3 py-2 text-xs text-gray-500 hover:text-gray-300" onclick="powerState.currentGiinmuls.clear(); renderPowerStep1();">선택 초기화</button>` : ''}
       </div>`;
@@ -743,7 +743,7 @@
       <div class="flex gap-2 mt-4">
         <button id="const-step1-next" class="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-sm rounded-lg transition-colors ${constState['공종'].length===0?'opacity-40 cursor-not-allowed':''}"
           onclick="${constState['공종'].length>0?'constStep1Next()':''}" ${constState['공종'].length===0?'disabled':''}>
-          다음 (${constState['공종'].length}개 선택)
+          ${I18n.t('다음')} (${constState['공종'].length}${I18n.isEn ? ' selected' : '개 선택'})
         </button>
       </div>`;
       document.getElementById('const-step1').innerHTML = html;
@@ -797,7 +797,7 @@
         <button class="px-4 py-2 bg-gray-700 hover:bg-gray-600 text-sm rounded-lg" onclick="renderConstStep1()">이전</button>
         <button id="const-step2-next" class="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-sm rounded-lg ${constState['작업명'].length===0?'opacity-40 cursor-not-allowed':''}"
           onclick="${constState['작업명'].length>0?'constStep2Next()':''}" ${constState['작업명'].length===0?'disabled':''}>
-          다음 (${constState['작업명'].length}개 선택)
+          ${I18n.t('다음')} (${constState['작업명'].length}${I18n.isEn ? ' selected' : '개 선택'})
         </button>
       </div>`;
       document.getElementById('const-step2').innerHTML = html;
@@ -852,7 +852,7 @@
         <button class="px-4 py-2 bg-gray-700 hover:bg-gray-600 text-sm rounded-lg" onclick="renderConstStep2()">이전</button>
         <button id="const-step3-next" class="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-sm rounded-lg ${constState['단위작업명'].length===0?'opacity-40 cursor-not-allowed':''}"
           onclick="${constState['단위작업명'].length>0?'constStep3Next()':''}" ${constState['단위작업명'].length===0?'disabled':''}>
-          결과 보기 (${constState['단위작업명'].length}개 선택)
+          ${I18n.isEn ? 'View Results' : '결과 보기'} (${constState['단위작업명'].length}${I18n.isEn ? ' selected' : '개 선택'})
         </button>
       </div>`;
       document.getElementById('const-step3').innerHTML = html;

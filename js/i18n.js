@@ -35,6 +35,11 @@ const I18n = {
       this._dbText = db || {};
       this._loaded = true;
       this._flat = null; // 리소스 로드 완료 → 평면 사전 재생성 강제
+      // 브라우저 탭 제목 번역
+      try {
+        const tt = (document.title || '').trim();
+        if (this._ui[tt]) document.title = this._ui[tt];
+      } catch (e) { /* 무시 */ }
     });
     return this.ready;
   },
@@ -144,6 +149,15 @@ const I18n = {
         if (conv !== raw) node.nodeValue = conv;
       }
     }
+
+    // data-en 요소: 내부 서식(<strong>,<br>)이 있어 텍스트노드 매칭이 어려운 산문은
+    // 요소 단위로 innerHTML을 통째 교체 (한국어 원본은 data-ko에 보존해 복원 가능)
+    el.querySelectorAll('[data-en]').forEach((node) => {
+      const en = node.getAttribute('data-en');
+      if (en == null) return;
+      if (node.getAttribute('data-ko') == null) node.setAttribute('data-ko', node.innerHTML);
+      if (node.innerHTML !== en) node.innerHTML = en;
+    });
 
     // placeholder / title 속성 치환
     el.querySelectorAll('[placeholder]').forEach((inp) => {
