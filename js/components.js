@@ -146,6 +146,9 @@ function renderSidebar() {
     mobileBtn.innerHTML = ICONS.menu;
   });
 
+  // 언어 토글 (한국어 / EN) — 테마 버튼 좌측 고정
+  renderLangToggle();
+
   // 테마 토글 버튼 (우측 상단 고정)
   const themeToggle = document.createElement('button');
   themeToggle.id = 'theme-toggle-fixed';
@@ -155,6 +158,33 @@ function renderSidebar() {
   themeToggle.innerHTML = isLight ? THEME_ICONS.moon : THEME_ICONS.sun;
   themeToggle.addEventListener('click', () => toggleTheme());
   document.body.appendChild(themeToggle);
+
+  // 렌더된 사이드바/토글 정적 텍스트 영어 치환
+  if (typeof I18n !== 'undefined') I18n.refresh();
+}
+
+/**
+ * 언어 토글: 한국어 / English 세그먼트 버튼 (우측 상단, 테마 버튼 좌측 고정)
+ */
+function renderLangToggle() {
+  if (document.getElementById('lang-toggle-fixed')) return;
+  const cur = (typeof I18n !== 'undefined') ? I18n.lang : 'ko';
+  const on = 'bg-blue-600 text-white';
+  const off = 'text-gray-400 hover:text-gray-200';
+  const wrap = document.createElement('div');
+  wrap.id = 'lang-toggle-fixed';
+  wrap.className = 'no-print fixed top-3 right-16 z-50 flex items-center bg-gray-800/90 border border-gray-700 rounded-lg overflow-hidden text-xs font-semibold backdrop-blur-sm';
+  wrap.innerHTML = `
+    <button type="button" data-lang="ko" class="px-2.5 py-2 transition-colors ${cur === 'ko' ? on : off}">한국어</button>
+    <button type="button" data-lang="en" class="px-2.5 py-2 transition-colors ${cur === 'en' ? on : off}">EN</button>
+  `;
+  wrap.querySelectorAll('button').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const lang = btn.getAttribute('data-lang');
+      if (typeof I18n !== 'undefined' && lang !== I18n.lang) I18n.setLang(lang);
+    });
+  });
+  document.body.appendChild(wrap);
 }
 
 function renderPageHeader(title, subtitle = '', options = {}) {
@@ -181,6 +211,8 @@ function renderPageHeader(title, subtitle = '', options = {}) {
       </div>
     </div>
   `;
+
+  if (typeof I18n !== 'undefined') I18n.refresh();
 }
 
 function toggleNavGroup(groupId) {
@@ -199,27 +231,29 @@ function createKoenToggle(containerId, onChange) {
   const toggleId = `${containerId}-toggle`;
   const labelId = `${containerId}-label`;
 
+  const _t = (ko) => (typeof I18n !== 'undefined' ? I18n.t(ko) : ko);
+
   container.innerHTML = `
     <div class="flex items-center gap-2 bg-gray-800 rounded-lg px-3 py-2">
-      <span class="text-xs text-gray-400">발전소 공정</span>
+      <span class="text-xs text-gray-400">${_t('발전소 공정')}</span>
       <label class="relative inline-flex items-center cursor-pointer">
         <input type="checkbox" id="${toggleId}" class="sr-only peer">
         <div class="w-9 h-5 bg-gray-600 rounded-full peer peer-checked:bg-blue-600 peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-0.5 after:left-0.5 after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all"></div>
       </label>
-      <span class="text-xs text-gray-400" id="${labelId}">전체</span>
+      <span class="text-xs text-gray-400" id="${labelId}">${_t('전체')}</span>
     </div>
   `;
 
   const toggle = document.getElementById(toggleId);
   const label = document.getElementById(labelId);
   toggle.addEventListener('change', () => {
-    label.textContent = toggle.checked ? '발전소 공정만' : '전체';
+    label.textContent = toggle.checked ? _t('발전소 공정만') : _t('전체');
     onChange(toggle.checked ? true : null);
   });
 
   // 초기화 함수 반환
   return () => {
     toggle.checked = false;
-    label.textContent = '전체';
+    label.textContent = _t('전체');
   };
 }

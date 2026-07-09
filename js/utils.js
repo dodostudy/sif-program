@@ -324,6 +324,7 @@ function buildTable(containerId, columns, rows, options = {}) {
   }
 
   container.innerHTML = html;
+  if (typeof I18n !== 'undefined') I18n.refresh();
 
   // 패널 닫기 공통 함수 (테이블 갱신 후 openFilterKey 없이 재렌더링)
   function applyAndClose(filterKey) {
@@ -656,6 +657,7 @@ function buildSelectableTable(containerId, columns, rows, options = {}) {
   }
 
   container.innerHTML = html;
+  if (typeof I18n !== 'undefined') I18n.refresh();
 
   // 패널 닫기 + 필터 적용
   function applyAndClose(filterKey) {

@@ -67,6 +67,7 @@
     </div>
   </main>
 
+  <script src="../js/i18n.js"></script>
   <script src="../js/data-loader.js"></script>
   <script src="../js/filter-manager.js"></script>
   <script src="../js/chart-manager.js"></script>
@@ -297,7 +298,7 @@
       cm.create('chart-cause', {
         type: 'bar',
         data: {
-          labels: sorted.map(a => a.key),
+          labels: sorted.map(a => I18n.tCat('기인물', a.key)),
           datasets: [{
             data: sorted.map(a => a.count),
             backgroundColor: sorted.map((_, i) => CHART_COLORS.getAlpha(CHART_COLORS.getColor(i), 0.7)),
@@ -324,7 +325,7 @@
       cm.create('chart-disaster', {
         type: 'doughnut',
         data: {
-          labels: sorted.map(a => a.key),
+          labels: sorted.map(a => I18n.tCat('재해형태', a.key)),
           datasets: [{
             data: sorted.map(a => a.count),
             backgroundColor: sorted.map((_, i) => CHART_COLORS.getColor(i)),
@@ -342,7 +343,7 @@
                 const total = ctx.dataset.data.reduce((a, b) => a + b, 0);
                 const pct = (value / total * 100).toFixed(1);
                 if (pct < 5) return '';
-                return `${value}건\n${pct}%`;
+                return `${I18n.isEn ? value : value + '건'}\n${pct}%`;
               },
               textAlign: 'center',
             }

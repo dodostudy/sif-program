@@ -142,6 +142,7 @@
     </div>
   </main>
 
+  <script src="../js/i18n.js"></script>
   <script src="../js/data-loader.js"></script>
   <script src="../js/filter-manager.js"></script>
   <script src="../js/chart-manager.js"></script>
@@ -474,7 +475,7 @@
       cm.create('chart-overview', {
         type: 'bar',
         data: {
-          labels: sorted.map(a => a[0]),
+          labels: sorted.map(a => I18n.tCat('재해형태', a[0])),
           datasets: [{
             data: sorted.map(a => a[1]),
             backgroundColor: sorted.map((_, i) => CHART_COLORS.getAlpha(CHART_COLORS.getColor(i), 0.7)),
@@ -489,7 +490,7 @@
             datalabels: {
               display: true, anchor: 'end', align: 'right',
               color: '#9CA3AF', font: { size: 10 },
-              formatter: (val) => `${val.toLocaleString()}건 (${(val/total*100).toFixed(1)}%)`,
+              formatter: (val) => `${val.toLocaleString()}${I18n.isEn ? '' : '건'} (${(val/total*100).toFixed(1)}%)`,
             }
           },
           scales: {
@@ -516,7 +517,7 @@
       cm.create('chart-by-gz', {
         type: 'bar',
         data: {
-          labels: sorted.map(a => a.key.replace(/^\d+\.\s*/, '')),
+          labels: sorted.map(a => I18n.tCat('공종', a.key).replace(/^\d+(\.\d+)*\.?\s*/, '')),
           datasets: [{
             data: sorted.map(a => a.count),
             backgroundColor: sorted.map((_, i) => CHART_COLORS.getAlpha(CHART_COLORS.getColor(i), 0.7)),
@@ -531,7 +532,7 @@
             datalabels: {
               display: true, anchor: 'end', align: 'right',
               color: '#9CA3AF', font: { size: 9 },
-              formatter: (val) => `${val}건 (${(val/total*100).toFixed(1)}%)`,
+              formatter: (val) => `${val}${I18n.isEn ? '' : '건'} (${(val/total*100).toFixed(1)}%)`,
             }
           },
           scales: {
@@ -557,7 +558,7 @@
       cm.create('chart-by-cause', {
         type: 'bar',
         data: {
-          labels: sorted.map(a => a.key),
+          labels: sorted.map(a => I18n.tCat('기인물', a.key)),
           datasets: [{
             data: sorted.map(a => a.count),
             backgroundColor: sorted.map((_, i) => CHART_COLORS.getAlpha(CHART_COLORS.getColor(i), 0.7)),
@@ -573,7 +574,7 @@
             datalabels: {
               display: true, anchor: 'end', align: 'right',
               color: '#9CA3AF', font: { size: 9 },
-              formatter: (val) => `${val}건 (${(val/total*100).toFixed(1)}%)`,
+              formatter: (val) => `${val}${I18n.isEn ? '' : '건'} (${(val/total*100).toFixed(1)}%)`,
             }
           },
           scales: {
@@ -599,7 +600,7 @@
       cm.create('chart-by-work', {
         type: 'bar',
         data: {
-          labels: sorted.map(a => a.key),
+          labels: sorted.map(a => I18n.tCat('작업명', a.key)),
           datasets: [{
             data: sorted.map(a => a.count),
             backgroundColor: sorted.map((_, i) => CHART_COLORS.getAlpha(CHART_COLORS.getColor(i), 0.7)),

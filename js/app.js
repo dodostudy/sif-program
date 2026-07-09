@@ -67,8 +67,11 @@ function toggleTheme() {
   updateThemeToggleUI();
 }
 
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
   const theme = getCurrentTheme();
+
+  // 언어 리소스 로드 대기 (EN일 때 사전 프리페치 완료 보장)
+  if (typeof I18n !== 'undefined') { try { await I18n.init(); } catch (e) { /* 무시 */ } }
 
   // Chart.js 글로벌 설정
   if (typeof Chart !== 'undefined') {
@@ -98,6 +101,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // 사이드바 렌더링
   renderSidebar();
+
+  // 정적 DOM 영어 치환 + 동적 콘텐츠 자동 번역 (EN일 때만 동작)
+  if (typeof I18n !== 'undefined') { I18n.refresh(); I18n.installAutoTranslate(); }
 });
 
 /* =====================================================

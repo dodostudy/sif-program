@@ -89,6 +89,7 @@
     </div>
   </main>
 
+  <script src="./js/i18n.js"></script>
   <script src="./js/data-loader.js"></script>
   <script src="./js/filter-manager.js"></script>
   <script src="./js/chart-manager.js"></script>
@@ -100,6 +101,13 @@
     const cm = new ChartManager();
     let allData = [];
     let dropdownRef = {};
+
+    // i18n 헬퍼
+    const tc = (col, v) => (typeof I18n !== 'undefined' ? I18n.tCat(col, v) : v);
+    const tcShort = (col, v) => tc(col, v).replace(/^\d+(\.\d+)*\.?\s*/, '');
+    const tu = (v) => (typeof I18n !== 'undefined' ? I18n.t(v) : v);
+    const cs = (n) => (typeof I18n !== 'undefined' ? I18n.cases(n) : `${n}건`);
+    const dl = (v) => (typeof I18n !== 'undefined' && I18n.isEn) ? `${v}` : `${v}건`;
 
     // 전역 필터 상태
     let currentKoenFilter = null;
@@ -118,6 +126,7 @@
     }
 
     async function init() {
+      if (typeof I18n !== 'undefined') { try { await I18n.init(); } catch (e) {} }
       renderPageHeader('대시보드', '건설재해 위험성평가 데이터 현황', { showPrint: false });
       createKoenToggle('header-controls', (koen) => {
         currentKoenFilter = koen;
@@ -154,6 +163,8 @@
       // 드릴다운 초기화
       drillState = { 공종: null, 작업명: null, 단위작업명: null };
       document.getElementById('drilldown-area').classList.add('hidden');
+
+      if (typeof I18n !== 'undefined') I18n.refresh();
     }
 
     function toggleCardDropdown(which) {
@@ -288,6 +299,8 @@
           </div>
         </div>
       `;
+
+      if (typeof I18n !== 'undefined') I18n.refresh();
     }
 
     function renderDisasterTypeChart(data) {
@@ -295,10 +308,10 @@
       const sorted = topN(agg, 'count', 10);
       const otherCount = agg.filter(a => !sorted.includes(a)).reduce((s, a) => s + a.count, 0);
 
-      const labels = sorted.map(a => a.key);
+      const labels = sorted.map(a => tc('재해형태', a.key));
       const values = sorted.map(a => a.count);
       if (otherCount > 0) {
-        labels.push('기타');
+        labels.push(tu('기타'));
         values.push(otherCount);
       }
 
@@ -320,7 +333,7 @@
               callbacks: {
                 label: (ctx) => {
                   const total = ctx.dataset.data.reduce((a, b) => a + b, 0);
-                  return ` ${ctx.label}: ${formatNumber(ctx.raw)}건 (${formatPercent(ctx.raw, total)})`;
+                  return ` ${ctx.label}: ${cs(formatNumber(ctx.raw))} (${formatPercent(ctx.raw, total)})`;
                 }
               }
             },
@@ -332,7 +345,7 @@
                 const total = ctx.dataset.data.reduce((a, b) => a + b, 0);
                 const pct = (value / total * 100).toFixed(1);
                 if (pct < 5) return '';
-                return `${value}건\n${pct}%`;
+                return `${dl(value)}\n${pct}%`;
               },
               textAlign: 'center',
             }
@@ -352,7 +365,7 @@
       cm.create('chart-construction-type', {
         type: 'bar',
         data: {
-          labels: sorted.map(a => a.key.replace(/^\d+\.\s*/, '')),
+          labels: sorted.map(a => tcShort('공종', a.key)),
           datasets: [{
             data: sorted.map(a => a.count),
             backgroundColor: sorted.map((_, i) => CHART_COLORS.getAlpha(CHART_COLORS.getColor(i), 0.8)),
@@ -367,7 +380,7 @@
             legend: { display: false },
             tooltip: {
               callbacks: {
-                label: (ctx) => ` ${formatNumber(ctx.raw)}건 (${formatPercent(ctx.raw, data.length)})`
+                label: (ctx) => ` ${cs(formatNumber(ctx.raw))} (${formatPercent(ctx.raw, data.length)})`
               }
             }
           },
@@ -408,17 +421,17 @@
       if (!drillState['작업명']) {
         groupKey = '작업명';
         nextLevel = '작업명';
-        barTitle = `${drillState['공종'].replace(/^\d+\.\s*/, '')} — 작업명별 재해건수`;
+        barTitle = `${tcShort('공종', drillState['공종'])} — ${tu('작업명별 재해건수')}`;
       } else if (!drillState['단위작업명']) {
         groupKey = '단위작업명';
         nextLevel = '단위작업명';
-        barTitle = `${drillState['작업명']} — 단위작업명별 재해건수`;
+        barTitle = `${tc('작업명', drillState['작업명'])} — ${tu('단위작업명별 재해건수')}`;
       } else {
         groupKey = null;
-        barTitle = `${drillState['단위작업명']} — 상세`;
+        barTitle = `${tc('단위작업명', drillState['단위작업명'])} — ${tu('상세')}`;
       }
 
-      document.getElementById('drill-bar-title').textContent = groupKey ? barTitle : '상세';
+      document.getElementById('drill-bar-title').textContent = groupKey ? barTitle : tu('상세');
 
       if (groupKey) {
         const agg = aggregateBy(filtered, groupKey);
@@ -427,7 +440,7 @@
         cm.create('chart-drill-bar', {
           type: 'bar',
           data: {
-            labels: sorted.map(a => a.key),
+            labels: sorted.map(a => tc(groupKey, a.key)),
             datasets: [{
               data: sorted.map(a => a.count),
               backgroundColor: sorted.map((_, i) => CHART_COLORS.getAlpha(CHART_COLORS.getColor(i), 0.7)),
@@ -458,7 +471,7 @@
       cm.create('chart-drill-disaster', {
         type: 'doughnut',
         data: {
-          labels: disasterSorted.map(a => a.key),
+          labels: disasterSorted.map(a => tc('재해형태', a.key)),
           datasets: [{ data: disasterSorted.map(a => a.count), backgroundColor: disasterSorted.map((_, i) => CHART_COLORS.getColor(i)), borderWidth: 0 }]
         },
         options: {
@@ -468,7 +481,7 @@
             datalabels: {
               display: true,
               color: '#fff', font: { size: 9, weight: 'bold' },
-              formatter: (value, ctx) => { const t = ctx.dataset.data.reduce((a,b)=>a+b,0); const p=(value/t*100).toFixed(1); return p<5?'':`${value}건\n${p}%`; },
+              formatter: (value, ctx) => { const t = ctx.dataset.data.reduce((a,b)=>a+b,0); const p=(value/t*100).toFixed(1); return p<5?'':`${dl(value)}\n${p}%`; },
               textAlign: 'center',
             }
           }
@@ -482,7 +495,7 @@
       cm.create('chart-drill-cause', {
         type: 'doughnut',
         data: {
-          labels: causeSorted.map(a => a.key),
+          labels: causeSorted.map(a => tc('기인물', a.key)),
           datasets: [{ data: causeSorted.map(a => a.count), backgroundColor: causeSorted.map((_, i) => CHART_COLORS.getColor(i + 8)), borderWidth: 0 }]
         },
         options: {
@@ -492,7 +505,7 @@
             datalabels: {
               display: true,
               color: '#fff', font: { size: 9, weight: 'bold' },
-              formatter: (value, ctx) => { const t = ctx.dataset.data.reduce((a,b)=>a+b,0); const p=(value/t*100).toFixed(1); return p<5?'':`${value}건\n${p}%`; },
+              formatter: (value, ctx) => { const t = ctx.dataset.data.reduce((a,b)=>a+b,0); const p=(value/t*100).toFixed(1); return p<5?'':`${dl(value)}\n${p}%`; },
               textAlign: 'center',
             }
           }
@@ -518,6 +531,8 @@
       } else {
         tableArea.classList.add('hidden');
       }
+
+      if (typeof I18n !== 'undefined') I18n.refresh();
     }
 
     function renderDrillBreadcrumb(fullData) {
@@ -544,6 +559,8 @@
       }
 
       bc.innerHTML = parts.join('<span class="separator text-gray-600 mx-1">›</span>');
+
+      if (typeof I18n !== 'undefined') I18n.refresh();
     }
 
     function renderCauseTop10Chart(data) {
@@ -555,7 +572,7 @@
       cm.create('chart-cause-top10', {
         type: 'bar',
         data: {
-          labels: sorted.map(a => a.key),
+          labels: sorted.map(a => tc('기인물', a.key)),
           datasets: [{
             data: sorted.map(a => a.count),
             backgroundColor: sorted.map(a =>
@@ -621,13 +638,15 @@
         disasterTypes.forEach(dt => {
           const val = matrix[ct][dt];
           const bg = val === 0 ? 'rgba(31,41,55,0.5)' : CHART_COLORS.heatmapColor(val, 0, maxVal);
-          html += `<td class="px-2 py-1.5 text-center font-medium" style="background:${bg}" title="${shortName} - ${dt}: ${val}건">${val || ''}</td>`;
+          html += `<td class="px-2 py-1.5 text-center font-medium" style="background:${bg}" title="${shortName} - ${dt}: ${cs(val)}">${val || ''}</td>`;
         });
         html += `</tr>`;
       });
 
       html += `</tbody></table></div>`;
       container.innerHTML = html;
+
+      if (typeof I18n !== 'undefined') I18n.refresh();
     }
 
     init();
