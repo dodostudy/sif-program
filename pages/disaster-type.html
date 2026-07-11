@@ -213,6 +213,16 @@
       setupFilters();
       setupToggleButtons();
       renderResults();
+      applyDeepLinkParams();
+    }
+
+    // 위험지도 딥링크 수신: 재해형태/기인물 스코프 적용
+    function applyDeepLinkParams() {
+      const q = new URLSearchParams(location.search);
+      const dt = q.get('재해형태');
+      if (dt) msDisaster.setValues([dt]);
+      const cause = q.get('기인물');
+      if (cause) msCause.setValues([cause]);
     }
 
     // 상위 필터 적용 후 데이터 반환 (지정된 키까지만)
@@ -487,11 +497,7 @@
           indexAxis: 'y',
           plugins: {
             legend: { display: false },
-            datalabels: {
-              display: true, anchor: 'end', align: 'right',
-              color: '#9CA3AF', font: { size: 10 },
-              formatter: (val) => `${val.toLocaleString()}${I18n.isEn ? '' : '건'} (${(val/total*100).toFixed(1)}%)`,
-            }
+            datalabels: barDatalabels(total),
           },
           scales: {
             x: { grid: { color: '#1F2937' } },
@@ -529,11 +535,7 @@
           indexAxis: 'y',
           plugins: {
             legend: { display: false },
-            datalabels: {
-              display: true, anchor: 'end', align: 'right',
-              color: '#9CA3AF', font: { size: 9 },
-              formatter: (val) => `${val}${I18n.isEn ? '' : '건'} (${(val/total*100).toFixed(1)}%)`,
-            }
+            datalabels: barDatalabels(total),
           },
           scales: {
             x: { grid: { color: '#1F2937' } },
@@ -571,11 +573,7 @@
           maintainAspectRatio: false,
           plugins: {
             legend: { display: false },
-            datalabels: {
-              display: true, anchor: 'end', align: 'right',
-              color: '#9CA3AF', font: { size: 9 },
-              formatter: (val) => `${val}${I18n.isEn ? '' : '건'} (${(val/total*100).toFixed(1)}%)`,
-            }
+            datalabels: barDatalabels(total),
           },
           scales: {
             x: { grid: { color: '#1F2937' } },
@@ -611,12 +609,16 @@
         options: {
           indexAxis: 'y',
           maintainAspectRatio: false,
-          plugins: { legend: { display: false } },
+          plugins: {
+            legend: { display: false },
+            datalabels: barDatalabels(total),
+          },
           scales: {
             x: { grid: { color: '#1F2937' } },
             y: { grid: { display: false }, ticks: { font: { size: 9 }, autoSkip: false } }
           }
-        }
+        },
+        plugins: [ChartDataLabels]
       });
     }
 

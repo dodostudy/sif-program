@@ -42,7 +42,7 @@
     </div>
 
     <!-- 드릴다운 영역 -->
-    <div id="drilldown-area" class="hidden mb-4">
+    <div id="drilldown-area" class="hidden mb-4 drill-tint">
       <div class="breadcrumb mb-3" id="drill-breadcrumb"></div>
       <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-4">
         <div class="chart-container">
@@ -358,9 +358,23 @@
     // 드릴다운 상태
     let drillState = { 공종: null, 작업명: null, 단위작업명: null };
 
-    function renderConstructionTypeChart(data) {
+    // 선택/드릴 대상 막대만 강조(accent), 나머지는 채도 낮춘 톤으로 dim
+    const ACCENT = '#3B82F6';
+    const DIM_BG = 'rgba(148,163,184,0.22)';
+    const DIM_BD = 'rgba(148,163,184,0.45)';
+
+    function renderConstructionTypeChart(data, highlightKey = null) {
       const agg = aggregateBy(data, '공종');
       const sorted = topN(agg, 'count', 12);
+      const total = data.length;
+
+      // highlight 없으면 단일 통일색(우연한 강조 제거), 있으면 선택만 accent·나머지 dim
+      const bg = sorted.map(a => !highlightKey
+        ? CHART_COLORS.getAlpha(ACCENT, 0.55)
+        : (a.key === highlightKey ? ACCENT : DIM_BG));
+      const bd = sorted.map(a => !highlightKey
+        ? ACCENT
+        : (a.key === highlightKey ? '#1D4ED8' : DIM_BD));
 
       cm.create('chart-construction-type', {
         type: 'bar',
@@ -368,8 +382,8 @@
           labels: sorted.map(a => tcShort('공종', a.key)),
           datasets: [{
             data: sorted.map(a => a.count),
-            backgroundColor: sorted.map((_, i) => CHART_COLORS.getAlpha(CHART_COLORS.getColor(i), 0.8)),
-            borderColor: sorted.map((_, i) => CHART_COLORS.getColor(i)),
+            backgroundColor: bg,
+            borderColor: bd,
             borderWidth: 1,
             borderRadius: 4,
           }]
@@ -380,9 +394,10 @@
             legend: { display: false },
             tooltip: {
               callbacks: {
-                label: (ctx) => ` ${cs(formatNumber(ctx.raw))} (${formatPercent(ctx.raw, data.length)})`
+                label: (ctx) => ` ${cs(formatNumber(ctx.raw))} (${formatPercent(ctx.raw, total)})`
               }
-            }
+            },
+            datalabels: barDatalabels(total),
           },
           scales: {
             x: { grid: { color: '#1F2937' }, ticks: { font: { size: 10 } } },
@@ -393,14 +408,17 @@
             const idx = elements[0].index;
             const gz = sorted[idx].key;
             drillState = { 공종: gz, 작업명: null, 단위작업명: null };
+            renderConstructionTypeChart(data, gz); // 선택 공종 강조 재렌더
             renderDrilldown(data);
           }
         }
       });
 
-      // 드릴다운 초기화
-      drillState = { 공종: null, 작업명: null, 단위작업명: null };
-      document.getElementById('drilldown-area').classList.add('hidden');
+      // 신규(비강조) 렌더에서만 드릴다운 초기화
+      if (!highlightKey) {
+        drillState = { 공종: null, 작업명: null, 단위작업명: null };
+        document.getElementById('drilldown-area').classList.add('hidden');
+      }
     }
 
     function renderDrilldown(fullData) {
@@ -443,14 +461,17 @@
             labels: sorted.map(a => tc(groupKey, a.key)),
             datasets: [{
               data: sorted.map(a => a.count),
-              backgroundColor: sorted.map((_, i) => CHART_COLORS.getAlpha(CHART_COLORS.getColor(i), 0.7)),
-              borderColor: sorted.map((_, i) => CHART_COLORS.getColor(i)),
+              backgroundColor: CHART_COLORS.getAlpha(ACCENT, 0.55),
+              borderColor: ACCENT,
               borderWidth: 1, borderRadius: 3,
             }]
           },
           options: {
             indexAxis: 'y',
-            plugins: { legend: { display: false } },
+            plugins: {
+              legend: { display: false },
+              datalabels: barDatalabels(filtered.length),
+            },
             scales: {
               x: { grid: { color: '#1F2937' }, ticks: { font: { size: 10 } } },
               y: { grid: { display: false }, ticks: { font: { size: 9 } } }
@@ -593,7 +614,8 @@
               callbacks: {
                 afterLabel: (ctx) => is12.includes(sorted[ctx.dataIndex].key) ? '(12대 기인물)' : ''
               }
-            }
+            },
+            datalabels: barDatalabels(data.length),
           },
           scales: {
             x: { grid: { color: '#1F2937' }, ticks: { font: { size: 10 } } },

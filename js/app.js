@@ -44,6 +44,45 @@ function getCurrentTheme() {
   return document.documentElement.classList.contains('light') ? 'light' : 'dark';
 }
 
+/* =====================================================
+   막대차트 공통 datalabel 설정 (전 페이지 재사용)
+   ===================================================== */
+/**
+ * 수평 막대차트에 "건수 (비율%)"를 막대 끝에 상시 표시.
+ * @param {number} total 해당 차트 스코프의 전체 건수 (비율 분모 — 도넛과 동일 의미).
+ *                       Top-N이라 표시 막대 합이 total 미만일 수 있음(정상).
+ * 표기: "N건 (X%)" / EN "N cases (X%)". 아주 작은 값은 건수만.
+ * 색: 테마별 대비 확보 + 외곽선(textStroke)으로 막대 안/밖 어디서든 가독.
+ */
+function barDatalabels(total) {
+  return {
+    display: true,
+    anchor: 'end',
+    // 막대가 아주 길어(우측 경계 근접) 라벨이 밖으로 넘치면 막대 안쪽으로 자동 배치
+    align: (ctx) => {
+      const arr = (ctx.dataset && ctx.dataset.data) || [];
+      const max = arr.reduce((m, v) => Math.max(m, +v || 0), 0);
+      const v = +arr[ctx.dataIndex] || 0;
+      return (max && v / max > 0.8) ? 'start' : 'end';
+    },
+    clamp: true,          // 경계에서 라벨을 차트 영역 안으로 당김
+    clip: false,
+    offset: 2,
+    color: () => (getCurrentTheme() === 'light' ? '#1F2937' : '#E5E7EB'),
+    textStrokeColor: () => (getCurrentTheme() === 'light' ? 'rgba(255,255,255,0.9)' : 'rgba(17,24,39,0.9)'),
+    textStrokeWidth: 3,
+    font: { size: 10, weight: '600' },
+    formatter: (value) => {
+      if (!value) return '';
+      const cnt = (typeof I18n !== 'undefined') ? I18n.cases(value) : `${value}건`;
+      const pct = total ? (value / total * 100) : 0;
+      // 아주 작은 값(짧은 막대)은 건수만 표기해 라벨 넘침 방지
+      if (pct < 2) return cnt;
+      return `${cnt} (${pct.toFixed(1)}%)`;
+    },
+  };
+}
+
 function updateThemeToggleUI() {
   const isLight = getCurrentTheme() === 'light';
   if (typeof THEME_ICONS !== 'undefined') {

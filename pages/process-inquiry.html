@@ -120,6 +120,20 @@
 
       setupFilters();
       renderResults();
+      applyDeepLinkParams();
+    }
+
+    // 위험지도 딥링크 수신: 공종/작업명/단위작업명/기인물 스코프 적용
+    function applyDeepLinkParams() {
+      const q = new URLSearchParams(location.search);
+      const gz = q.get('공종');
+      if (gz) msGongzong.setValues([gz]);
+      const work = q.get('작업명');
+      if (work) msWork.setValues([work]);
+      const unit = q.get('단위작업명');
+      if (unit) msUnitWork.setValues([unit]);
+      const cause = q.get('기인물');
+      if (cause) msCause.setValues([cause]);
     }
 
     function setupFilters() {
@@ -309,12 +323,16 @@
         },
         options: {
           indexAxis: 'y',
-          plugins: { legend: { display: false } },
+          plugins: {
+            legend: { display: false },
+            datalabels: barDatalabels(data.length),
+          },
           scales: {
             x: { grid: { color: '#1F2937' }, ticks: { font: { size: 10 } } },
             y: { grid: { display: false }, ticks: { font: { size: 9 } } }
           }
-        }
+        },
+        plugins: [ChartDataLabels]
       });
     }
 

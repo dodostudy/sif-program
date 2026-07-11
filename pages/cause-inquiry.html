@@ -170,6 +170,14 @@
 
       setupFilters();
       renderResults();
+      applyDeepLinkParams();
+    }
+
+    // 위험지도 딥링크 수신: 기인물 스코프 적용
+    function applyDeepLinkParams() {
+      const q = new URLSearchParams(location.search);
+      const cause = q.get('기인물');
+      if (cause) msCause.setValues([cause]);
     }
 
     function setupFilters() {
@@ -330,12 +338,16 @@
         },
         options: {
           indexAxis: 'y',
-          plugins: { legend: { display: false } },
+          plugins: {
+            legend: { display: false },
+            datalabels: barDatalabels(data.length),
+          },
           scales: {
             x: { grid: { color: '#1F2937' } },
             y: { grid: { display: false }, ticks: { font: { size: 10 } } }
           }
-        }
+        },
+        plugins: [ChartDataLabels]
       });
     }
 
@@ -356,12 +368,16 @@
         },
         options: {
           indexAxis: 'y',
-          plugins: { legend: { display: false } },
+          plugins: {
+            legend: { display: false },
+            datalabels: barDatalabels(data.length),
+          },
           scales: {
             x: { grid: { color: '#1F2937' } },
             y: { grid: { display: false }, ticks: { font: { size: 10 } } }
           }
-        }
+        },
+        plugins: [ChartDataLabels]
       });
     }
 
@@ -382,12 +398,16 @@
         },
         options: {
           indexAxis: 'y',
-          plugins: { legend: { display: false } },
+          plugins: {
+            legend: { display: false },
+            datalabels: barDatalabels(data.length),
+          },
           scales: {
             x: { grid: { color: '#1F2937' } },
             y: { grid: { display: false }, ticks: { font: { size: 9 }, autoSkip: false } }
           }
-        }
+        },
+        plugins: [ChartDataLabels]
       });
     }
 

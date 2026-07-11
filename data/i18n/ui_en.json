@@ -217,6 +217,7 @@
   "SIF 건설재해 위험성평가 - 기인물조회": "SIF Construction Risk Assessment - Causal Agent Inquiry",
   "SIF 건설재해 위험성평가 - 재해형태 분석": "SIF Construction Risk Assessment - Accident Type Analysis",
   "SIF 건설재해 위험성평가 - 위험성평가 생성": "SIF Construction Risk Assessment - Risk Assessment Generation",
+  "SIF 건설재해 위험성평가 - 위험지도": "SIF Construction Risk Assessment - Risk Map",
 
   "한국산업안전보건공단이 구축한 자료 기반으로, 높은 신뢰성과 활용 가치를 보장합니다": "Built on data from KOSHA, ensuring high reliability and practical value",
   "공종·작업명·단위작업명까지 3단계로 분류된 로우데이터, 위험성평가 기준자료로 바로 활용할 수 있습니다": "Raw data classified into 3 levels (Work Type · Activity · Task), ready to use as a risk-assessment reference",
@@ -237,5 +238,27 @@
   "발전업·건설업 위험성평가 직접 생성, AI GPTs '안전누리' 연동": "Generate power/construction risk assessments directly, linked with AI GPTs 'Safety Nuri'",
   "발전업: 기인물 기반 단계별 위자드": "Power: causal-agent-based step-by-step wizard",
   "건설업: 공종 → 작업명 → 단위작업명 선택": "Construction: select Work Type → Activity → Task",
-  "재해사례 체크박스 선택 + 인쇄 지원": "Select accident cases via checkboxes + print support"
+  "재해사례 체크박스 선택 + 인쇄 지원": "Select accident cases via checkboxes + print support",
+
+  "위험지도": "Risk Map",
+  "위험 랭킹": "Risk Ranking",
+  "공정": "Process",
+  "재해유형": "Accident Type",
+  "공정·기인물·재해유형 3축을 넘나들며 전체 위험 구조를 조망": "Explore the full risk structure across three axes — Process, Causal Agent, and Accident Type",
+  "공정 위험 랭킹": "Process Risk Ranking",
+  "기인물 위험 랭킹": "Causal Agent Risk Ranking",
+  "재해유형 위험 랭킹": "Accident Type Risk Ranking",
+  "좌측 목록에서 항목을 선택하면 상세 분석이 표시됩니다.": "Select an item from the list on the left to view its detailed analysis.",
+  "아래 차트·사례의 항목을 클릭하면 해당 항목으로 이동합니다 (분포 %는 선택 항목 기준).": "Click an item in the charts or cases below to navigate to it (distribution % is based on the selected item).",
+  "재해유형 분포": "Accident Type Distribution",
+  "기인물 Top": "Top Causal Agents",
+  "발생 공정": "Occurring Processes",
+  "대표 사례": "Representative Cases",
+  "사례가 없습니다.": "No cases.",
+  "← 목록": "← List",
+  "← 사례 목록": "← Case List",
+  "전체 사례·필터 →": "All cases & filters →",
+  "사례": "Cases",
+  "사망·중상": "Fatal·Severe",
+  "전체 대비": "vs. Total"
 }

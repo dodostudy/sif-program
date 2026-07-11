@@ -925,8 +925,10 @@
             borderColor: causeSorted.map((_, i) => CHART_COLORS.getColor(i)),
             borderWidth: 1, borderRadius: 3 }]
         },
-        options: { indexAxis: 'y', plugins: { legend: { display: false } },
-          scales: { x: { grid: { color: '#1F2937' } }, y: { grid: { display: false }, ticks: { font: { size: 10 } } } } }
+        options: { indexAxis: 'y',
+          plugins: { legend: { display: false }, datalabels: barDatalabels(data.length) },
+          scales: { x: { grid: { color: '#1F2937' } }, y: { grid: { display: false }, ticks: { font: { size: 10 } } } } },
+        plugins: [ChartDataLabels]
       });
       const disasterAgg = aggregateBy(data, '재해형태');
       const disasterSorted = topN(disasterAgg, 'count', 8);

@@ -23,6 +23,32 @@
   }
 }
 
+/* 우측 상단 고정 토글(언어/테마) 클러스터와 페이지 헤더 액션 버튼(인쇄 등) 겹침 방지.
+   헤더 우측에 토글 클러스터 폭만큼 여백을 확보한다. */
+#page-header {
+  padding-right: 10.5rem;
+}
+@media (max-width: 640px) {
+  #page-header {
+    padding-right: 0;
+    padding-top: 2.75rem; /* 세로 배치 시 상단 토글 줄 아래로 밀어 겹침 방지 */
+  }
+}
+
+/* 드릴다운/선택 컨텍스트 구분용 옅은 틴트 (대시보드 드릴다운·위험지도 상세) */
+.drill-tint {
+  background: rgba(59, 130, 246, 0.05);
+  border: 1px solid rgba(59, 130, 246, 0.28);
+  border-left: 3px solid #3B82F6;
+  border-radius: 0.75rem;
+  padding: 0.85rem;
+}
+html.light .drill-tint {
+  background: rgba(59, 130, 246, 0.05);
+  border-color: rgba(59, 130, 246, 0.25);
+  border-left-color: #3B82F6;
+}
+
 /* 메인 콘텐츠 영역 */
 #content {
   margin-left: 0;
@@ -729,6 +755,359 @@
 }
 .breadcrumb .separator {
   color: #4B5563;
+}
+
+/* =====================================================
+   위험지도 (risk-map.html)
+   ===================================================== */
+
+/* 3축 탭 바 */
+.rm-tabs {
+  display: flex;
+  gap: 0.25rem;
+  border-bottom: 1px solid #1F2937;
+  overflow-x: auto;
+}
+.rm-tabs .tab-btn {
+  border-bottom-width: 2px;
+}
+
+/* 2단 레이아웃: 좌 리스트 + 우 상세 */
+.rm-layout {
+  display: grid;
+  grid-template-columns: minmax(300px, 380px) 1fr;
+  gap: 1rem;
+  align-items: start;
+}
+/* 중첩 grid/flex 오버플로우 방지 (min-width:auto → 0) */
+.rm-list-panel,
+.rm-detail-panel,
+.rm-list,
+.rm-row {
+  min-width: 0;
+}
+.rm-row {
+  max-width: 100%;
+}
+
+/* heat 랭킹 리스트 */
+.rm-list {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  max-height: 70vh;
+  overflow-y: auto;
+}
+/* 행 전체를 heat 배경으로 채우고(값 비례 가로 채움) 그 위에 라벨/건수를 얹는다.
+   → 라벨이 행 전체 폭을 쓰므로 잘림 없이 자연 wrap 가능. */
+.rm-row {
+  position: relative;
+  display: flex;
+  align-items: stretch;
+  min-height: 44px;
+  border-radius: 0.375rem;
+  cursor: pointer;
+  border: 1px solid transparent;
+  overflow: hidden;
+  transition: border-color 0.12s, box-shadow 0.12s;
+}
+.rm-heat-bg {
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  z-index: 0;
+  border-radius: 0.375rem;
+  pointer-events: none;
+  transition: width 0.2s;
+}
+.rm-row-main {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  width: 100%;
+  padding: 0.4rem 0.6rem 0.4rem 0;
+}
+.rm-row:hover {
+  border-color: #4B5563;
+}
+.rm-row.rm-row-active {
+  border-color: #3B82F6;
+  box-shadow: 0 0 0 1px #3B82F6;
+}
+.rm-toggle {
+  flex-shrink: 0;
+  width: 1.25rem;
+  height: 1.25rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.9rem;
+  line-height: 1;
+  color: #E5E7EB;
+  background: rgba(31, 41, 55, 0.85);
+  border: 1px solid #4B5563;
+  border-radius: 0.25rem;
+  cursor: pointer;
+}
+.rm-toggle:hover {
+  color: #ffffff;
+  border-color: #6B7280;
+}
+.rm-toggle-spacer {
+  flex-shrink: 0;
+  width: 1.25rem;
+  height: 1.25rem;
+}
+.rm-row-name {
+  flex: 1 1 auto;
+  min-width: 0;
+  font-size: 0.8rem;
+  color: #F3F4F6;
+  white-space: normal;
+  word-break: break-word;
+  overflow-wrap: anywhere;
+  line-height: 1.25;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.6);
+}
+.rm-row-count {
+  flex-shrink: 0;
+  font-size: 0.72rem;
+  color: #F3F4F6;
+  text-align: right;
+  white-space: nowrap;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.6);
+}
+.rm-row-pct {
+  color: #E5E7EB;
+  opacity: 0.85;
+}
+
+/* 상세 패널 */
+.rm-detail-empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 240px;
+  color: #6B7280;
+  font-size: 0.9rem;
+  text-align: center;
+  padding: 2rem;
+}
+.rm-detail-head {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+}
+.rm-detail-title {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #ffffff;
+}
+.rm-detail-sub {
+  font-size: 0.78rem;
+  color: #9CA3AF;
+}
+
+/* 대표 사례 목록 */
+.rm-case-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0.6rem;
+  border: 1px solid #1F2937;
+  border-radius: 0.5rem;
+  cursor: pointer;
+  transition: border-color 0.12s, background 0.12s;
+}
+.rm-case-row:hover {
+  border-color: #3B82F6;
+  background: #1E3A5F;
+}
+.rm-case-rank-badge {
+  flex-shrink: 0;
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: #FCA5A5;
+  background: rgba(239, 68, 68, 0.15);
+  padding: 0.1rem 0.45rem;
+  border-radius: 9999px;
+  min-width: 2.4rem;
+  text-align: center;
+}
+.rm-case-row-text {
+  flex: 1;
+  min-width: 0;
+  font-size: 0.78rem;
+  color: #D1D5DB;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* 사례 상세 카드 */
+.rm-case-section {
+  margin-top: 0.9rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid #1F2937;
+}
+.rm-case-section h4 {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #93C5FD;
+  margin-bottom: 0.35rem;
+}
+.rm-case-section p {
+  font-size: 0.82rem;
+  color: #D1D5DB;
+  line-height: 1.55;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+.rm-case-tag {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.1rem 0.5rem;
+  border-radius: 0.375rem;
+  font-size: 0.72rem;
+  background: #1F2937;
+  border: 1px solid #374151;
+  color: #E5E7EB;
+}
+
+/* 뒤로 / 딥링크 버튼 */
+.rm-back-btn {
+  font-size: 0.78rem;
+  color: #9CA3AF;
+  background: transparent;
+  border: 1px solid #374151;
+  border-radius: 0.375rem;
+  padding: 0.3rem 0.7rem;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.rm-back-btn:hover {
+  color: #E5E7EB;
+  border-color: #4B5563;
+  background: #1F2937;
+}
+.rm-deeplink {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.8rem;
+  color: #60A5FA;
+  border: 1px solid #1E3A5F;
+  border-radius: 0.5rem;
+  padding: 0.4rem 0.75rem;
+  transition: all 0.15s;
+}
+.rm-deeplink:hover {
+  color: #93C5FD;
+  border-color: #3B82F6;
+  background: rgba(59, 130, 246, 0.1);
+}
+
+/* 모바일: 리스트 → 상세 전체폭 전환 */
+@media (max-width: 1023px) {
+  .rm-layout {
+    grid-template-columns: 1fr;
+  }
+  .rm-detail-panel {
+    display: none;
+  }
+  .rm-layout.rm-show-detail .rm-list-panel {
+    display: none;
+  }
+  .rm-layout.rm-show-detail .rm-detail-panel {
+    display: block;
+  }
+  .rm-list {
+    max-height: none;
+  }
+}
+
+/* 좁은 화면: 간격/폰트 축소 (라벨은 행 배경 채움 위에서 자연 wrap) */
+@media (max-width: 767px) {
+  .rm-row-main {
+    gap: 0.35rem;
+    padding-right: 0.4rem;
+  }
+  .rm-row-count {
+    font-size: 0.68rem;
+  }
+}
+
+/* 라이트 모드 */
+html.light .rm-tabs {
+  border-color: #E5E7EB;
+}
+html.light .rm-row:hover {
+  border-color: #D1D5DB;
+}
+html.light .rm-row.rm-row-active {
+  border-color: #3B82F6;
+  box-shadow: 0 0 0 1px #3B82F6;
+}
+html.light .rm-row-name {
+  color: #1F2937;
+  text-shadow: 0 1px 1px rgba(255, 255, 255, 0.7);
+}
+html.light .rm-row-count {
+  color: #1F2937;
+  text-shadow: 0 1px 1px rgba(255, 255, 255, 0.7);
+}
+html.light .rm-row-pct {
+  color: #4B5563;
+}
+html.light .rm-toggle {
+  background: rgba(255, 255, 255, 0.85);
+  border-color: #9CA3AF;
+  color: #374151;
+}
+html.light .rm-detail-title {
+  color: #111827;
+}
+html.light .rm-case-row {
+  border-color: #E5E7EB;
+}
+html.light .rm-case-row:hover {
+  background: #EFF6FF;
+}
+html.light .rm-case-section {
+  border-color: #E5E7EB;
+}
+html.light .rm-case-section p {
+  color: #374151;
+}
+html.light .rm-case-tag {
+  background: #F3F4F6;
+  border-color: #E5E7EB;
+  color: #374151;
+}
+html.light .rm-back-btn:hover {
+  background: #F3F4F6;
+}
+
+/* 인쇄: 리스트/탭/브레드크럼 숨기고 상세만 */
+@media print {
+  .rm-tabs,
+  .rm-list-panel,
+  .rm-deeplink,
+  .rm-back-btn {
+    display: none !important;
+  }
+  .rm-layout {
+    grid-template-columns: 1fr !important;
+    display: block !important;
+  }
+  .rm-detail-panel {
+    display: block !important;
+  }
 }
 
 /* =====================================================

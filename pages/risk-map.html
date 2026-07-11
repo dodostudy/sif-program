@@ -1,0 +1,600 @@
+<!DOCTYPE html>
+<html lang="ko" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SIF 건설재해 위험성평가 - 위험지도</title>
+  <script>if(localStorage.getItem('sif-theme')==='light'){document.documentElement.classList.replace('dark','light')}</script>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"></script>
+  <script src="https://cdn.jsdelivr.net/npm/papaparse@5"></script>
+  <link rel="stylesheet" href="../css/style.css">
+</head>
+<body class="bg-gray-950 text-gray-100 min-h-screen">
+  <div id="sidebar"></div>
+
+  <main id="content" class="p-4 lg:p-6">
+    <div id="page-header"></div>
+
+    <!-- 3축 탭 -->
+    <div class="rm-tabs mb-3" id="rm-tabs">
+      <button type="button" class="tab-btn" data-axis="공정">공정</button>
+      <button type="button" class="tab-btn" data-axis="기인물">기인물</button>
+      <button type="button" class="tab-btn" data-axis="재해유형">재해유형</button>
+    </div>
+
+    <!-- 브레드크럼 (hop 경로) -->
+    <div id="rm-breadcrumb" class="breadcrumb mb-4 flex-wrap"></div>
+
+    <!-- 좌 리스트 + 우 상세 -->
+    <div class="rm-layout" id="rm-layout">
+      <div class="rm-list-panel" id="rm-list-panel">
+        <div class="chart-container">
+          <h3 class="text-sm font-semibold text-gray-300 mb-3" id="rm-list-title">위험 랭킹</h3>
+          <div id="rm-list" class="rm-list"></div>
+        </div>
+      </div>
+      <div class="rm-detail-panel" id="rm-detail-panel">
+        <div id="rm-detail"></div>
+      </div>
+    </div>
+  </main>
+
+  <script src="../js/i18n.js"></script>
+  <script src="../js/data-loader.js"></script>
+  <script src="../js/filter-manager.js"></script>
+  <script src="../js/chart-manager.js"></script>
+  <script src="../js/utils.js"></script>
+  <script src="../js/components.js"></script>
+  <script src="../js/app.js"></script>
+
+  <script>
+    const cm = new ChartManager();
+
+    // ── 전역 상태 ──────────────────────────────────────
+    let allData = [];
+    let dropdownRef = {};
+    let TOTAL = 0;
+    let is12List = [];       // 12대기인물 목록
+    let nested = {};         // 공종 → { count, works: { 작업명 → { count, units: {단위작업명: count} } } }
+
+    // 축 → db.json 컬럼 매핑
+    const AXIS_COL = { '공정': '공종', '기인물': '기인물', '재해유형': '재해형태' };
+
+    const state = {
+      axis: '공정',      // 현재 탭
+      trail: [],         // hop 경로 (focus 객체 배열)
+      focus: null,       // 현재 선택 focus (= trail의 마지막)
+      caseView: null,    // 개별 사례 카드 표시 시 { record }
+      expanded: new Set(),   // 공정 드릴 확장 키
+    };
+
+    // 행 클릭 시 focus 복원용 (속성 인코딩 회피)
+    let rowFocusMap = {};
+    let rowIdSeq = 0;
+
+    // ── 유틸 ───────────────────────────────────────────
+    const stripNum = (s) => String(s == null ? '' : s).replace(/^\d+(\.\d+)*\.?\s*/, '');
+    const esc = (s) => { const d = document.createElement('div'); d.textContent = (s == null ? '' : s); return d.innerHTML; };
+
+    // 범주값 표시 (집계·비교는 항상 한글 canonical, 표시만 tCat)
+    function catLabel(col, val) {
+      let s = I18n.tCat(col, val);
+      if (col === '공종' || col === '작업명' || col === '단위작업명') s = stripNum(s);
+      return s;
+    }
+
+    // heat 행 배경 채움색 (표면→빨강): 낮은 알파로 텍스트 가독성 확보(다크/라이트 공용)
+    function heatFill(ratio) {
+      const a = (0.16 + 0.62 * Math.max(0, Math.min(ratio, 1))).toFixed(3);
+      return `rgba(239,68,68,${a})`;
+    }
+
+    // focus 생성기 (filters는 항상 한글 canonical)
+    const F = {
+      공정(gz) { return { axis: '공정', column: '공종', value: gz, label: stripNum(gz), filters: { '공종': gz } }; },
+      work(gz, work) { return { axis: '공정', column: '작업명', value: work, label: stripNum(work), filters: { '공종': gz, '작업명': work } }; },
+      unit(gz, work, unit) { return { axis: '공정', column: '단위작업명', value: unit, label: stripNum(unit), filters: { '공종': gz, '작업명': work, '단위작업명': unit } }; },
+      기인물(c) { return { axis: '기인물', column: '기인물', value: c, label: c, filters: { '기인물': c } }; },
+      재해유형(dt) { return { axis: '재해유형', column: '재해형태', value: dt, label: dt, filters: { '재해형태': dt } }; },
+    };
+
+    // ── 초기화 ─────────────────────────────────────────
+    async function init() {
+      renderPageHeader('위험지도', '공정·기인물·재해유형 3축을 넘나들며 전체 위험 구조를 조망');
+
+      allData = await DataLoader.loadDB();
+      dropdownRef = await DataLoader.loadDropdownRef();
+      TOTAL = allData.length;
+      is12List = dropdownRef['12대기인물'] || [];
+
+      // 공정 계층 구조를 실데이터 기준으로 집계
+      buildNested();
+
+      setupTabs();
+      renderAll();
+    }
+
+    function buildNested() {
+      nested = {};
+      allData.forEach(r => {
+        const gz = r['공종']; if (!gz) return;
+        if (!nested[gz]) nested[gz] = { count: 0, works: {} };
+        nested[gz].count++;
+        const w = r['작업명'];
+        if (w) {
+          if (!nested[gz].works[w]) nested[gz].works[w] = { count: 0, units: {} };
+          nested[gz].works[w].count++;
+          const u = r['단위작업명'];
+          if (u) nested[gz].works[w].units[u] = (nested[gz].works[w].units[u] || 0) + 1;
+        }
+      });
+    }
+
+    function setupTabs() {
+      document.querySelectorAll('#rm-tabs .tab-btn').forEach(btn => {
+        btn.addEventListener('click', () => switchTab(btn.dataset.axis));
+      });
+    }
+
+    // ── 상태 전이 ──────────────────────────────────────
+    function switchTab(axis) {
+      state.axis = axis;
+      state.trail = [];
+      state.focus = null;
+      state.caseView = null;
+      state.expanded = new Set();
+      renderAll();
+    }
+
+    // 리스트에서 항목 선택 → 새 포커스 (같은 축, trail 리셋)
+    function selectListItem(focus) {
+      state.axis = focus.axis;
+      state.trail = [focus];
+      state.focus = focus;
+      state.caseView = null;
+      renderAll();
+    }
+
+    // 상세 속 항목 클릭 → hop (다른 축으로 포커스 전환, 브레드크럼 누적)
+    function hop(focus) {
+      state.trail = [...state.trail, focus];
+      state.axis = focus.axis;
+      state.focus = focus;
+      state.caseView = null;
+      state.expanded = new Set();
+      renderAll();
+    }
+
+    // 브레드크럼 클릭 → 해당 지점으로 복귀
+    function crumbClick(index) {
+      state.trail = state.trail.slice(0, index + 1);
+      state.focus = state.trail[index];
+      state.axis = state.focus.axis;
+      state.caseView = null;
+      renderAll();
+    }
+
+    // 축 홈 크럼 클릭 → 포커스 해제 (리스트만)
+    function clearFocus() {
+      state.trail = [];
+      state.focus = null;
+      state.caseView = null;
+      renderAll();
+    }
+
+    function openCase(record) {
+      state.caseView = { record };
+      renderAll();
+    }
+    function closeCase() {
+      state.caseView = null;
+      renderAll();
+    }
+
+    // ── 렌더 ───────────────────────────────────────────
+    function renderAll() {
+      renderTabs();
+      renderBreadcrumb();
+      renderList();
+      renderDetail();
+
+      // 모바일: 포커스/사례 선택 시 상세 전체폭 전환
+      const layout = document.getElementById('rm-layout');
+      layout.classList.toggle('rm-show-detail', !!(state.focus || state.caseView));
+
+      if (typeof I18n !== 'undefined') I18n.refresh();
+    }
+
+    function renderTabs() {
+      document.querySelectorAll('#rm-tabs .tab-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.axis === state.axis);
+      });
+      document.getElementById('rm-list-title').textContent = `${state.axis} 위험 랭킹`;
+    }
+
+    function renderBreadcrumb() {
+      const el = document.getElementById('rm-breadcrumb');
+      // 축 홈 크럼 (포커스 해제)
+      let html = `<a data-crumb="home">${state.axis}</a>`;
+      state.trail.forEach((f, i) => {
+        html += `<span class="separator">›</span>`;
+        if (i === state.trail.length - 1 && !state.caseView) {
+          html += `<span class="text-white">${esc(f.label)}</span>`;
+        } else {
+          html += `<a data-crumb="${i}">${esc(f.label)}</a>`;
+        }
+      });
+      if (state.caseView) {
+        html += `<span class="separator">›</span><span class="text-white">사례</span>`;
+      }
+      el.innerHTML = html;
+
+      el.querySelectorAll('[data-crumb]').forEach(a => {
+        a.addEventListener('click', () => {
+          const v = a.dataset.crumb;
+          if (v === 'home') clearFocus();
+          else crumbClick(parseInt(v));
+        });
+      });
+    }
+
+    // ── 리스트 (heat 랭킹) ─────────────────────────────
+    function renderList() {
+      rowFocusMap = {};
+      rowIdSeq = 0;
+      const container = document.getElementById('rm-list');
+      let html;
+      if (state.axis === '공정') html = buildProcessList();
+      else html = buildFlatList(state.axis);
+      container.innerHTML = html;
+      attachListEvents(container);
+    }
+
+    // heat 행 마크업: 행 배경을 값 비례로 채우고, 그 위에 [토글] 명칭(전체) ··· 건수(%)
+    function heatRowHtml(opts) {
+      const { label, count, ratio, badge, hasToggle, expanded, indent, rowId, toggleKey, active } = opts;
+      const pct = (count / TOTAL * 100).toFixed(1);
+      const fillW = Math.max(ratio * 100, 3);
+      const toggle = hasToggle
+        ? `<button type="button" class="rm-toggle" data-toggle="${esc(toggleKey)}">${expanded ? '−' : '+'}</button>`
+        : `<span class="rm-toggle-spacer"></span>`;
+      const badgeHtml = badge ? ` <span class="badge-12">12대</span>` : '';
+      return `<div class="rm-row${active ? ' rm-row-active' : ''}" data-row-id="${rowId}" title="${esc(label)}">
+        <span class="rm-heat-bg" style="width:${fillW}%;background:${heatFill(ratio)}"></span>
+        <span class="rm-row-main" style="padding-left:${0.5 + indent}rem">
+          ${toggle}
+          <span class="rm-row-name">${esc(label)}${badgeHtml}</span>
+          <span class="rm-row-count">${I18n.cases(count)} <span class="rm-row-pct">(${pct}%)</span></span>
+        </span>
+      </div>`;
+    }
+
+    // 공정 탭: 공종 → 작업명 → 단위작업명 드릴
+    function buildProcessList() {
+      const gzEntries = Object.entries(nested).sort((a, b) => b[1].count - a[1].count);
+      const maxGz = gzEntries.length ? gzEntries[0][1].count : 1;
+      let html = '';
+
+      gzEntries.forEach(([gz, gzData]) => {
+        const gzKey = `gz:${gz}`;
+        const gzExpanded = state.expanded.has(gzKey);
+        const gzActive = state.focus && state.focus.column === '공종' && state.focus.value === gz;
+        const rowId = rowIdSeq++;
+        rowFocusMap[rowId] = F.공정(gz);
+        const hasWorks = Object.keys(gzData.works).length > 0;
+        html += heatRowHtml({
+          label: catLabel('공종', gz), count: gzData.count, ratio: gzData.count / maxGz,
+          hasToggle: hasWorks, expanded: gzExpanded, indent: 0, rowId, toggleKey: gzKey, active: gzActive,
+        });
+
+        if (gzExpanded) {
+          const workEntries = Object.entries(gzData.works).sort((a, b) => b[1].count - a[1].count);
+          workEntries.forEach(([work, workData]) => {
+            const workKey = `work:${gz}|||${work}`;
+            const workExpanded = state.expanded.has(workKey);
+            const workActive = state.focus && state.focus.column === '작업명' && state.focus.value === work;
+            const wRowId = rowIdSeq++;
+            rowFocusMap[wRowId] = F.work(gz, work);
+            const hasUnits = Object.keys(workData.units).length > 0;
+            html += heatRowHtml({
+              label: catLabel('작업명', work), count: workData.count, ratio: workData.count / maxGz,
+              hasToggle: hasUnits, expanded: workExpanded, indent: 1.5, rowId: wRowId, toggleKey: workKey, active: workActive,
+            });
+
+            if (workExpanded) {
+              const unitEntries = Object.entries(workData.units).sort((a, b) => b[1] - a[1]);
+              unitEntries.forEach(([unit, uCount]) => {
+                const uActive = state.focus && state.focus.column === '단위작업명' && state.focus.value === unit;
+                const uRowId = rowIdSeq++;
+                rowFocusMap[uRowId] = F.unit(gz, work, unit);
+                html += heatRowHtml({
+                  label: catLabel('단위작업명', unit), count: uCount, ratio: uCount / maxGz,
+                  hasToggle: false, indent: 3, rowId: uRowId, active: uActive,
+                });
+              });
+            }
+          });
+        }
+      });
+      return html;
+    }
+
+    // 기인물 / 재해유형 탭: 단일 레벨, 건수 desc
+    function buildFlatList(axis) {
+      const col = AXIS_COL[axis];
+      const agg = aggregateBy(allData, col).sort((a, b) => b.count - a.count);
+      const max = agg.length ? agg[0].count : 1;
+      let html = '';
+      agg.forEach(a => {
+        const active = state.focus && state.focus.value === a.key;
+        const rowId = rowIdSeq++;
+        rowFocusMap[rowId] = (axis === '기인물') ? F.기인물(a.key) : F.재해유형(a.key);
+        html += heatRowHtml({
+          label: catLabel(col, a.key), count: a.count, ratio: a.count / max,
+          badge: (axis === '기인물' && is12List.includes(a.key)),
+          hasToggle: false, indent: 0, rowId, active,
+        });
+      });
+      return html;
+    }
+
+    function attachListEvents(container) {
+      // 드릴 토글
+      container.querySelectorAll('.rm-toggle').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          const key = btn.dataset.toggle;
+          if (state.expanded.has(key)) state.expanded.delete(key);
+          else state.expanded.add(key);
+          renderList();
+        });
+      });
+      // 행 선택
+      container.querySelectorAll('.rm-row').forEach(row => {
+        row.addEventListener('click', () => {
+          const focus = rowFocusMap[row.dataset.rowId];
+          if (focus) selectListItem(focus);
+        });
+      });
+    }
+
+    // ── 상세 패널 ──────────────────────────────────────
+    function renderDetail() {
+      const el = document.getElementById('rm-detail');
+      cm.destroyAll();
+
+      if (state.caseView) {
+        el.innerHTML = renderCaseCard(state.caseView.record);
+        const back = document.getElementById('rm-case-back');
+        if (back) back.addEventListener('click', closeCase);
+        return;
+      }
+
+      if (!state.focus) {
+        el.innerHTML = `<div class="chart-container"><div class="rm-detail-empty">좌측 목록에서 항목을 선택하면 상세 분석이 표시됩니다.</div></div>`;
+        return;
+      }
+
+      const focus = state.focus;
+      const data = filterDB(allData, focus.filters);
+      const scopeTotal = data.length;
+
+      // 축별 차트 구성 결정
+      let chartA, chartB;
+      if (focus.axis === '공정') {
+        chartA = { col: '재해형태', type: 'doughnut', title: '재해유형 분포', hop: (k) => F.재해유형(k), top: 8 };
+        chartB = { col: '기인물', type: 'bar', title: '기인물 Top', hop: (k) => F.기인물(k), top: 12 };
+      } else if (focus.axis === '기인물') {
+        chartA = { col: '재해형태', type: 'doughnut', title: '재해유형 분포', hop: (k) => F.재해유형(k), top: 8 };
+        chartB = { col: '공종', type: 'bar', title: '발생 공정', hop: (k) => F.공정(k), top: 12 };
+      } else {
+        chartA = { col: '공종', type: 'bar', title: '발생 공정', hop: (k) => F.공정(k), top: 12 };
+        chartB = { col: '기인물', type: 'bar', title: '기인물 Top', hop: (k) => F.기인물(k), top: 12 };
+      }
+
+      el.innerHTML = `
+        <div class="chart-container drill-tint mb-4">
+          <div class="rm-detail-head">
+            <button type="button" class="rm-back-btn lg:hidden" id="rm-detail-back">← 목록</button>
+            <span class="rm-detail-title">${esc(focus.label)}</span>
+            <span class="rm-detail-sub">${I18n.isEn ? `Fatal·Severe ${I18n.cases(scopeTotal)} · ${formatPercent(scopeTotal, TOTAL)} of total` : `사망·중상 ${I18n.cases(scopeTotal)} · 전체 대비 ${formatPercent(scopeTotal, TOTAL)}`}</span>
+          </div>
+          <p class="text-xs text-gray-500">아래 차트·사례의 항목을 클릭하면 해당 항목으로 이동합니다 (분포 %는 선택 항목 기준).</p>
+        </div>
+
+        <div class="grid grid-cols-1 xl:grid-cols-2 gap-4 mb-4">
+          <div class="chart-container">
+            <h3 class="text-sm font-semibold text-gray-300 mb-3" id="rm-chart-a-title"></h3>
+            <div style="height:300px"><canvas id="rm-chart-a"></canvas></div>
+          </div>
+          <div class="chart-container">
+            <h3 class="text-sm font-semibold text-gray-300 mb-3" id="rm-chart-b-title"></h3>
+            <div style="height:300px"><canvas id="rm-chart-b"></canvas></div>
+          </div>
+        </div>
+
+        <div class="chart-container">
+          <div class="flex items-center justify-between mb-3">
+            <h3 class="text-sm font-semibold text-gray-300">대표 사례</h3>
+            <button type="button" class="table-excel-btn text-xs text-emerald-400 hover:text-emerald-300 px-3 py-1 border border-emerald-700 hover:border-emerald-500 rounded transition-colors" id="rm-excel-btn">📥 엑셀 다운로드</button>
+          </div>
+          <div id="rm-cases" class="flex flex-col gap-2"></div>
+          <div class="mt-4 pt-3 border-t border-gray-800">
+            <a class="rm-deeplink" id="rm-deeplink" href="${deepLinkFor(focus)}">전체 사례·필터 →</a>
+          </div>
+        </div>
+      `;
+
+      document.getElementById('rm-chart-a-title').textContent = chartA.title;
+      document.getElementById('rm-chart-b-title').textContent = chartB.title;
+
+      renderDistChart('rm-chart-a', chartA, data, scopeTotal);
+      renderDistChart('rm-chart-b', chartB, data, scopeTotal);
+      renderRepresentativeCases(data);
+
+      const back = document.getElementById('rm-detail-back');
+      if (back) back.addEventListener('click', clearFocus);
+
+      const excelBtn = document.getElementById('rm-excel-btn');
+      if (excelBtn) excelBtn.addEventListener('click', () => downloadTableAsExcel(caseColumns(), data, '위험지도_사례'));
+    }
+
+    // 분포 차트 (bar/doughnut) + 클릭 시 hop
+    function renderDistChart(canvasId, cfg, data, scopeTotal) {
+      const agg = aggregateBy(data, cfg.col);
+      const sorted = topN(agg, 'count', cfg.top);
+      const keys = sorted.map(a => a.key); // 한글 canonical (hop용)
+      const labels = sorted.map(a => catLabel(cfg.col, a.key));
+
+      const common = {
+        onClick: (e, elements) => {
+          if (elements.length > 0) {
+            const idx = elements[0].index;
+            hop(cfg.hop(keys[idx]));
+          }
+        },
+      };
+
+      if (cfg.type === 'doughnut') {
+        cm.create(canvasId, {
+          type: 'doughnut',
+          data: {
+            labels,
+            datasets: [{
+              data: sorted.map(a => a.count),
+              backgroundColor: sorted.map((_, i) => CHART_COLORS.getColor(i)),
+              borderWidth: 0,
+            }]
+          },
+          options: {
+            cutout: '50%',
+            plugins: {
+              legend: { position: 'right', labels: { boxWidth: 10, font: { size: 10 } } },
+              datalabels: {
+                display: true, color: '#fff', font: { size: 9, weight: 'bold' }, textAlign: 'center',
+                formatter: (value) => {
+                  const pct = (value / scopeTotal * 100).toFixed(1);
+                  if (pct < 5) return '';
+                  return `${I18n.isEn ? value : value + '건'}\n${pct}%`;
+                },
+              }
+            },
+            ...common,
+          },
+          plugins: [ChartDataLabels]
+        });
+      } else {
+        // 막대는 단일 강조색으로 통일 (색 순환에 의한 우연한 강조 제거 — 강조는 선택/활성 의미로만)
+        cm.create(canvasId, {
+          type: 'bar',
+          data: {
+            labels,
+            datasets: [{
+              data: sorted.map(a => a.count),
+              backgroundColor: CHART_COLORS.getAlpha('#3B82F6', 0.6),
+              borderColor: '#3B82F6',
+              borderWidth: 1, borderRadius: 3,
+            }]
+          },
+          options: {
+            indexAxis: 'y',
+            plugins: {
+              legend: { display: false },
+              datalabels: barDatalabels(scopeTotal),
+            },
+            scales: {
+              x: { grid: { color: '#1F2937' } },
+              y: { grid: { display: false }, ticks: { font: { size: 9 }, autoSkip: false } }
+            },
+            ...common,
+          },
+          plugins: [ChartDataLabels]
+        });
+      }
+    }
+
+    // 대표 사례 5건 (위험도순위 우선)
+    function renderRepresentativeCases(data) {
+      const cases = [...data].sort((a, b) => (a['위험도순위'] || 999) - (b['위험도순위'] || 999)).slice(0, 5);
+      const el = document.getElementById('rm-cases');
+      if (cases.length === 0) {
+        el.innerHTML = `<div class="text-sm text-gray-500 py-4">사례가 없습니다.</div>`;
+        return;
+      }
+      el.innerHTML = cases.map(r => {
+        const summary = `${catLabel('기인물', r['기인물'])} · ${catLabel('재해형태', r['재해형태'])} — ${esc((r['재해개요'] || '').slice(0, 60))}`;
+        return `<div class="rm-case-row" data-case-id="${r.id}">
+          <span class="rm-case-rank-badge">${r['위험도순위'] != null ? r['위험도순위'] + '위' : '-'}</span>
+          <span class="rm-case-row-text">${summary}</span>
+        </div>`;
+      }).join('');
+
+      el.querySelectorAll('.rm-case-row').forEach(row => {
+        row.addEventListener('click', () => {
+          const rec = allData.find(r => String(r.id) === row.dataset.caseId);
+          if (rec) openCase(rec);
+        });
+      });
+    }
+
+    // 개별 사고사망 사례 카드
+    function renderCaseCard(r) {
+      const tags = [
+        r['공종'] ? catLabel('공종', r['공종']) : null,
+        r['작업명'] ? catLabel('작업명', r['작업명']) : null,
+        r['단위작업명'] ? catLabel('단위작업명', r['단위작업명']) : null,
+        r['기인물'] ? catLabel('기인물', r['기인물']) : null,
+        r['재해형태'] ? catLabel('재해형태', r['재해형태']) : null,
+      ].filter(Boolean).map(t => `<span class="rm-case-tag">${esc(t)}</span>`).join(' ');
+
+      return `<div class="chart-container rm-case-card">
+        <div class="flex items-center justify-between mb-3">
+          <button type="button" class="rm-back-btn" id="rm-case-back">← 사례 목록</button>
+          <span class="rm-case-rank-badge">${r['위험도순위'] != null ? (I18n.isEn ? 'Risk Rank #' + r['위험도순위'] : '위험도 ' + r['위험도순위'] + '위') : '-'}</span>
+        </div>
+        <div class="flex flex-wrap gap-1.5 mb-2">${tags}</div>
+        <div class="rm-case-section"><h4>재해개요</h4><p>${esc(r['재해개요'])}</p></div>
+        <div class="rm-case-section"><h4>재해유발요인</h4><p>${esc(r['재해유발요인'])}</p></div>
+        <div class="rm-case-section"><h4>위험성감소대책</h4><p>${esc(r['위험성감소대책'])}</p></div>
+      </div>`;
+    }
+
+    // 사례 엑셀용 컬럼
+    function caseColumns() {
+      return [
+        { key: 'id', label: 'No' },
+        { key: '공종', label: '공종' },
+        { key: '작업명', label: '작업명' },
+        { key: '단위작업명', label: '단위작업명' },
+        { key: '기인물', label: '기인물' },
+        { key: '재해형태', label: '재해형태' },
+        { key: '위험도순위', label: '위험도순위' },
+        { key: '재해개요', label: '재해개요' },
+        { key: '재해유발요인', label: '재해유발요인' },
+        { key: '위험성감소대책', label: '위험성감소대책' },
+      ];
+    }
+
+    // 기존 페이지 딥링크 (스코프를 걸고 이동, 공존 원칙)
+    function deepLinkFor(focus) {
+      if (focus.axis === '공정') {
+        const p = new URLSearchParams();
+        p.set('공종', focus.filters['공종']);
+        if (focus.filters['작업명']) p.set('작업명', focus.filters['작업명']);
+        if (focus.filters['단위작업명']) p.set('단위작업명', focus.filters['단위작업명']);
+        return `process-inquiry.html?${p.toString()}`;
+      }
+      if (focus.axis === '기인물') {
+        const p = new URLSearchParams(); p.set('기인물', focus.filters['기인물']);
+        return `cause-inquiry.html?${p.toString()}`;
+      }
+      const p = new URLSearchParams(); p.set('재해형태', focus.filters['재해형태']);
+      return `disaster-type.html?${p.toString()}`;
+    }
+
+    init();
+  </script>
+</body>
+</html>
