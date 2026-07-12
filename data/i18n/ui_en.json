@@ -16,7 +16,6 @@
   "발전소 공정": "Power Plant Process",
   "전체": "All",
   "발전소 공정만": "Power Plant Only",
-
   "건설재해 위험성평가 데이터 현황": "Construction Accident Risk Assessment — Data Overview",
   "재해형태 분포": "Accident Type Distribution",
   "공종별 재해건수": "Accidents by Work Type",
@@ -40,7 +39,6 @@
   "기타": "Other",
   "다음": "Next",
   "이전": "Prev",
-
   "기인물": "Causal Agent",
   "재해형태": "Accident Type",
   "재해개요": "Accident Summary",
@@ -51,13 +49,11 @@
   "작업명": "Activity",
   "단위작업명": "Task",
   "기인물분류": "Causal Agent Category",
-
   "기인물조회": "Causal Agent Inquiry",
   "기인물 기준 역방향 조회 - 해당 기인물이 어떤 공정에서 위험한지 분석": "Reverse inquiry by causal agent — analyze which processes make each agent hazardous",
   "재해형태 기준 역방향 조회 - 해당 재해형태가 발생하는 공정·기인물 분석": "Reverse inquiry by accident type — analyze the processes and agents where each type occurs",
   "공정조회": "Process Inquiry",
   "Excel ③공정조회 시트 기반 - 공정별 재해사례 조회": "Based on Excel sheet ③ Process Inquiry — accident cases by process",
-
   "행복+ 분당발전본부 안전관리실": "Happy+ Bundang Power HQ · Safety Management Office",
   "위험성평가": "Risk Assessment",
   "지원시스템 + AI": "Support System + AI",
@@ -108,7 +104,6 @@
   "기인물별 주요 재해형태 + 사용공정 확인": "Check main accident types and processes by causal agent",
   "바로가기 →": "Open →",
   "다차원 연계 필터": "Multidimensional linked filter",
-
   "공종 선택": "Select Work Type",
   "전체 공종": "All Work Types",
   "작업명 선택": "Select Activity",
@@ -131,7 +126,6 @@
   "엑셀 다운로드": "Excel Download",
   "📥 엑셀 다운로드": "📥 Excel Download",
   "키워드 검색 (재해개요, 유발요인, 감소대책)": "Keyword search (summary, factor, measure)",
-
   "조회 건수": "Results",
   "총 사고건수": "Total Accidents",
   "기인물 종류": "# of Causal Agents",
@@ -142,7 +136,6 @@
   "12대기인물": "12 Major Causal Agents",
   "12대 기인물 (중점관리대상)": "12 Major Causal Agents (Priority Control)",
   "12대만": "12 Major Only",
-
   "기인물별 사고건수": "Accidents by Causal Agent",
   "기인물별 사고건수 (Top 15)": "Accidents by Causal Agent (Top 15)",
   "공종별 사고건수": "Accidents by Work Type",
@@ -157,7 +150,6 @@
   "관련 재해형태": "Related Accident Types",
   "재해사례 및 감소대책": "Accident Cases & Reduction Measures",
   "재해사례 및 예방대책": "Accident Cases & Prevention Measures",
-
   "특허출원": "Patent Pending",
   "AI GPTs 안전누리": "AI GPTs Safety Nuri",
   "대화하듯 질문에 답하면 7단계로 위험성평가가 완성됩니다": "Answer questions conversationally to complete a risk assessment in 7 steps",
@@ -210,7 +202,6 @@
   "폭염/원인미상": "Heat Wave / Unknown",
   "작업유형별": "By Activity Type",
   "다빈도순 전체": "All by Frequency",
-
   "SIF 건설재해 위험성평가 - 대시보드": "SIF Construction Risk Assessment - Dashboard",
   "SIF 건설재해 위험성평가 - 시스템 소개": "SIF Construction Risk Assessment - System Overview",
   "SIF 건설재해 위험성평가 - 공정조회": "SIF Construction Risk Assessment - Process Inquiry",
@@ -218,7 +209,6 @@
   "SIF 건설재해 위험성평가 - 재해형태 분석": "SIF Construction Risk Assessment - Accident Type Analysis",
   "SIF 건설재해 위험성평가 - 위험성평가 생성": "SIF Construction Risk Assessment - Risk Assessment Generation",
   "SIF 건설재해 위험성평가 - 위험지도": "SIF Construction Risk Assessment - Risk Map",
-
   "한국산업안전보건공단이 구축한 자료 기반으로, 높은 신뢰성과 활용 가치를 보장합니다": "Built on data from KOSHA, ensuring high reliability and practical value",
   "공종·작업명·단위작업명까지 3단계로 분류된 로우데이터, 위험성평가 기준자료로 바로 활용할 수 있습니다": "Raw data classified into 3 levels (Work Type · Activity · Task), ready to use as a risk-assessment reference",
   "공정별 주요 기인물(위험원)이 정리되어 작업별 위험요인을 구조적으로 파악할 수 있습니다": "Key causal agents (hazard sources) are organized by process, so hazards can be grasped structurally per task",
@@ -239,7 +229,6 @@
   "발전업: 기인물 기반 단계별 위자드": "Power: causal-agent-based step-by-step wizard",
   "건설업: 공종 → 작업명 → 단위작업명 선택": "Construction: select Work Type → Activity → Task",
   "재해사례 체크박스 선택 + 인쇄 지원": "Select accident cases via checkboxes + print support",
-
   "위험지도": "Risk Map",
   "위험 랭킹": "Risk Ranking",
   "공정": "Process",
@@ -260,5 +249,8 @@
   "전체 사례·필터 →": "All cases & filters →",
   "사례": "Cases",
   "사망·중상": "Fatal·Severe",
-  "전체 대비": "vs. Total"
+  "전체 대비": "vs. Total",
+  "작업 분포": "Activity Distribution",
+  "단위작업 분포": "Task Distribution",
+  "아래 차트·사례의 항목을 클릭하면 현재 선택 범위 안에서 더 좁혀집니다 (분포 %는 선택 항목 기준).": "Click an item in the charts or cases to narrow further within the current selection (distribution % is based on the selected item)."
 }
