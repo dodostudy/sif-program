@@ -17,11 +17,14 @@
   <main id="content" class="p-4 lg:p-6">
     <div id="page-header"></div>
 
-    <!-- 3축 탭 -->
-    <div class="rm-tabs mb-3" id="rm-tabs">
-      <button type="button" class="tab-btn" data-axis="공정">공정</button>
-      <button type="button" class="tab-btn" data-axis="기인물">기인물</button>
-      <button type="button" class="tab-btn" data-axis="재해유형">재해유형</button>
+    <!-- 3축 탭 + 발전소 공정 토글 -->
+    <div class="flex items-center justify-between gap-3 mb-3 flex-wrap">
+      <div class="rm-tabs" id="rm-tabs">
+        <button type="button" class="tab-btn" data-axis="공정">공정</button>
+        <button type="button" class="tab-btn" data-axis="기인물">기인물</button>
+        <button type="button" class="tab-btn" data-axis="재해유형">재해유형</button>
+      </div>
+      <div id="rm-koen-wrap"></div>
     </div>
 
     <!-- 브레드크럼 (hop 경로) -->
@@ -61,6 +64,41 @@
 
     // 축 → db.json 컬럼 매핑
     const AXIS_COL = { '공정': '공종', '기인물': '기인물', '재해유형': '재해형태' };
+
+    // 발전소 공정 필터 (null=전체, true=KOEN공정만)
+    let koenOnly = null;
+    function curData() { return koenOnly ? allData.filter(r => r.KOEN공정) : allData; }
+
+    // 상세 패널 차트 정의 (드릴 대상 차원별)
+    const CHART_DEFS = {
+      '재해형태':   { col: '재해형태',   type: 'doughnut', title: '재해유형 분포', top: 8 },
+      '기인물':     { col: '기인물',     type: 'bar',      title: '기인물 Top',   top: 12 },
+      '공종':       { col: '공종',       type: 'bar',      title: '발생 공정',    top: 12 },
+      '작업명':     { col: '작업명',     type: 'bar',      title: '작업 분포',    top: 12 },
+      '단위작업명': { col: '단위작업명', type: 'bar',      title: '단위작업 분포', top: 12 },
+    };
+
+    // 현재 축·필터 상태에서 상세에 보여줄 드릴 차트(최대 2개) 선정
+    // 규칙: 이미 고정된 차원은 제외. 공정 탭은 좌측 목록이 공종 드릴을 담당하므로 재해형태·기인물만.
+    function detailCharts(filters, axis) {
+      const has = (c) => filters[c] != null;
+      const list = [];
+      if (axis === '공정') {
+        if (!has('재해형태')) list.push('재해형태');
+        if (!has('기인물')) list.push('기인물');
+      } else if (axis === '기인물') {
+        if (!has('재해형태')) list.push('재해형태');
+        if (!has('공종')) list.push('공종');
+        else if (!has('작업명')) list.push('작업명');
+        else if (!has('단위작업명')) list.push('단위작업명');
+      } else { // 재해유형
+        if (!has('공종')) list.push('공종');
+        else if (!has('작업명')) list.push('작업명');
+        else if (!has('단위작업명')) list.push('단위작업명');
+        if (!has('기인물')) list.push('기인물');
+      }
+      return list.slice(0, 2).map(k => CHART_DEFS[k]);
+    }
 
     const state = {
       axis: '공정',      // 현재 탭
@@ -106,19 +144,37 @@
 
       allData = await DataLoader.loadDB();
       dropdownRef = await DataLoader.loadDropdownRef();
-      TOTAL = allData.length;
+      TOTAL = curData().length;
       is12List = dropdownRef['12대기인물'] || [];
 
       // 공정 계층 구조를 실데이터 기준으로 집계
       buildNested();
 
       setupTabs();
+
+      // 발전소 공정 토글 (페이지 전체 스코프 필터)
+      createKoenToggle('rm-koen-wrap', (val) => {
+        koenOnly = val;
+        onKoenChange();
+      });
+
+      renderAll();
+    }
+
+    // 발전소 공정 토글 변경 → 스코프 재집계 후 포커스 초기화
+    function onKoenChange() {
+      TOTAL = curData().length;
+      buildNested();
+      state.trail = [];
+      state.focus = null;
+      state.caseView = null;
+      state.expanded = new Set();
       renderAll();
     }
 
     function buildNested() {
       nested = {};
-      allData.forEach(r => {
+      curData().forEach(r => {
         const gz = r['공종']; if (!gz) return;
         if (!nested[gz]) nested[gz] = { count: 0, works: {} };
         nested[gz].count++;
@@ -164,6 +220,17 @@
       state.focus = focus;
       state.caseView = null;
       state.expanded = new Set();
+      renderAll();
+    }
+
+    // 상세 차트 막대 클릭 → 현재 스코프 안으로 드릴다운 (교집합 필터 누적, 축 유지)
+    function drill(col, value, label) {
+      if (!state.focus) return;
+      const newFilters = { ...state.focus.filters, [col]: value };
+      const focus = { axis: state.axis, column: col, value, label, filters: newFilters };
+      state.trail = [...state.trail, focus];
+      state.focus = focus;
+      state.caseView = null;
       renderAll();
     }
 
@@ -324,7 +391,7 @@
     // 기인물 / 재해유형 탭: 단일 레벨, 건수 desc
     function buildFlatList(axis) {
       const col = AXIS_COL[axis];
-      const agg = aggregateBy(allData, col).sort((a, b) => b.count - a.count);
+      const agg = aggregateBy(curData(), col).sort((a, b) => b.count - a.count);
       const max = agg.length ? agg[0].count : 1;
       let html = '';
       agg.forEach(a => {
@@ -378,21 +445,20 @@
       }
 
       const focus = state.focus;
-      const data = filterDB(allData, focus.filters);
+      const data = filterDB(curData(), focus.filters);
       const scopeTotal = data.length;
 
-      // 축별 차트 구성 결정
-      let chartA, chartB;
-      if (focus.axis === '공정') {
-        chartA = { col: '재해형태', type: 'doughnut', title: '재해유형 분포', hop: (k) => F.재해유형(k), top: 8 };
-        chartB = { col: '기인물', type: 'bar', title: '기인물 Top', hop: (k) => F.기인물(k), top: 12 };
-      } else if (focus.axis === '기인물') {
-        chartA = { col: '재해형태', type: 'doughnut', title: '재해유형 분포', hop: (k) => F.재해유형(k), top: 8 };
-        chartB = { col: '공종', type: 'bar', title: '발생 공정', hop: (k) => F.공정(k), top: 12 };
-      } else {
-        chartA = { col: '공종', type: 'bar', title: '발생 공정', hop: (k) => F.공정(k), top: 12 };
-        chartB = { col: '기인물', type: 'bar', title: '기인물 Top', hop: (k) => F.기인물(k), top: 12 };
-      }
+      // 현재 스코프에서 더 좁힐 수 있는 드릴 차트(최대 2개) — 이미 고정된 차원은 제외
+      const charts = detailCharts(focus.filters, state.axis);
+
+      const chartsHtml = charts.length ? `
+        <div class="grid grid-cols-1 ${charts.length > 1 ? 'xl:grid-cols-2' : ''} gap-4 mb-4">
+          ${charts.map((c, i) => `
+          <div class="chart-container">
+            <h3 class="text-sm font-semibold text-gray-300 mb-3" id="rm-chart-${i}-title"></h3>
+            <div style="height:300px"><canvas id="rm-chart-${i}"></canvas></div>
+          </div>`).join('')}
+        </div>` : '';
 
       el.innerHTML = `
         <div class="chart-container drill-tint mb-4">
@@ -401,19 +467,10 @@
             <span class="rm-detail-title">${esc(focus.label)}</span>
             <span class="rm-detail-sub">${I18n.isEn ? `Fatal·Severe ${I18n.cases(scopeTotal)} · ${formatPercent(scopeTotal, TOTAL)} of total` : `사망·중상 ${I18n.cases(scopeTotal)} · 전체 대비 ${formatPercent(scopeTotal, TOTAL)}`}</span>
           </div>
-          <p class="text-xs text-gray-500">아래 차트·사례의 항목을 클릭하면 해당 항목으로 이동합니다 (분포 %는 선택 항목 기준).</p>
+          <p class="text-xs text-gray-500">아래 차트·사례의 항목을 클릭하면 현재 선택 범위 안에서 더 좁혀집니다 (분포 %는 선택 항목 기준).</p>
         </div>
 
-        <div class="grid grid-cols-1 xl:grid-cols-2 gap-4 mb-4">
-          <div class="chart-container">
-            <h3 class="text-sm font-semibold text-gray-300 mb-3" id="rm-chart-a-title"></h3>
-            <div style="height:300px"><canvas id="rm-chart-a"></canvas></div>
-          </div>
-          <div class="chart-container">
-            <h3 class="text-sm font-semibold text-gray-300 mb-3" id="rm-chart-b-title"></h3>
-            <div style="height:300px"><canvas id="rm-chart-b"></canvas></div>
-          </div>
-        </div>
+        ${chartsHtml}
 
         <div class="chart-container">
           <div class="flex items-center justify-between mb-3">
@@ -427,11 +484,10 @@
         </div>
       `;
 
-      document.getElementById('rm-chart-a-title').textContent = chartA.title;
-      document.getElementById('rm-chart-b-title').textContent = chartB.title;
-
-      renderDistChart('rm-chart-a', chartA, data, scopeTotal);
-      renderDistChart('rm-chart-b', chartB, data, scopeTotal);
+      charts.forEach((c, i) => {
+        document.getElementById(`rm-chart-${i}-title`).textContent = c.title;
+        renderDistChart(`rm-chart-${i}`, c, data, scopeTotal);
+      });
       renderRepresentativeCases(data);
 
       const back = document.getElementById('rm-detail-back');
@@ -452,7 +508,7 @@
         onClick: (e, elements) => {
           if (elements.length > 0) {
             const idx = elements[0].index;
-            hop(cfg.hop(keys[idx]));
+            drill(cfg.col, keys[idx], catLabel(cfg.col, keys[idx]));
           }
         },
       };
@@ -515,9 +571,20 @@
       }
     }
 
-    // 대표 사례 5건 (위험도순위 우선)
+    // 대표 사례 5건 — 위험도순위(고위험) 우선 정렬 + '기인물·재해형태' 조합 중복 제거로 다양성 확보.
+    //  · 위험도순위는 기인물 묶음에 부여된 SIF 고위험 등급이라 같은 값이 다수 → dedup 없으면 동일 조합이 반복됨.
+    //  · 조합이 5종 미만이면 있는 만큼만 노출(중복 채우기 안 함).
     function renderRepresentativeCases(data) {
-      const cases = [...data].sort((a, b) => (a['위험도순위'] || 999) - (b['위험도순위'] || 999)).slice(0, 5);
+      const sorted = [...data].sort((a, b) => (a['위험도순위'] || 999) - (b['위험도순위'] || 999));
+      const seen = new Set();
+      const primary = [], rest = [];
+      for (const r of sorted) {
+        const key = `${r['기인물']}|${r['재해형태']}`;
+        if (seen.has(key)) rest.push(r);        // 이미 나온 조합 → 후순위
+        else { seen.add(key); primary.push(r); } // 새 조합 → 우선
+      }
+      // 다양성 우선(조합별 대표 1건) → 조합이 5종 미만이면 남은 실제 사례로 5건까지 채움
+      const cases = primary.concat(rest).slice(0, 5);
       const el = document.getElementById('rm-cases');
       if (cases.length === 0) {
         el.innerHTML = `<div class="text-sm text-gray-500 py-4">사례가 없습니다.</div>`;
@@ -579,19 +646,25 @@
 
     // 기존 페이지 딥링크 (스코프를 걸고 이동, 공존 원칙)
     function deepLinkFor(focus) {
-      if (focus.axis === '공정') {
+      const f = (focus && focus.filters) || {};
+      // 드릴로 누적된 모든 필터를 전달. 공정 계층이 있으면 process-inquiry(기인물 파라미터까지 지원).
+      if (f['공종'] || f['작업명'] || f['단위작업명']) {
         const p = new URLSearchParams();
-        p.set('공종', focus.filters['공종']);
-        if (focus.filters['작업명']) p.set('작업명', focus.filters['작업명']);
-        if (focus.filters['단위작업명']) p.set('단위작업명', focus.filters['단위작업명']);
+        if (f['공종']) p.set('공종', f['공종']);
+        if (f['작업명']) p.set('작업명', f['작업명']);
+        if (f['단위작업명']) p.set('단위작업명', f['단위작업명']);
+        if (f['기인물']) p.set('기인물', f['기인물']);
         return `process-inquiry.html?${p.toString()}`;
       }
-      if (focus.axis === '기인물') {
-        const p = new URLSearchParams(); p.set('기인물', focus.filters['기인물']);
+      if (f['기인물']) {
+        const p = new URLSearchParams(); p.set('기인물', f['기인물']);
         return `cause-inquiry.html?${p.toString()}`;
       }
-      const p = new URLSearchParams(); p.set('재해형태', focus.filters['재해형태']);
-      return `disaster-type.html?${p.toString()}`;
+      if (f['재해형태']) {
+        const p = new URLSearchParams(); p.set('재해형태', f['재해형태']);
+        return `disaster-type.html?${p.toString()}`;
+      }
+      return '#';
     }
 
     init();
