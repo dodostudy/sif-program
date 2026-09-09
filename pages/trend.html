@@ -82,8 +82,7 @@
     <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-4" id="summary-cards"></div>
 
     <!-- 자동 인사이트 -->
-    <div class="insight-box mb-4" id="insight-box"
-         style="background:rgba(30,58,138,.18);border:1px solid #1E40AF;border-radius:.5rem;padding:.75rem 1rem"></div>
+    <div class="note note-blue mb-4" id="insight-box" style="padding:.75rem 1rem"></div>
 
     <!-- 연도 추이 -->
     <div class="chart-container mb-4">
@@ -376,7 +375,7 @@
       }
 
       document.getElementById('insight-box').innerHTML =
-        `<ul class="list-disc pl-4 space-y-0.5" style="font-size:.8125rem;color:#BFDBFE;line-height:1.7">
+        `<ul class="list-disc pl-4 space-y-0.5" style="font-size:.8125rem;line-height:1.7">
            ${lines.map(l => `<li>${l}</li>`).join('')}
          </ul>`;
     }

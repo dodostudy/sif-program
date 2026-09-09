@@ -1914,3 +1914,31 @@ html.light .hover\:bg-gray-600:hover,
 html.light .hover\:bg-gray-700:hover {
   background-color: #D1D5DB !important;
 }
+
+/* 위험성평가 생성 — 대표사례 카드 (Step4 유형 선택) */
+.rep-card {
+  border: 1px solid #374151; border-radius: .5rem; padding: .6rem .75rem;
+  background: rgba(31, 41, 55, .4); cursor: pointer; transition: all .15s;
+}
+.rep-card:hover { border-color: #6B7280; }
+.rep-card.on { border-color: #3B82F6; background: rgba(30, 58, 138, .3); }
+html.light .rep-card { background: #F9FAFB; border-color: #E5E7EB; }
+html.light .rep-card.on { background: #DBEAFE; border-color: #3B82F6; }
+
+/* 정보 상자 — 인라인 색을 쓰면 라이트 테마에서 연한 글자가 사라진다.
+   페이지마다 제각각 만들던 것을 공통 클래스로 통일한다. */
+.note { border-radius: .5rem; padding: .6rem .9rem; }
+.note-blue  { background: rgba(30,58,138,.18); border: 1px solid #1E40AF; }
+.note-green { background: rgba(6,78,59,.18);   border: 1px solid #059669; }
+.note-blue  .note-t, .note-blue  p, .note-blue  li { color: #BFDBFE; }
+.note-blue  .note-h { color: #93C5FD; }
+.note-blue  .note-sub { color: #93C5FD; }
+.note-green p { color: #A7F3D0; }
+.note-chip { display:inline-block; font-size:.75rem; padding:.25rem .5rem; border-radius:.25rem;
+             background: rgba(30,58,138,.45); color:#BFDBFE; border:1px solid #1E40AF; }
+html.light .note-blue  { background: #EFF6FF; border-color: #BFDBFE; }
+html.light .note-green { background: #ECFDF5; border-color: #A7F3D0; }
+html.light .note-blue  .note-t, html.light .note-blue p, html.light .note-blue li { color: #1E40AF; }
+html.light .note-blue  .note-h, html.light .note-blue .note-sub { color: #1D4ED8; }
+html.light .note-green p { color: #065F46; }
+html.light .note-chip { background: #DBEAFE; color: #1E40AF; border-color: #93C5FD; }
