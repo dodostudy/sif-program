@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SIF 아카이브 구버전 → 신버전 변화 보고</title>
+<style>
+:root{--ink:#16191d;--ink2:#4a5158;--ink3:#767d85;--paper:#fbfaf7;--panel:#fff;--rule:#dcd8cf;--acc:#1f4e79;--mark:#7a5c00;--markbg:#fdf6dd;--markrule:#e3d190;--ok:#1f5c3d}
+*{box-sizing:border-box}body{margin:0;background:var(--paper);color:var(--ink);font-family:"Pretendard","Malgun Gothic","Apple SD Gothic Neo",sans-serif;font-size:16px;line-height:1.75;letter-spacing:-.01em}
+.wrap{max-width:53rem;margin:0 auto;padding:0 1.4rem 6rem}
+header{padding:4.5rem 0 2rem;border-bottom:2px solid var(--ink)}header h1{font-size:2rem;line-height:1.25;margin:0 0 .7rem}header p{margin:0;color:var(--ink2);max-width:44rem}
+.meta{margin-top:1.4rem;display:flex;flex-wrap:wrap;gap:.3rem 1.6rem;font-size:.86rem;color:var(--ink3)}.meta b{color:var(--ink);font-weight:600}
+h2{font-size:1.28rem;margin:3.2rem 0 .9rem;padding-top:1.4rem;border-top:1px solid var(--rule)}h3{font-size:1rem;margin:1.8rem 0 .5rem;color:var(--ink2)}
+p{margin:.7rem 0}ul{margin:.6rem 0;padding-left:1.15rem}li{margin:.3rem 0}
+table{border-collapse:collapse;width:100%;margin:1rem 0;font-size:.9rem}th,td{border-bottom:1px solid var(--rule);padding:.48rem .6rem;text-align:left;vertical-align:top}th{background:#f2efe8;font-weight:600;border-bottom:1.5px solid var(--ink3)}td.n{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+.kpi{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:.7rem;margin:1.4rem 0}.kpi div{background:var(--panel);border:1px solid var(--rule);border-radius:4px;padding:.8rem .9rem}.kpi b{display:block;font-size:1.5rem;color:var(--acc);line-height:1.2}.kpi span{font-size:.82rem;color:var(--ink3)}
+.note{background:var(--markbg);border:1px solid var(--markrule);border-radius:3px;padding:.85rem 1rem;margin:1rem 0;font-size:.92rem}.note b{color:var(--mark)}
+.done{background:var(--panel);border:1px solid var(--rule);border-left:3px solid var(--ok);border-radius:3px;padding:.85rem 1rem;margin:1rem 0;font-size:.92rem}.done b{color:var(--ok)}
+code{font-family:"D2Coding",Consolas,monospace;font-size:.88em;background:#efece5;border:1px solid var(--rule);border-radius:3px;padding:.05rem .3rem}
+footer{margin-top:4rem;padding-top:1.2rem;border-top:1px solid var(--rule);font-size:.84rem;color:var(--ink3)}
+@media(max-width:640px){body{font-size:15px}header{padding:2.6rem 0 1.4rem}header h1{font-size:1.5rem}h2{font-size:1.12rem}table{font-size:.82rem}th,td{padding:.4rem .4rem}.kpi b{font-size:1.25rem}}
+</style></head><body><div class="wrap">
+
+<header>
+<h1>SIF 아카이브 구버전 → 신버전 변화 보고</h1>
+<p>운영 중인 구버전 DB(<code>구_db.json</code>, 2,574건)와 공단이 배포한 신버전 원본(2026.4.1., 3,459건)을 대조한 결과입니다. 아래 수치는 전부 두 파일을 직접 계산한 값이고, 판단이 필요한 대목은 따로 표시했습니다.</p>
+<div class="meta"><span><b>기준일</b> 2026.9.8.</span><span><b>구버전</b> 구_db.json 2,574건 15열</span><span><b>신버전</b> 공단 아카이브 20260401 3,459건 9열</span></div>
+</header>
+
+<h2>한눈에</h2>
+<div class="kpi">
+<div><b>+885</b><span>사례 증가 (+34.4%)</span></div>
+<div><b>2022~23</b><span>새로 들어온 2개년 703건</span></div>
+<div><b>93.5%</b><span>재해개요 익명처리 비율 (구 0.2%)</span></div>
+<div><b>−17%</b><span>재해개요 평균 길이 130→107자</span></div>
+<div><b>3종</b><span>새로 생긴 기인물</span></div>
+<div><b>20종</b><span>재해형태 용어 체계 전면 교체</span></div>
+</div>
+<p>요약하면 이렇습니다. <b>사례는 최근 3년치가 붙어 3할 늘었고, 분류 체계는 공종·기인물·재해형태 세 축이 모두 바뀌었으며, 본문은 익명처리되면서 짧아졌습니다.</b> 그래서 구버전 위에 얹어 두신 파생 열과 웹사이트 필터는 그대로 교체하면 깨지고, 규칙을 다시 적용해야 했습니다.</p>
+
+<h2>1. 규모 — 어느 해가 늘었나</h2>
+<table><tr><th>재해 발생연도</th><th class="n">구버전</th><th class="n">신버전</th><th class="n">증감</th></tr>
+<tr><td>2013~2015</td><td class="n">38</td><td class="n">38</td><td class="n">0</td></tr>
+<tr><td>2016</td><td class="n">491</td><td class="n">500</td><td class="n">+9</td></tr>
+<tr><td>2017</td><td class="n">477</td><td class="n">488</td><td class="n">+11</td></tr>
+<tr><td>2018</td><td class="n">423</td><td class="n">433</td><td class="n">+10</td></tr>
+<tr><td>2019</td><td class="n">445</td><td class="n">450</td><td class="n">+5</td></tr>
+<tr><td>2020</td><td class="n">420</td><td class="n">442</td><td class="n">+22</td></tr>
+<tr><td>2021</td><td class="n">256</td><td class="n">404</td><td class="n">+148</td></tr>
+<tr><td>2022</td><td class="n">0</td><td class="n">371</td><td class="n">+371</td></tr>
+<tr><td>2023</td><td class="n">0</td><td class="n">332</td><td class="n">+332</td></tr>
+<tr><td>2024</td><td class="n">0</td><td class="n">1</td><td class="n">+1</td></tr></table>
+<p>2016~2020년은 거의 그대로입니다. 증가분 885건 중 <b>851건이 2021년 이후</b>입니다. 구버전은 2021년이 중간에 끊긴 상태였고(256건), 신버전에서 404건으로 채워졌습니다. 2024년 1건은 원문 표기가 2024년인 사례가 한 건 있는 것이며 2024년 집계가 시작된 것은 아닙니다.</p>
+<p>연도는 재해개요 원문의 연도 표기에서 추출했고 3,459건 전부 추출됐습니다.</p>
+
+<h2>2. 구조 — 컬럼과 공종</h2>
+<h3>컬럼</h3>
+<p>공단 원본은 9열입니다. 구버전 15열 중 6열(<code>KOEN공정·기인물분류·12대기인물·위험도순위·3년간사고비중·혹서기</code>)은 원본에 없고 직접 붙이신 열입니다. 신버전 원본에는 당연히 없으므로 규칙을 역산해 다시 부여했습니다.</p>
+<h3>공종 체계 개편</h3>
+<table><tr><th>구버전</th><th class="n">건수</th><th>신버전</th><th class="n">건수</th><th>변화</th></tr>
+<tr><td>12. 공통공사</td><td class="n">463</td><td>13. 기타 건설공사</td><td class="n">534</td><td>번호·이름 변경</td></tr>
+<tr><td>—</td><td class="n"></td><td>12. 철거 및 해체 공사</td><td class="n">235</td><td>신설 (12번 자리를 차지)</td></tr>
+<tr><td>5. 전기, 기계설비공사</td><td class="n">390</td><td>5. 전기·기계 설비공사</td><td class="n">525</td><td>표기 정규화</td></tr>
+<tr><td>2. 철근콘크리트공사</td><td class="n">336</td><td>2. 철근콘크리트 공사</td><td class="n">433</td><td>띄어쓰기</td></tr>
+<tr><td>8. 교량공사</td><td class="n">11</td><td>8. 교량공사</td><td class="n">40</td><td>단위작업명 전면 교체</td></tr>
+<tr><td>9. 터널공사</td><td class="n">17</td><td>9. 터널공사</td><td class="n">36</td><td>단위작업명 전면 교체</td></tr>
+<tr><td>10. 하천 및 항만공사</td><td class="n">15</td><td>10. 하천 및 항만공사</td><td class="n">39</td><td>단위작업명 개편</td></tr></table>
+<p>공종 이름을 문자열로 매칭하던 코드가 있으면 12번이 <b>다른 공종</b>을 가리키게 되므로 주의가 필요합니다. 단위작업명은 구 113종·신 112종 중 <b>67종만 동일</b>하고, 교량·터널은 사실상 새 목록입니다.</p>
+<p>이 개편 때문에 KOEN공정 규칙(교량·터널·하천항만 전체 + 양수발전용 댐 제외)을 공종 번호가 아니라 이름으로 걸었고, 제외 건수는 44건에서 116건으로 늘었습니다.</p>
+
+<h2>3. 기인물 — 이름이 바뀌고 셋이 새로 생김</h2>
+<p>구 58종, 신 57종입니다. 이름이 그대로인 것은 40종이고, 나머지는 세 부류입니다.</p>
+<table><tr><th>부류</th><th class="n">종</th><th>예</th><th>처리</th></tr>
+<tr><td>표기만 바뀜</td><td class="n">14</td><td>굴착기 → 굴착기(백호우), 트럭 → 트럭류, 개구부(바닥개구부) → 바닥개구부(자재인양구 등)</td><td>1:1 대응표로 구버전 룩업 승계</td></tr>
+<tr><td>신버전에 새로 생김</td><td class="n">3</td><td>작업발판 일체형 거푸집 42건 · 타워크레인 31건 · 줄걸이 기구 43건</td><td>직접 결정하심 (아래)</td></tr>
+<tr><td>구버전에만 있음</td><td class="n">4</td><td>교통수단 14건 · 폭염 11건 · 고정식크레인 32건 · 비계(일체형비계) 11건</td><td>신버전에서 다른 이름으로 흡수되거나 사라짐</td></tr></table>
+<div class="done"><b>결정 사항</b> — 작업발판 일체형 거푸집은 <code>거푸집</code>(12대, 순위 11) 승계, 타워크레인은 신설(분류 건설기계, 12대 아님), 줄걸이 기구는 신설(분류 줄걸이 기구, 12대 아님). 이 결정으로 12대 기인물이 2,032건으로 확정됐습니다.</div>
+<p>폭염은 구버전에서 기인물이자 재해형태였는데(기인물 11건, 재해형태 9건 + 열사병 2건), 신버전에는 <code>이상온도 접촉</code> 15건으로만 남았습니다. 폭염 사례를 따로 보시려면 재해개요 텍스트로 찾아야 합니다.</p>
+
+<h2>4. 재해형태 — 용어 체계가 통째로 바뀜</h2>
+<p>가장 큰 차이입니다. 구버전은 <code>떨어짐·맞음·끼임·무너짐</code> 체계이고, 신버전 원본은 <code>추락·낙하·끼임·붕괴</code> 체계입니다. 20종 중 같은 표기는 <b>감전·끼임·익사·폭발·화재 5종</b>뿐입니다.</p>
+<table><tr><th>구버전 재해형태</th><th class="n">건수</th><th>신버전 재해종류</th><th class="n">건수</th></tr>
+<tr><td>떨어짐</td><td class="n">1,609</td><td>추락</td><td class="n">2,030</td></tr>
+<tr><td>깔림 뒤집힘</td><td class="n">248</td><td>깔림 / 전도</td><td class="n">250 / 155</td></tr>
+<tr><td>맞음 / 맞음(낙하물체)</td><td class="n">171 / 42</td><td>낙하</td><td class="n">246</td></tr>
+<tr><td>무너짐</td><td class="n">84</td><td>붕괴</td><td class="n">179</td></tr>
+<tr><td>부딪힘 접촉</td><td class="n">91</td><td>부딪힘</td><td class="n">164</td></tr>
+<tr><td>절단 베임 찔림</td><td class="n">20</td><td>찔림 / 베임</td><td class="n">16 / 3</td></tr>
+<tr><td>유해위험물질 노출 접촉</td><td class="n">16</td><td>중독 / 유해물 접촉</td><td class="n">11 / 2</td></tr>
+<tr><td>산소결핍 질식</td><td class="n">10</td><td>질식</td><td class="n">20</td></tr>
+<tr><td>폭염 / 열사병</td><td class="n">9 / 2</td><td>이상온도 접촉</td><td class="n">15</td></tr>
+<tr><td>—</td><td class="n"></td><td>화상 / 파열</td><td class="n">30 / 3</td></tr></table>
+<p>구버전 용어 중 <code>추락→떨어짐</code>은 직접 바꾸신 것이라고 확인해 주셨습니다. 나머지 용어의 유래는 <b>[확인 필요]</b>로 남깁니다.</p>
+<div class="note"><b>1:1 환원이 안 되는 이유</b> — 두 버전에서 같은 사고로 확인된 1,474건을 대조하면 구버전 <code>떨어짐</code>이 신버전에서 추락 917건뿐 아니라 낙하 23건·전도 18건으로도 갈리고, <code>깔림 뒤집힘</code>은 깔림 54건·전도 19건·붕괴로 갈립니다. 라벨만 바꿔서는 구버전 체계로 돌아갈 수 없었습니다.</div>
+<div class="done"><b>처리</b> — 라벨이 1:1로 대응하는 12종은 구버전 용어로 치환했고, 대응이 안 되는 전도 155건·화상 30건·파열 3건은 재해개요 원문을 읽어 사고가 실제로 어떻게 끝났는지로 배정했습니다(깔림 뒤집힘 74 · 떨어짐 40 · 맞음 22 · 부딪힘 접촉 13 · 화재 12 · 감전 10 …). 기전 서술이 없는 18건은 전문을 읽어 개별 판정하고 사유를 코드에 남겼습니다. 결과는 구버전 20종 안에서 결측 0건입니다.</div>
+
+
+<h3>구버전 용어로 통일한 뒤의 두 버전 비교</h3>
+<p>신버전 파일의 <code>재해형태</code> 열은 아래처럼 구버전 20종 용어로 맞춰져 있습니다. 원문 용어는 <code>재해종류</code> 열에 그대로 남겨 두었습니다. 두 버전을 같은 축으로 볼 수 있는 표입니다.</p>
+<table><tr><th>재해형태 (구버전 용어)</th><th class="n">구버전</th><th class="n">%</th><th class="n">신버전</th><th class="n">%</th><th class="n">증감</th></tr><tr><td>떨어짐</td><td class="n">1,609.0</td><td class="n">62.5</td><td class="n">2,071.0</td><td class="n">59.9</td><td class="n">+462.0</td></tr><tr><td>깔림 뒤집힘</td><td class="n">248.0</td><td class="n">9.6</td><td class="n">324.0</td><td class="n">9.4</td><td class="n">+76.0</td></tr><tr><td>맞음</td><td class="n">171.0</td><td class="n">6.6</td><td class="n">268.0</td><td class="n">7.7</td><td class="n">+97.0</td></tr><tr><td>무너짐</td><td class="n">84.0</td><td class="n">3.3</td><td class="n">179.0</td><td class="n">5.2</td><td class="n">+95.0</td></tr><tr><td>부딪힘 접촉</td><td class="n">91.0</td><td class="n">3.5</td><td class="n">177.0</td><td class="n">5.1</td><td class="n">+86.0</td></tr><tr><td>끼임</td><td class="n">133.0</td><td class="n">5.2</td><td class="n">154.0</td><td class="n">4.5</td><td class="n">+21.0</td></tr><tr><td>감전</td><td class="n">63.0</td><td class="n">2.4</td><td class="n">97.0</td><td class="n">2.8</td><td class="n">+34.0</td></tr><tr><td>익사</td><td class="n">6.0</td><td class="n">0.2</td><td class="n">43.0</td><td class="n">1.2</td><td class="n">+37.0</td></tr><tr><td>원인미상</td><td class="n">15.0</td><td class="n">0.6</td><td class="n">28.0</td><td class="n">0.8</td><td class="n">+13.0</td></tr><tr><td>화재</td><td class="n">24.0</td><td class="n">0.9</td><td class="n">25.0</td><td class="n">0.7</td><td class="n">+1.0</td></tr><tr><td>산소결핍 질식</td><td class="n">10.0</td><td class="n">0.4</td><td class="n">20.0</td><td class="n">0.6</td><td class="n">+10.0</td></tr><tr><td>절단 베임 찔림</td><td class="n">20.0</td><td class="n">0.8</td><td class="n">19.0</td><td class="n">0.5</td><td class="n">-1.0</td></tr><tr><td>폭발</td><td class="n">13.0</td><td class="n">0.5</td><td class="n">19.0</td><td class="n">0.5</td><td class="n">+6.0</td></tr><tr><td>이상온도 노출 접촉</td><td class="n">2.0</td><td class="n">0.1</td><td class="n">18.0</td><td class="n">0.5</td><td class="n">+16.0</td></tr><tr><td>유해위험물질 노출 접촉</td><td class="n">16.0</td><td class="n">0.6</td><td class="n">13.0</td><td class="n">0.4</td><td class="n">-3.0</td></tr><tr><td>넘어짐</td><td class="n">10.0</td><td class="n">0.4</td><td class="n">4.0</td><td class="n">0.1</td><td class="n">-6.0</td></tr><tr><td>맞음(낙하물체)</td><td class="n">42.0</td><td class="n">1.6</td><td class="n">0.0</td><td class="n">0.0</td><td class="n">-42.0</td></tr><tr><td>폭염</td><td class="n">9.0</td><td class="n">0.3</td><td class="n">0.0</td><td class="n">0.0</td><td class="n">-9.0</td></tr><tr><td>보호구 이상</td><td class="n">6.0</td><td class="n">0.2</td><td class="n">0.0</td><td class="n">0.0</td><td class="n">-6.0</td></tr><tr><td>열사병</td><td class="n">2.0</td><td class="n">0.1</td><td class="n">0.0</td><td class="n">0.0</td><td class="n">-2.0</td></tr></table>
+<p>떨어짐 비중이 62.5%에서 59.9%로 조금 내려가고 맞음·무너짐·부딪힘 접촉이 올라갔습니다. 신버전에서 사라진 것은 <b>맞음(낙하물체)·폭염·열사병·보호구 이상</b> 네 종이고, 각각 맞음·이상온도 노출 접촉으로 흡수되거나 원문에서 구분이 없어졌습니다.</p>
+<h2>5. 본문 텍스트 — 익명처리되고 짧아짐</h2>
+<table><tr><th>항목</th><th class="n">구버전</th><th class="n">신버전</th></tr>
+<tr><td>재해개요 평균 길이</td><td class="n">130자</td><td class="n">107자 (−17.3%)</td></tr>
+<tr><td>재해개요에 ○○ 마스킹</td><td class="n">0.2%</td><td class="n">93.5%</td></tr>
+<tr><td>재해유발요인 평균 길이</td><td class="n">56자</td><td class="n">59자</td></tr>
+<tr><td>감소대책 항목 수 (▶ 기준)</td><td class="n">평균 2.80개</td><td class="n">평균 2.98개</td></tr></table>
+<p>구버전 재해개요에는 "군부대 방호문 설치공사", "OO산 산림레포츠시설 조성사업" 같은 현장 정보가 있었는데 신버전은 대부분 "○○ 현장"입니다. 장소·업체·일부 규격이 빠지면서 23자가 줄었습니다. 감소대책은 오히려 조금 늘었습니다.</p>
+<p>사이트에서 재해개요 전문 검색을 쓰고 계셨다면 현장명·업체명으로는 이제 안 잡힙니다. 작업·기인물·기전 단어로는 여전히 잡힙니다.</p>
+<h3>익명처리 누락</h3>
+<p>3,459건 중 <b>224건은 ○○ 마스킹이 없고</b>, 그중 1건은 자치구·동·지번과 재해자의 나이·직종이 그대로 남아 있습니다. 공단 원본의 비식별이 일관되지 않다는 뜻입니다. 사내 시스템에 올릴 때 이 1건은 마스킹하시길 권합니다.</p>
+
+<h2>6. 표기 오류 — 양쪽 다 있었음</h2>
+<table><tr><th>어디</th><th>무엇</th><th class="n">건수</th><th>처리</th></tr>
+<tr><td>신버전</td><td>연·월 표기 오류 (<code>2017월 11월경</code>, <code>2018년 09년경</code>, <code>2019년 09경</code>)</td><td class="n">6</td><td>정규식을 넓혀 전부 추출. 실패 0건</td></tr>
+<tr><td>구버전</td><td>혹서기 열 <code>#VALUE!</code> — 월 추출 실패</td><td class="n">27</td><td>신버전에서는 발생 안 함</td></tr>
+<tr><td>구버전</td><td>개구부(바닥개구부) 79건은 순위 1인데 1건만 공란</td><td class="n">1</td><td>다수값으로 정리</td></tr>
+<tr><td>구버전</td><td>기인물 '분류불능' 17건은 분류불능인데 1건만 원인미상</td><td class="n">1</td><td>다수값으로 정리</td></tr></table>
+<p>구버전의 두 건은 직접 입력하실 때 빠진 것으로 보입니다. 규칙을 역산할 때 걸려서 찾았습니다.</p>
+
+<h2>7. 두 버전의 같은 사고를 찾을 수 있나</h2>
+<p>재해개요가 다시 쓰이고 익명처리되어 <b>문자열 완전일치는 2건</b>뿐입니다. 글자 단위 유사도(TF-IDF)로 짝을 지으면 이렇습니다.</p>
+<table><tr><th>유사도</th><th class="n">건수</th><th class="n">비율</th><th>의미</th></tr>
+<tr><td>0.95 이상</td><td class="n">121</td><td class="n">4.7%</td><td>사실상 같은 문장</td></tr>
+<tr><td>0.90 이상</td><td class="n">586</td><td class="n">22.8%</td><td></td></tr>
+<tr><td>0.80 이상</td><td class="n">1,474</td><td class="n">57.3%</td><td>같은 사고로 확인 가능</td></tr>
+<tr><td>0.70 이상</td><td class="n">1,906</td><td class="n">74.0%</td><td>검토하면 대부분 같은 사고</td></tr>
+<tr><td>0.70 미만</td><td class="n">668</td><td class="n">26.0%</td><td>수동으로만 확인 가능</td></tr></table>
+<p>구버전에 사례별로 메모나 태그를 붙여 두신 게 있다면 자동으로 옮겨지는 건 6할 정도이고 나머지는 손으로 봐야 합니다. 파생 열 6개는 사례별이 아니라 기인물·공종·월 단위 규칙이라 이 문제와 무관하게 전부 재부여됐습니다.</p>
+
+<h2>8. 이 변화가 목적에 미치는 영향</h2>
+<h3>웹사이트 교체</h3>
+<ul>
+<li>구버전과 같은 15열 구조로 만든 파일을 그대로 넣으면 됩니다. 열 이름·순서·타입(bool·int·null)을 원본 JSON과 대조했습니다.</li>
+<li>공종 필터가 <code>12. 공통공사</code>를 참조하면 <code>13. 기타 건설공사</code>로 바꾸셔야 합니다. 12번은 이제 철거·해체입니다.</li>
+<li>재해형태 값은 구버전 20종 안으로 통일했으니 필터 라벨은 그대로 쓰시면 됩니다. 단, 폭염·열사병·보호구 이상·맞음(낙하물체)은 신버전에서 한 건도 없습니다.</li>
+<li>2022~2023년 703건이 새로 보이게 됩니다.</li></ul>
+<h3>위험성평가 시스템 연계</h3>
+<ul>
+<li>기인물 57종을 사망건수 순으로 정렬한 마스터(T6)를 드롭다운에 쓰실 수 있습니다. 새로 생긴 3종도 분류가 있어 다른 테이블과 조인됩니다.</li>
+<li>기인물 프로파일(T1)에서 57종 중 23종(40%)은 재해형태 하나로 정해지지 않습니다. 굴착기·트럭·크레인 같은 장비류는 분포로 보여주셔야 합니다.</li>
+<li>재해개요가 짧아졌지만 재해유발요인은 오히려 길어져, 유사 사례 검색은 재해유발요인으로 하는 편이 낫습니다. 이 열로 검색했을 때 상위 5건 기인물 일치율이 84%였습니다.</li></ul>
+<h3>논문 (보류)</h3>
+<ul>
+<li>익명처리 불일치 224건·지번 노출 1건, 표기 오류, 용어 체계 교체는 "피해조사 기록이 구조화되어 있지 않다"는 문제 제기의 실측 근거로 쓸 수 있습니다.</li>
+<li>다만 요강의 주제 예시와 안내 데이터가 공단 자료와 거리가 있어 우선순위를 낮추기로 하셨습니다.</li></ul>
+
+<h2>9. 대응한 것 정리</h2>
+<table><tr><th>변화</th><th>대응</th></tr>
+<tr><td>파생 열 6개 부재</td><td>구버전 2,574건에서 규칙을 역산·검증 후 재부여. 혹서기 규칙은 월별 교차표로, KOEN공정은 전건 일치로 확인</td></tr>
+<tr><td>기인물 개칭·신설</td><td>14종 대응표 + 3종 결정 반영. 공란 0</td></tr>
+<tr><td>재해형태 용어 교체</td><td>12종 치환 + 188건 원문 판독 + 18건 개별 판정. 구버전 20종 안, 결측 0</td></tr>
+<tr><td>본문 원문</td><td>세 열 모두 원본과 문자 단위 일치 확인. 수정 없음</td></tr>
+<tr><td>표기 오류</td><td>월 추출 정규식 보강. 실패 0</td></tr>
+<tr><td>재현성</td><td>12단계 노트북 + 단계별 assert. 전 단계 통과</td></tr></table>
+
+<footer>계산 근거: 구_db.json(2,574) · 한국산업안전보건공단_산업재해 고위험요인SIF 아카이브_20260401.xlsx(3,459) · 재현 코드는 SIF_변환_검증_노트북.ipynb</footer>
+</div></body></html>

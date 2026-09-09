@@ -82,7 +82,7 @@
         <div class="flex items-center justify-between mb-3">
           <h3 class="text-sm font-semibold text-gray-300">공종 x 재해형태 교차분석</h3>
         </div>
-        <div style="height:360px" id="heatmap-container">
+        <div style="min-height:360px" id="heatmap-container">
           <canvas id="chart-heatmap"></canvas>
         </div>
       </div>
@@ -262,7 +262,7 @@
         <div class="stat-card">
           <p class="text-xs text-gray-500 uppercase tracking-wide">총 재해건수</p>
           <p class="text-3xl font-bold text-white mt-2">${formatNumber(total)}</p>
-          <p class="text-xs text-gray-500 mt-1">2013~2021년 사망/중상</p>
+          <p class="text-xs text-gray-500 mt-1">2013~2023년 사망·중상</p>
         </div>
         <div class="stat-card relative cursor-pointer select-none" id="card-gongzong" onclick="toggleCardDropdown('gongzong')">
           <div class="flex items-center justify-between">
@@ -365,7 +365,8 @@
 
     function renderConstructionTypeChart(data, highlightKey = null) {
       const agg = aggregateBy(data, '공종');
-      const sorted = topN(agg, 'count', 12);
+      // 공종은 고정 차원(현재 13개) — 개수를 박아두면 신규 공종이 조용히 잘린다
+      const sorted = topN(agg, 'count', agg.length);
       const total = data.length;
 
       // highlight 없으면 단일 통일색(우연한 강조 제거), 있으면 선택만 accent·나머지 dim
@@ -659,7 +660,7 @@
         html += `<tr><td class="px-2 py-1.5 text-gray-400 whitespace-nowrap">${shortName}</td>`;
         disasterTypes.forEach(dt => {
           const val = matrix[ct][dt];
-          const bg = val === 0 ? 'rgba(31,41,55,0.5)' : CHART_COLORS.heatmapColor(val, 0, maxVal);
+          const bg = CHART_COLORS.heatmapColor(val, 0, maxVal);  // 0이면 transparent 반환
           html += `<td class="px-2 py-1.5 text-center font-medium" style="background:${bg}" title="${shortName} - ${dt}: ${cs(val)}">${val || ''}</td>`;
         });
         html += `</tr>`;

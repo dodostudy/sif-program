@@ -3,3 +3,7 @@
 .claude/
 *.env
 *.env.local
+
+# 빌드 산출물(리포트·감사 로그)
+scripts/out/
+new_data_260908/

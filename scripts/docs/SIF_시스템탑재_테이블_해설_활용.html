@@ -1,0 +1,111 @@
+<!DOCTYPE html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>SIF 시스템 탑재 테이블 — 상세 해설과 활용 아이디어</title><style>
+:root{--ink:#16191d;--ink2:#4a5158;--ink3:#767d85;--paper:#fbfaf7;--panel:#fff;--rule:#dcd8cf;--acc:#1f4e79;--cbg:#1b1f24;--cink:#dfe4ea;--k:#89b4ff;--s:#b5d99c;--c:#7d8794;--mark:#7a5c00;--markbg:#fdf6dd;--markrule:#e3d190;--ok:#1f5c3d}
+*{box-sizing:border-box}body{margin:0;background:var(--paper);color:var(--ink);font-family:"Pretendard","Malgun Gothic","Apple SD Gothic Neo",sans-serif;font-size:16px;line-height:1.75;letter-spacing:-.01em}
+.wrap{max-width:53rem;margin:0 auto;padding:0 1.4rem 6rem}
+header{padding:4.5rem 0 2rem;border-bottom:2px solid var(--ink)}header h1{font-size:2rem;line-height:1.25;margin:0 0 .7rem}header p{margin:0;color:var(--ink2);max-width:44rem}
+.meta{margin-top:1.4rem;display:flex;flex-wrap:wrap;gap:.3rem 1.6rem;font-size:.86rem;color:var(--ink3)}.meta b{color:var(--ink);font-weight:600}
+h2{font-size:1.28rem;margin:3.2rem 0 .9rem;padding-top:1.4rem;border-top:1px solid var(--rule)}h3{font-size:1rem;margin:1.8rem 0 .5rem;color:var(--ink2)}
+p{margin:.7rem 0}ul{margin:.6rem 0;padding-left:1.15rem}li{margin:.3rem 0}
+.step{display:flex;align-items:baseline;gap:.75rem;margin:3.4rem 0 .9rem;padding-top:1.4rem;border-top:1px solid var(--rule)}.step .n{flex:0 0 auto;font-size:.8rem;font-weight:700;color:#fff;background:var(--ink);border-radius:2px;padding:.12rem .5rem}.step h2{margin:0;border:0;padding:0}
+pre{background:var(--cbg);color:var(--cink);border-radius:5px;padding:1rem 1.1rem;overflow-x:auto;margin:1rem 0;font-family:"D2Coding",Consolas,monospace;font-size:.83rem;line-height:1.66}
+code{font-family:"D2Coding",Consolas,monospace;font-size:.88em}p code,li code,td code{background:#efece5;border:1px solid var(--rule);border-radius:3px;padding:.05rem .3rem}
+.k{color:var(--k)}.s{color:var(--s)}.c{color:var(--c)}
+table{border-collapse:collapse;width:100%;margin:1rem 0;font-size:.9rem}th,td{border-bottom:1px solid var(--rule);padding:.48rem .6rem;text-align:left;vertical-align:top}th{background:#f2efe8;font-weight:600;border-bottom:1.5px solid var(--ink3)}td.n{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+.check{background:var(--panel);border:1px solid var(--rule);border-left:3px solid var(--ok);border-radius:3px;padding:.85rem 1rem;margin:1rem 0;font-size:.92rem}.check b{color:var(--ok)}
+.hold{background:var(--markbg);border:1px solid var(--markrule);border-radius:3px;padding:.85rem 1rem;margin:1rem 0;font-size:.92rem}.hold b{color:var(--mark)}
+.idea{background:var(--panel);border:1px solid var(--rule);border-left:3px solid var(--acc);border-radius:3px;padding:.9rem 1.05rem;margin:1rem 0}.idea b{color:var(--acc)}.idea .tag{font-size:.78rem;color:var(--ink3);margin-left:.4rem}
+.flow{background:var(--panel);border:1px solid var(--rule);border-radius:4px;padding:1rem 1.1rem;margin:1.2rem 0;font-family:"D2Coding",Consolas,monospace;font-size:.85rem;line-height:1.8;white-space:pre;overflow-x:auto}
+footer{margin-top:4rem;padding-top:1.2rem;border-top:1px solid var(--rule);font-size:.84rem;color:var(--ink3)}
+@media(max-width:640px){body{font-size:15px}header{padding:2.6rem 0 1.4rem}header h1{font-size:1.5rem}h2,.step h2{font-size:1.12rem}pre{font-size:.76rem}table{font-size:.82rem}th,td{padding:.4rem .4rem}}
+</style></head><body><div class="wrap">
+<header><h1>SIF 시스템 탑재 테이블<br>상세 해설과 활용 아이디어</h1>
+<p>테이블 7개가 각각 무엇을 담고 있고, 위험성평가 전산화 시스템과 SIF 웹사이트에서 어떻게 쓸 수 있는지 정리했습니다. 수치는 실제 테이블에서 가져온 값이고, 활용 방안은 제안입니다. 아직 시스템에 구현된 것은 아닙니다.</p>
+<div class="meta"><span><b>기준</b> 2026.9.8. 산출 테이블</span><span><b>사례</b> 3,459건 · 기인물 57종 · 공종 13종 · 재해형태 16종(실제 발생)</span></div></header>
+
+<h2>먼저 — 이 테이블들이 답하는 질문</h2>
+<table><tr><th>현장에서 나오는 질문</th><th>보는 테이블</th></tr>
+<tr><td>이 기인물은 어떤 재해를 일으키나</td><td>T1 기인물프로파일</td></tr>
+<tr><td>이 공종에서 조심할 기인물은 무엇인가</td><td>T2 공종기인물후보</td></tr>
+<tr><td>이 조합은 얼마나 위험한가, 특이한가</td><td>T3 고위험조합</td></tr>
+<tr><td>실제 사례를 보여달라 — 그런데 100건은 못 본다</td><td>T4 대표사례 · T4m</td></tr>
+<tr><td>그래서 뭘 해야 하나</td><td>T5 감소대책항목</td></tr>
+<tr><td>기인물 목록에서 고르게 해달라</td><td>T6 기인물마스터</td></tr></table>
+
+<h2>T6 기인물마스터 — 입구</h2>
+<p>57종을 사망건수 내림차순으로 세운 표입니다. 위험성평가 입력 화면의 <b>기인물 드롭다운</b>이 여기서 시작합니다.</p>
+<table><tr><th>열</th><th>용도</th></tr>
+<tr><td>표시명</td><td>드롭다운에 보이는 문자열. "비계 (196건 ·12대)" 형식이라 고르면서 위험 크기와 12대 여부를 동시에 봄</td></tr>
+<tr><td>최근5년건수</td><td>2019년 이후 건수. 고소작업대는 전체 173건이지만 최근 5년 114건으로 비계(90건)보다 많음 — 최근 추세 정렬 옵션의 근거</td></tr>
+<tr><td>프로파일유형</td><td>선택 직후 화면 구성을 결정. 단일형이면 재해형태 하나, 분산형이면 분포</td></tr>
+<tr><td>주요공종</td><td>그 기인물이 가장 많이 나온 공종. 사용자가 공종을 잘못 골랐는지 확인하는 힌트</td></tr></table>
+<div class="idea"><b>활용</b><span class="tag">드롭다운</span><br>기본 정렬은 사망건수 순, 토글로 "최근 5년 순"을 두면 오래된 위험과 새로 커지는 위험을 구분해 볼 수 있습니다. 12대 기인물은 아이콘이나 색으로 표시해 고르는 순간 눈에 들어오게 합니다.</div>
+<div class="idea"><b>활용</b><span class="tag">입력 검증</span><br>사용자가 공종 "조경공사"에 기인물 "달비계"를 고르면, T2에서 조경공사에 달비계 사례가 0건이라는 것을 확인해 "이 조합은 사례가 없습니다. 기인물을 다시 확인하시겠습니까?"를 띄울 수 있습니다. 막는 게 아니라 확인만 받는 것입니다.</div>
+
+<h2>T1 기인물프로파일 — 기인물을 고르면 무엇이 뜨나</h2>
+<p>기인물 57종 중 <b>23종(40%)은 재해형태 하나로 정해지지 않습니다.</b> 이 표가 그 사실을 담고 있고, 화면 구성이 여기서 갈립니다.</p>
+<table><tr><th>유형</th><th class="n">종</th><th>화면</th><th>예</th></tr>
+<tr><td>단일형</td><td class="n">20</td><td>재해형태 하나를 확정 표시, 나머지는 "드물게: 맞음 2건" 식으로 접어 둠</td><td>비계 → 떨어짐 96%</td></tr>
+<tr><td>혼합형</td><td class="n">14</td><td>1위를 크게, 2위를 작게</td><td>고소작업대(차) → 떨어짐 75%, 끼임 17%</td></tr>
+<tr><td>분산형</td><td class="n">23</td><td>비율 막대로 전부 표시. 사용자가 작업 상황에 맞는 것을 고르게</td><td>굴착기 → 깔림 40% · 부딪힘 22% · 맞음 15% · 끼임 14%</td></tr></table>
+<div class="idea"><b>활용</b><span class="tag">위험성평가 자동 채움</span><br>기인물을 고르면 위험성평가 양식의 "재해형태" 칸에 1위를 기본값으로 넣고, 분산형은 빈 칸으로 두어 사용자가 고르게 합니다. 사용자가 굴착기에 "떨어짐"을 고르면(4%) 경고 없이 허용하되, 사례가 적다는 표시를 붙입니다.</div>
+<div class="idea"><b>활용</b><span class="tag">교육 자료</span><br>분산형 23종은 "이 장비는 이렇게도 저렇게도 죽는다"는 교육 소재입니다. 굴착기 한 장 슬라이드에 네 가지 재해형태와 각각의 대표사례를 넣으면 TBM 자료가 됩니다.</div>
+
+<h2>T2 공종기인물후보 — 기인물을 모를 때</h2>
+<p>작업허가서나 위험성평가 초안에 공종만 적혀 있고 기인물이 없는 경우가 많습니다. 이 표가 공종에서 기인물을 추정합니다. 누적 80%에 도달하는 데 공종당 중앙값 11종이 필요합니다.</p>
+<div class="idea"><b>활용</b><span class="tag">2단계 드롭다운</span><br>공종을 먼저 고르면 기인물 드롭다운이 그 공종의 순위대로 재정렬되고, 누적 80% 밖의 기인물은 "기타" 아래로 접힙니다. 마감공사를 고르면 지붕·달비계·비계가 위에 오고, 굴착기는 아래로 내려갑니다.</div>
+<div class="idea"><b>활용</b><span class="tag">누락 점검</span><br>작성 완료된 위험성평가에서 그 공종의 상위 3개 기인물이 하나도 안 나오면 "이 공종에서 가장 흔한 기인물 ○○이 평가에 없습니다"를 띄웁니다. 빠뜨린 위험을 잡는 용도입니다.</div>
+
+<h2>T3 고위험조합 — 얼마나, 그리고 특이하게</h2>
+<p>두 지표가 다른 것을 봅니다.</p>
+<table><tr><th>지표</th><th>보는 것</th><th>예</th></tr>
+<tr><td>등급 A/B/C</td><td>전체에서 얼마나 자주 죽는 조합인가. A 44개가 사망의 절반, B까지 196개가 8할</td><td>철골공사×철골구조물×떨어짐 129건 A</td></tr>
+<tr><td>표준화잔차</td><td>그 공종 크기를 감안하면 유별난가. 3 이상이면 통계적으로 과다</td><td>조경공사×수목 20건 — 빈도는 낮지만 잔차 27</td></tr></table>
+<p>등급만 보면 큰 공종이 항상 위에 옵니다. 잔차를 같이 봐야 소규모 공정의 고유 위험이 보입니다.</p>
+<div class="idea"><b>활용</b><span class="tag">위험도 표시</span><br>위험성평가 한 줄이 완성되면(공종·기인물·재해형태) T3에서 등급을 찾아 A는 빨강, B는 주황, C는 회색으로 표시합니다. 특이조합이면 별표를 하나 더 붙입니다. "이 조합은 드물지만 이 공종에서는 유독 많다"는 뜻입니다.</div>
+<div class="idea"><b>활용</b><span class="tag">우선 탑재</span><br>시스템 초기 구축 때 3,459건을 다 넣기 부담스러우면 A·B등급 196개 조합에 속한 사례만 먼저 넣습니다. 그것만으로 사망 위험의 8할을 커버합니다. C등급은 "사례 드묾"으로만 표시하고 나중에 채웁니다.</div>
+<div class="idea"><b>활용</b><span class="tag">본부 맞춤</span><br>분당본부에서 실제로 일어나는 공종 조합(예: 전기·기계 설비 · 기타 건설)만 필터해 등급을 다시 매기면 본부용 우선순위표가 됩니다. 표준화잔차는 전체 기준이라 그대로 두고, 등급만 본부 범위로 재계산합니다.</div>
+
+<h2>T4 대표사례 · T4m — 100건을 5건으로</h2>
+<p>비계×떨어짐 한 칸에 188건이 있습니다. 다 보여주면 아무도 안 읽고, 무작위 3건이면 편향됩니다. 칸 안에서 재해유발요인 문장을 군집화해 <b>상황이 다른 하위 유형</b>을 나누고 각각 가장 전형적인 1건을 뽑았습니다.</p>
+<table><tr><th>비계×떨어짐 하위유형</th><th class="n">건수</th><th>대표사례 (재해유발요인)</th></tr>
+<tr><td>0</td><td class="n">26</td><td>석재운반 작업 중 안전난간이 설치되지 않은 작업발판 단부로 추락</td></tr>
+<tr><td>1</td><td class="n">20</td><td>안전대 미착용하고 작업발판 설치·해체 중 추락</td></tr>
+<tr><td>2</td><td class="n">28</td><td>외벽 거푸집 해체 중 외벽과 비계 사이 개구부로 추락</td></tr>
+<tr><td>3</td><td class="n">23</td><td>가림막 고정을 위해 강관비계 수평재 위에서 작업 중 추락</td></tr>
+<tr><td>4</td><td class="n">91</td><td>해체작업을 위해 작업발판에서 이동 중 추락</td></tr></table>
+<p>같은 "비계에서 떨어짐"인데 단부·개구부·수평재·안전대·이동은 대책이 전부 다릅니다. 242개 칸에서 310건의 대표사례가 나왔고, 나머지 3,149건은 T4m으로 각 대표사례 뒤에 매달려 있습니다.</p>
+<div class="hold"><b>이름은 아직 없습니다</b> — <code>하위유형명</code> 열이 비어 있습니다. 위 다섯 개에 "단부 추락 · 안전대 미착용 · 비계-외벽 틈 · 수평재 작업 · 이동 중"처럼 이름을 붙이는 건 안전관리자의 일입니다. 이름이 붙으면 그게 곧 하위유형 코드표가 되고, 위험성평가의 "위험 상황" 드롭다운으로 쓸 수 있습니다.</div>
+<div class="idea"><b>활용</b><span class="tag">사례 표시</span><br>기인물·재해형태가 정해지면 대표사례 3~5건을 카드로 보여주고, 각 카드 아래 "유사 사례 26건 더 보기"를 둡니다. 사용자는 자기 작업과 가장 가까운 카드 하나를 고르면 됩니다.</div>
+<div class="idea"><b>활용</b><span class="tag">하위유형 → 대책 연결</span><br>하위유형별로 T5에서 감소대책을 모으면 "단부 추락"에는 안전난간, "안전대 미착용"에는 안전대 부착설비, "이동 중"에는 작업발판 간격 — 상황에 맞는 대책만 나옵니다. 지금은 188건의 대책이 섞여 있어 이게 안 됩니다.</div>
+<div class="idea"><b>활용</b><span class="tag">신규 사례 배정</span><br>다음 공단 배포판이 오면 새 사례의 재해유발요인을 기존 군집 중심과 비교해 가장 가까운 하위유형에 자동 배정할 수 있습니다. 이름표는 유지되고 사례만 늘어납니다.</div>
+
+<h2>T5 감소대책항목 — 찾은 다음 보여줄 것</h2>
+<p>10,578개 항목이 3,149가지 문장으로 적혀 있고, 그중 2,335개는 한 번만 나옵니다. 같은 뜻을 표현만 바꿔 쓴 것이 대부분입니다.</p>
+<table><tr><th>가장 많이 나온 문장</th><th class="n">건</th></tr>
+<tr><td>추락위험이 있는 작업시 안전대 부착설비 설치 및 안전대 착용</td><td class="n">166</td></tr>
+<tr><td>노후화 되거나 강도가 약한 재료의 지붕재 위에 지붕 전용 안전덮개(발판)를 견고하게 설치</td><td class="n">166</td></tr>
+<tr><td>지붕재의 해체 또는 설치 작업 시, 고소작업대 등을 사용하여 지붕 위에서의 작업을 최소화</td><td class="n">165</td></tr>
+<tr><td>카메라 부착 또는 후방에 근로자의 접근을 알리는 후방센서, 경보장치 등 부착</td><td class="n">136</td></tr></table>
+<div class="hold"><b>표준화가 필요합니다</b> — 이대로 서비스하면 사용자가 볼 때마다 다른 문장을 보고, "안전대 착용" 관련 대책이 몇 건인지 셀 수도 없습니다. 유사 문장을 묶어 표준 대책 목록(수백 개 예상)을 만들고 원문을 그 아래 매핑하는 작업이 다음 단계입니다. 군집 후보는 코사인 유사도로 뽑고, 최종 문안은 사람이 정합니다.</div>
+<div class="idea"><b>활용</b><span class="tag">대책 자동 제안</span><br>표준화가 끝나면, 기인물·재해형태·하위유형이 정해졌을 때 그 조합에서 가장 많이 나온 표준 대책 3~5개를 위험성평가의 "개선대책" 칸에 후보로 넣어 줍니다. 사용자는 고르거나 고쳐 씁니다.</div>
+<div class="idea"><b>활용</b><span class="tag">대책 누락 점검</span><br>사용자가 쓴 개선대책에 그 조합의 1위 표준 대책이 없으면 "이 조합에서 가장 많이 제시된 대책 ○○이 빠져 있습니다"를 띄웁니다.</div>
+
+<h2>전체를 잇는 화면 흐름 (제안)</h2>
+<div class="flow">① 공종 선택          →  T2로 기인물 드롭다운 재정렬
+② 기인물 선택        →  T6 라벨 · T1 프로파일 · 재해형태 기본값
+③ 재해형태 확정      →  T3 등급·특이조합 표시
+④ 대표사례 카드      →  T4 하위유형 3~5건, 사용자가 상황 선택
+⑤ 개선대책 후보      →  T5 (표준화 후) 상위 3~5개
+⑥ 저장               →  선택한 대표사례id·하위유형을 평가 레코드에 기록</div>
+<p>⑥이 중요합니다. 어느 사례를 참고했는지 평가 레코드에 남기면, 나중에 "이 하위유형을 참고한 평가가 몇 건인지", "어떤 대책이 실제로 채택되는지"를 셀 수 있습니다. SIF가 참고 자료에서 <b>측정 가능한 자산</b>이 되는 지점입니다.</p>
+
+<h2>지금 없는 것, 정직하게</h2>
+<ul>
+<li><b>하위유형 이름</b> — T4의 310개 군집에 이름이 없습니다. 사람이 붙여야 하고, 붙이기 전까지는 "하위유형 0·1·2"로만 보입니다.</li>
+<li><b>표준 대책 목록</b> — T5는 분해만 된 상태입니다. 묶는 작업이 남았습니다.</li>
+<li><b>본부 기인물 목록과의 대응</b> — 시스템이 자체 기인물 목록을 쓴다면 SIF 57종과의 대응표가 필요합니다. 목록을 받지 못해 아직 없습니다.</li>
+<li><b>외부 검증</b> — 유사도 검색 84%는 SIF 안에서 돌린 값입니다. 실제 작업허가서 문장으로 해 본 적은 없습니다.</li>
+<li><b>사망 편중</b> — 3,459건 중 3,303건이 사망입니다. 부상·아차사고는 이 DB로 다룰 수 없습니다.</li></ul>
+
+<footer>산출 테이블: SIF_시스템탑재_테이블_20260908.xlsx · 생성 절차: SIF_시스템탑재_테이블_변환가이드.html · 코드: build_tables.py</footer>
+</div></body></html>

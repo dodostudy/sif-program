@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SIF 아카이브 신버전 변환 가이드</title>
+<style>
+:root{
+  --ink:#16191d; --ink-2:#4a5158; --ink-3:#767d85;
+  --paper:#fbfaf7; --panel:#ffffff; --rule:#dcd8cf;
+  --code-bg:#1b1f24; --code-ink:#dfe4ea; --code-key:#89b4ff; --code-str:#b5d99c; --code-cmt:#7d8794;
+  --mark:#7a5c00; --mark-bg:#fdf6dd; --mark-rule:#e3d190;
+  --ok:#1f5c3d;
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{
+  margin:0; background:var(--paper); color:var(--ink);
+  font-family:"Pretendard","Malgun Gothic","Apple SD Gothic Neo",sans-serif;
+  font-size:16px; line-height:1.75; letter-spacing:-.01em;
+}
+.wrap{max-width:53rem; margin:0 auto; padding:0 1.4rem 6rem}
+
+header{padding:4.5rem 0 2.2rem; border-bottom:2px solid var(--ink)}
+header h1{font-size:2rem; line-height:1.25; margin:0 0 .7rem; font-weight:700}
+header p{margin:0; color:var(--ink-2); max-width:42rem}
+.meta{margin-top:1.6rem; display:flex; flex-wrap:wrap; gap:.35rem 1.6rem; font-size:.86rem; color:var(--ink-3)}
+.meta b{color:var(--ink); font-weight:600}
+
+h2{font-size:1.28rem; margin:3.4rem 0 .9rem; font-weight:700; line-height:1.35}
+h3{font-size:1rem; margin:2rem 0 .5rem; font-weight:700; color:var(--ink-2)}
+p{margin:.7rem 0}
+ul{margin:.7rem 0; padding-left:1.15rem}
+li{margin:.3rem 0}
+
+.step{
+  display:flex; align-items:baseline; gap:.75rem;
+  margin:3.6rem 0 .9rem; padding-top:1.4rem; border-top:1px solid var(--rule);
+}
+.step .n{
+  flex:0 0 auto; font-size:.8rem; font-weight:700; color:var(--panel);
+  background:var(--ink); border-radius:2px; padding:.12rem .5rem; letter-spacing:.02em;
+}
+.step h2{margin:0; font-size:1.28rem}
+
+pre{
+  background:var(--code-bg); color:var(--code-ink); border-radius:5px;
+  padding:1rem 1.1rem; overflow-x:auto; margin:1rem 0;
+  font-family:"D2Coding","SFMono-Regular",Consolas,monospace;
+  font-size:.83rem; line-height:1.68; tab-size:4;
+}
+code{font-family:"D2Coding","SFMono-Regular",Consolas,monospace; font-size:.89em}
+p code,li code,td code{background:#efece5; border:1px solid var(--rule); border-radius:3px; padding:.05rem .3rem}
+.k{color:var(--code-key)} .s{color:var(--code-str)} .c{color:var(--code-cmt)}
+
+table{border-collapse:collapse; width:100%; margin:1.1rem 0; font-size:.9rem}
+th,td{border-bottom:1px solid var(--rule); padding:.5rem .6rem; text-align:left; vertical-align:top}
+th{background:#f2efe8; font-weight:600; border-bottom:1.5px solid var(--ink-3)}
+td.num{text-align:right; font-variant-numeric:tabular-nums; white-space:nowrap}
+
+.check{
+  background:var(--panel); border:1px solid var(--rule); border-left:3px solid var(--ok);
+  border-radius:3px; padding:.85rem 1rem; margin:1.1rem 0; font-size:.92rem;
+}
+.check b{color:var(--ok)}
+.hold{
+  background:var(--mark-bg); border:1px solid var(--mark-rule); border-radius:3px;
+  padding:.9rem 1.05rem; margin:1.2rem 0; font-size:.93rem;
+}
+.hold b{color:var(--mark)}
+
+footer{margin-top:5rem; padding-top:1.4rem; border-top:1px solid var(--rule);
+  font-size:.85rem; color:var(--ink-3)}
+
+@media (max-width:640px){
+  body{font-size:15px}
+  header{padding:2.6rem 0 1.6rem}
+  header h1{font-size:1.5rem}
+  h2,.step h2{font-size:1.12rem}
+  pre{font-size:.76rem; padding:.85rem .9rem}
+  table{font-size:.83rem}
+  th,td{padding:.42rem .4rem}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <h1>SIF 아카이브 신버전 변환 가이드</h1>
+  <p>공단 원본 CSV를 주피터로 불러온 상태에서 시작해, 전처리 → 기존 열구조(15열) 저장 → 확장 열구조(28열) 저장 순으로 진행하는 절차입니다. 함께 드린 주피터 노트북의 셀 순서와 그대로 대응합니다.</p>
+  <div class="meta">
+    <span><b>입력</b> 공단 원본 csv · 구_db.json</span>
+    <span><b>출력</b> 15열·28열 각 xlsx / csv / json</span>
+    <span><b>행수</b> 3,459</span>
+  </div>
+</header>
+
+<h2>이 문서를 읽는 법</h2>
+<p>단계마다 <b>무엇을 하는지 → 코드 → 무엇을 확인해야 하는지</b> 순서로 적었습니다. 노트북에는 각 단계 끝에 <code>assert</code>가 붙어 있어, 셀이 오류 없이 끝나면 그 단계는 검증을 통과한 것입니다.</p>
+<p>변환 전체를 관통하는 원칙이 하나 있습니다. <b>원문에서 읽어낼 수 없는 값은 채우지 않고 비웁니다.</b> 추락 높이가 적히지 않은 사고에 평균값을 넣거나, 결과가 서술되지 않은 사고를 사망으로 처리하면 그 순간부터 데이터가 아니라 추정이 됩니다. 논문 심사에서 산출식을 물었을 때 답할 수 없는 칸은 만들지 않았습니다.</p>
+
+<h2>준비물</h2>
+<table>
+<tr><th>파일</th><th>역할</th></tr>
+<tr><td><code>한국산업안전보건공단_산업재해 고위험요인SIF 아카이브_20260401.csv</code></td><td>신버전 원본 3,459건 (xlsx도 같은 로더로 읽힘)</td></tr>
+<tr><td><code>구_db.json</code></td><td>구버전 2,574건. 파생 규칙을 역산하는 기준</td></tr>
+</table>
+<pre><span class="c"># 필요한 라이브러리</span>
+pip install pandas openpyxl jupyter</pre>
+
+<div class="step"><span class="n">1</span><h2>신버전 원본 CSV 로드·정규화</h2></div>
+<p>공단 원본은 위쪽 몇 행이 제목과 병합 헤더입니다. <code>header=None</code>으로 읽고 <code>연번</code>이 있는 행을 찾아 그 아래부터 9열을 잘라냅니다. 인코딩은 utf-8-sig → cp949 순으로 시도합니다.</p>
+<pre><span class="k">def</span> load_sif(path):
+    raw = pd.read_csv(path, header=<span class="k">None</span>, encoding=<span class="s">'utf-8-sig'</span>, dtype=str)
+    <span class="k">for</span> i <span class="k">in</span> range(<span class="s">10</span>):                          <span class="c"># '연번' 셀이 있는 행 = 헤더</span>
+        row = raw.iloc[i].astype(str).str.strip().tolist()
+        <span class="k">if</span> <span class="s">'연번'</span> <span class="k">in</span> row: hdr, col0 = i, row.index(<span class="s">'연번'</span>); <span class="k">break</span>
+    df = raw.iloc[hdr+<span class="s">1</span>:, col0:col0+<span class="s">9</span>].copy()
+    df.columns = [<span class="s">'연번','공종','작업명','단위작업명','재해종류',
+                  '재해개요','기인물','재해유발요인','위험성감소대책'</span>]
+    df = df.dropna(subset=[<span class="s">'재해개요'</span>]).reset_index(drop=<span class="k">True</span>)
+    <span class="k">for</span> c <span class="k">in</span> df.columns:                        <span class="c"># 앞뒤 공백 제거</span>
+        <span class="k">if</span> c != <span class="s">'연번'</span>: df[c] = df[c].astype(str).str.strip()
+    <span class="k">return</span> df
+
+new = load_sif(F_NEW_CSV)</pre>
+<div class="check"><b>확인</b> — 3,459행 9열, 결측 0. 공백 제거는 dtype 조건 없이 전 열에 적용합니다(pandas 3.x는 문자열 dtype이 object가 아니라 조건을 걸면 건너뜁니다).</div>
+
+<div class="step"><span class="n">2</span><h2>구버전에서 파생 규칙 역산</h2></div>
+<p>구버전에 직접 붙여 두셨던 5개 열은 규칙이 명시돼 있지 않습니다. 그래서 규칙을 짐작하지 않고, 구버전 2,574건에서 <b>실제로 성립하는지 검증한 뒤에만</b> 신버전에 적용합니다.</p>
+
+<h3>기인물 단위 룩업</h3>
+<p><code>기인물</code> 값 하나가 <code>기인물분류·12대기인물·위험도순위·3년간사고비중</code>을 결정하는지 확인합니다.</p>
+<pre>COLS4 = [<span class="s">'기인물분류','12대기인물','위험도순위','3년간사고비중'</span>]
+<span class="k">for</span> c <span class="k">in</span> COLS4:
+    n = old.groupby(<span class="s">'기인물'</span>)[c].nunique(dropna=<span class="k">False</span>)
+    print(c, <span class="s">'값이 갈리는 기인물:'</span>, list(n[n&gt;<span class="s">1</span>].index))</pre>
+<p>실행하면 두 건이 걸립니다. 구버전 원본에 남아 있는 입력 누락입니다.</p>
+<table>
+<tr><th>기인물</th><th>다수</th><th class="num">건</th><th>소수</th><th class="num">건</th></tr>
+<tr><td>개구부(바닥개구부)</td><td>위험도순위 1 · 비중 0.09</td><td class="num">79</td><td>순위 공란 · 해당없음</td><td class="num">1</td></tr>
+<tr><td>분류불능</td><td>기인물분류 분류불능</td><td class="num">17</td><td>원인미상</td><td class="num">1</td></tr>
+</table>
+<p>다수값으로 정리했습니다. 소수 1건씩은 나머지 열의 값이 다수와 같아 판단이 갈리지 않습니다.</p>
+<pre>LOOKUP = old.groupby(<span class="s">'기인물'</span>)[COLS4].agg(<span class="k">lambda</span> s: s.mode().iat[<span class="s">0</span>] <span class="k">if</span> len(s.mode()) <span class="k">else</span> <span class="k">None</span>)</pre>
+
+<h3>혹서기 규칙</h3>
+<p>재해개요의 발생월로 결정되는지 교차표로 확인합니다. 구버전 2,574건에서 예외 없이 성립합니다.</p>
+<table>
+<tr><th>발생월</th><th>값</th></tr>
+<tr><td>6 · 7 · 8월</td><td>혹서기</td></tr>
+<tr><td>12 · 1 · 2월</td><td>혹한기</td></tr>
+<tr><td>그 외</td><td>-</td></tr>
+</table>
+<p>구버전의 <code>#VALUE!</code> 27건은 월 추출이 실패한 행이었습니다. <code>2018년 09년경</code>처럼 원본 표기가 틀린 경우인데, 정규식을 넓혀 신버전에서는 실패가 없습니다.</p>
+
+<h3>KOEN공정 규칙 — 구버전에서 무엇이었는지 확인</h3>
+<p>여기서는 구버전이 어떤 규칙을 썼는지만 확인합니다. 신버전에 실제로 적용하는 규칙은 5단계이고, 그때 <b>터널공사를 KOEN공정에 포함</b>합니다.</p>
+<pre>EX_GJ = (<span class="s">'8. 교량공사'</span>, <span class="s">'9. 터널공사'</span>, <span class="s">'10. 하천 및 항만공사'</span>)
+pred = ~(old[<span class="s">'공종'</span>].isin(EX_GJ) | old[<span class="s">'단위작업명'</span>].str.contains(<span class="s">'양수발전용 댐'</span>))
+<span class="k">assert</span> pred.equals(old[<span class="s">'KOEN공정'</span>])</pre>
+<div class="check"><b>확인</b> — 구버전 2,574건 전부에서 이 규칙이 일치합니다. 신버전 적용 규칙(터널 포함)은 5단계에서 따로 씁니다.</div>
+
+<div class="step"><span class="n">3</span><h2>기인물 크로스워크</h2></div>
+<p>신버전에서 기인물 명칭이 바뀌었습니다. 명칭만 달라진 14종은 연결하고, 판단이 필요한 3종은 <b>연결하지 않고 비워 둡니다.</b></p>
+<table>
+<tr><th>신버전</th><th>구버전</th></tr>
+<tr><td>고소작업대(차)</td><td>고소작업대</td></tr>
+<tr><td>굴착기(백호우)</td><td>굴착기</td></tr>
+<tr><td>철골구조물 / 철골자재</td><td>철골(철골구조물) / 철골(철골자재)</td></tr>
+<tr><td>바닥개구부(자재인양구 등)</td><td>개구부(바닥개구부)</td></tr>
+<tr><td>지붕 채광판 등(선라이트, 슬레이트)</td><td>지붕(채광판,선라이트)</td></tr>
+<tr><td>트럭류 / 전주, 철탑</td><td>트럭 / 전주</td></tr>
+</table>
+<p>신버전에 새로 생긴 3종은 다음과 같이 정했습니다.</p>
+<table>
+<tr><th>신버전 기인물</th><th class="num">건수</th><th>처리</th><th>기인물분류</th><th>12대</th></tr>
+<tr><td>작업발판 일체형 거푸집</td><td class="num">42</td><td>거푸집 룩업 승계</td><td>거푸집</td><td>O (순위 11)</td></tr>
+<tr><td>타워크레인</td><td class="num">31</td><td>신설</td><td>건설기계</td><td>X</td></tr>
+<tr><td>줄걸이 기구</td><td class="num">43</td><td>신설</td><td>줄걸이 기구</td><td>X</td></tr>
+</table>
+<pre>XW[<span class="s">'작업발판 일체형 거푸집'</span>] = <span class="s">'거푸집'</span>
+NEW_ITEMS = {<span class="s">'타워크레인'</span>: <span class="s">'건설기계'</span>, <span class="s">'줄걸이 기구'</span>: <span class="s">'줄걸이 기구'</span>}</pre>
+
+<div class="step"><span class="n">4</span><h2>발생시점 파생</h2></div>
+<p>재해개요 원문의 연·월 표기를 뽑아 연도·월·계절·혹서기 네 열을 만듭니다.</p>
+<pre>MP = re.compile(<span class="s">r'(?:19|20)\d{2}\s*[년월.\-/]?\s*(\d{1,2})\s*[월년.\-/경]'</span>)</pre>
+<p>연도와 월 사이 구분자를 느슨하게 둔 이유는 원본에 <code>2017월 11월경</code>, <code>2019년 09경</code>, <code>2020.10.24.</code> 같은 표기가 섞여 있기 때문입니다. 3,459건 전부에서 추출됩니다.</p>
+<div class="check"><b>확인</b> — 연도·월 결측 0, 월은 모두 1~12 범위.</div>
+
+<div class="step"><span class="n">5</span><h2>KOEN공정</h2></div>
+<p>2단계에서 검증한 구버전 규칙은 교량·터널·하천항만 제외였습니다. <b>터널공사는 KOEN공정에 포함</b>하기로 하셨으므로(26.9.8) 신버전에는 교량·하천항만·양수발전용 댐만 제외합니다. 제외 80건, 포함 3,379건입니다.</p>
+<pre>EX_GJ_KOEN = (<span class="s">'8. 교량공사'</span>, <span class="s">'10. 하천 및 항만공사'</span>)</pre>
+
+<div class="step"><span class="n">6</span><h2>분류코드</h2></div>
+<p><code>4. 마감공사</code>의 <code>4</code>, <code>4.1 조적 작업</code>의 <code>4.1</code>처럼 이미 붙어 있는 번호를 떼어냅니다. 새로 부여하는 값이 아닙니다.</p>
+<pre>new[<span class="s">'공종코드'</span>] = new[<span class="s">'공종'</span>].str.extract(<span class="s">r'^(\d+)\.'</span>)[<span class="s">0</span>].astype(int)</pre>
+
+<div class="step"><span class="n">7</span><h2>추락고 추출</h2></div>
+<p>이 단계가 가장 주의를 요합니다. 숫자와 <code>m</code>만 보고 뽑으면 부재 길이와 간격까지 높이로 잡힙니다.</p>
+<table>
+<tr><th>표기</th><th>판정</th><th>이유</th></tr>
+<tr><td><code>추락(H≒18.0m)</code></td><td>추출</td><td>높이를 지시하는 앵커가 있음</td></tr>
+<tr><td><code>약 4.7m 아래 바닥으로</code></td><td>추출</td><td>‘아래’가 방향을 확정</td></tr>
+<tr><td><code>1.5m 간격으로</code></td><td>제외</td><td>간격이지 높이가 아님</td></tr>
+<tr><td><code>L=8m, 608kg</code></td><td>제외</td><td>부재 길이</td></tr>
+<tr><td><code>H≒100mm</code></td><td>제외</td><td>철근 높이 100밀리. 단위 뒤 <code>(?![mM])</code>로 차단</td></tr>
+</table>
+<pre>U  = <span class="s">r'(?:m|M|미터)(?![mM])'</span>
+HP = [re.compile(<span class="s">r'[Hh]\s*[≒=≈:：]\s*약?\s*([0-9]+(?:\.[0-9]+)?)\s*'</span> + U),
+      re.compile(<span class="s">r'높이\s*[:：]?\s*약?\s*([0-9]+(?:\.[0-9]+)?)\s*'</span> + U),
+      re.compile(<span class="s">r'약?\s*([0-9]+(?:\.[0-9]+)?)\s*'</span> + U + <span class="s">r'\s*아래'</span>)]
+
+<span class="k">def</span> fall_height(s):
+    <span class="k">for</span> P <span class="k">in</span> HP:
+        m = P.search(str(s))
+        <span class="k">if</span> m: <span class="k">return</span> float(m.group(<span class="s">1</span>))
+    <span class="k">return</span> <span class="k">None</span>          <span class="c"># 앵커 없으면 비움</span></pre>
+<p>결과는 1,549건이고 추락 사례 기준 2,030건 중 1,360건(67.0%)입니다. 값 범위는 0.5m에서 97m, 중앙값 6.0m입니다.</p>
+<div class="hold"><b>직접 확인하세요</b> — 50m를 넘는 50건은 노트북에서 원문과 나란히 출력됩니다. 전부 아파트 외벽 달비계·갱폼 추락이라 수치가 맞지만, 논문에 쓰실 값이니 눈으로 한 번 훑어보시는 편이 좋습니다.</div>
+
+<div class="step"><span class="n">8</span><h2>재해정도·텍스트 파생</h2></div>
+<p>재해정도는 원문 표현만 봅니다.</p>
+<pre><span class="k">def</span> degree(s):
+    s = str(s)
+    <span class="k">if</span> <span class="s">'사망'</span> <span class="k">in</span> s <span class="k">or</span> <span class="s">'익사'</span> <span class="k">in</span> s: <span class="k">return</span> <span class="s">'사망'</span>
+    <span class="k">if</span> <span class="s">'부상'</span> <span class="k">in</span> s:               <span class="k">return</span> <span class="s">'부상'</span>
+    <span class="k">return</span> <span class="s">'미상'</span></pre>
+<table>
+<tr><th>값</th><th class="num">건수</th></tr>
+<tr><td>사망</td><td class="num">3,303</td></tr>
+<tr><td>부상</td><td class="num">136</td></tr>
+<tr><td>미상</td><td class="num">20</td></tr>
+</table>
+<p>미상 20건은 <span style="color:var(--ink-2)">“바닥에 쓰러진 상태로 발견됨”</span>, <span style="color:var(--ink-2)">“작업자 2명이 감전”</span>처럼 결과가 서술되지 않은 사례입니다. SIF 아카이브라는 성격상 사망으로 짐작할 수는 있지만, 원문에 없는 사실이므로 채우지 않았습니다. 노트북이 20건 전문을 출력하니 직접 보고 판단하시면 됩니다.</p>
+<p><code>복수재해자</code>도 인원수를 세지 않고 2명 이상 표기가 있는지만 참·거짓으로 뒀습니다. <span style="color:var(--ink-2)">“1명은 사망하고 1명은 부상”</span> 같은 문장에서 사망자 수를 뽑아내는 것은 해석이 들어가는 일입니다.</p>
+
+<div class="step"><span class="n">9</span><h2>기존 열구조 완성 (15열) → xlsx · csv · json 저장</h2></div>
+<p>구버전 <code>구_db.json</code>과 열 이름·순서·타입이 같은 15열 표를 먼저 만듭니다. 사이트 교체용입니다.</p>
+<p><code>재해형태</code>는 구버전 재해형태 20종 안에서만 표기합니다. <b>치환 대상은 전부 구버전에 실재하는 값이고, 새 용어를 만들지 않습니다.</b> 코드에 <code>assert</code>로 이를 강제해 두었습니다.</p>
+<table>
+<tr><th>신버전 재해종류</th><th class="num">건수</th><th>처리</th><th>재해형태</th></tr>
+<tr><td>추락</td><td class="num">2,030</td><td>치환</td><td>떨어짐</td></tr>
+<tr><td>깔림</td><td class="num">250</td><td>치환</td><td>깔림 뒤집힘</td></tr>
+<tr><td>낙하</td><td class="num">246</td><td>치환</td><td>맞음</td></tr>
+<tr><td>붕괴</td><td class="num">179</td><td>치환</td><td>무너짐</td></tr>
+<tr><td>부딪힘</td><td class="num">164</td><td>치환</td><td>부딪힘 접촉</td></tr>
+<tr><td>끼임</td><td class="num">154</td><td>유지</td><td>끼임</td></tr>
+<tr><td>감전</td><td class="num">87</td><td>유지</td><td>감전</td></tr>
+<tr><td>익사</td><td class="num">40</td><td>유지</td><td>익사</td></tr>
+<tr><td>기타</td><td class="num">27</td><td>치환</td><td>원인미상</td></tr>
+<tr><td>질식</td><td class="num">20</td><td>치환</td><td>산소결핍 질식</td></tr>
+<tr><td>찔림 · 베임</td><td class="num">19</td><td>치환</td><td>절단 베임 찔림</td></tr>
+<tr><td>이상온도 접촉</td><td class="num">15</td><td>치환</td><td>이상온도 노출 접촉</td></tr>
+<tr><td>폭발</td><td class="num">14</td><td>유지</td><td>폭발</td></tr>
+<tr><td>화재</td><td class="num">13</td><td>유지</td><td>화재</td></tr>
+<tr><td>중독 · 유해물 접촉</td><td class="num">13</td><td>치환</td><td>유해위험물질 노출 접촉</td></tr>
+<tr><td>전도</td><td class="num">155</td><td>보류</td><td>전도</td></tr>
+<tr><td>화상</td><td class="num">30</td><td>보류</td><td>화상</td></tr>
+<tr><td>파열</td><td class="num">3</td><td>보류</td><td>파열</td></tr>
+</table>
+<pre>TERM_FIX = {<span class="s">'추락'</span>:<span class="s">'떨어짐'</span>, <span class="s">'낙하'</span>:<span class="s">'맞음'</span>, <span class="s">'붕괴'</span>:<span class="s">'무너짐'</span>, <span class="s">'깔림'</span>:<span class="s">'깔림 뒤집힘'</span>,
+            <span class="s">'부딪힘'</span>:<span class="s">'부딪힘 접촉'</span>, <span class="s">'베임'</span>:<span class="s">'절단 베임 찔림'</span>, <span class="s">'찔림'</span>:<span class="s">'절단 베임 찔림'</span>,
+            <span class="s">'질식'</span>:<span class="s">'산소결핍 질식'</span>, <span class="s">'중독'</span>:<span class="s">'유해위험물질 노출 접촉'</span>,
+            <span class="s">'유해물 접촉'</span>:<span class="s">'유해위험물질 노출 접촉'</span>, <span class="s">'이상온도 접촉'</span>:<span class="s">'이상온도 노출 접촉'</span>,
+            <span class="s">'기타'</span>:<span class="s">'원인미상'</span>}
+
+<span class="k">assert</span> set(TERM_FIX.values()) &lt;= set(old[<span class="s">'재해형태'</span>].unique())   <span class="c"># 새 용어 생성 차단</span>
+new[<span class="s">'재해형태'</span>] = new[<span class="s">'재해종류'</span>].replace(TERM_FIX)</pre>
+<h3>라벨로 정할 수 없는 3종은 원문을 읽어 배정</h3>
+<p><code>전도·화상·파열</code>은 라벨만으로 구버전 용어가 정해지지 않습니다. 사고가 실제로 어떻게 끝났는지를 재해개요에서 읽어 배정했습니다. 전도 155건 중 사람이 떨어져 사망했으면 <code>떨어짐</code>, 장비에 깔려 사망했으면 <code>깔림 뒤집힘</code>입니다.</p>
+<table>
+<tr><th>원 라벨</th><th class="num">건수</th><th>배정 결과</th></tr>
+<tr><td>전도</td><td class="num">155</td><td>깔림 뒤집힘 74 · 떨어짐 40 · 맞음 20 · 부딪힘 접촉 13 · 넘어짐 4 · 익사 3 · 원인미상 1</td></tr>
+<tr><td>화상</td><td class="num">30</td><td>화재 12 · 감전 10 · 폭발 5 · 이상온도 노출 접촉 3</td></tr>
+<tr><td>파열</td><td class="num">3</td><td>맞음 2 · 떨어짐 1</td></tr>
+</table>
+<p>전도·파열은 <b>결과절에서 가장 마지막에 나오는 기전</b>을 따랐습니다. 사망에 이른 최종 원인이기 때문입니다. 화상은 결과가 아니라 원인을 봤습니다. 아크·충전부면 감전, 불티·화염이면 화재입니다.</p>
+<pre><span class="c"># "전도 충격에 파손된 부재에 깔려 사망"        -> 깔림 뒤집힘</span>
+<span class="c"># "넘어져 난간에 충격 후 바닥으로 떨어져 사망"  -> 떨어짐</span>
+<span class="c"># "전락되어 하부 대기 중 피재자가 협착되어 사망" -> 깔림 뒤집힘</span></pre>
+<p>결과절에 기전이 아예 없는 18건은 재해개요 전문을 읽어 개별 판정했습니다. 판정 기준은 다음과 같고, 코드에 <code>개별판정</code> 표로 사유와 함께 남겨 두었습니다.</p>
+<table>
+<tr><th>상황</th><th>재해형태</th><th>예</th></tr>
+<tr><td>장비·구조물이 전도·전복되어 사람이 재해</td><td>깔림 뒤집힘</td><td>덤프트럭 전복, 벽체철근 전도, 고소작업대 전도</td></tr>
+<tr><td>사람이 같은 높이에서 균형을 잃고 넘어짐</td><td>넘어짐</td><td>작업 중 뒤로 넘어짐, 닻줄에 걸려 넘어짐</td></tr>
+<tr><td>사람이 높은 곳에 있다가 지면까지 내려옴</td><td>떨어짐</td><td>전주 승주 중 전주 파단, 전주와 함께</td></tr>
+<tr><td>원문에 기전이 전혀 없음</td><td>원인미상</td><td>베란다에 쓰러진 상태로 발견</td></tr>
+</table>
+<div class="check"><b>확인</b> — 최종 <code>재해형태</code> 값 전건이 구버전 20종 안에 있고 결측이 없습니다. <code>assert set(new['재해형태']) &lt;= 구버전용어</code> 로 강제합니다.</div>
+<div class="check"><b>본문 무결성</b> — <code>재해개요·재해유발요인·위험성감소대책</code> 세 열은 원본 엑셀과 문자 단위로 대조해 일치를 확인합니다. 어떤 단계에서도 본문은 고치지 않습니다.</div>
+
+
+<pre>COLS_A = [<span class="s">'id','공종','작업명','단위작업명','KOEN공정','기인물분류','기인물','12대기인물',
+          '위험도순위','3년간사고비중','혹서기','재해형태','재해개요','재해유발요인','위험성감소대책'</span>]
+A = new[COLS_A].copy()
+<span class="k">assert</span> list(A.columns) == list(old_json[<span class="s">0</span>].keys())     <span class="c"># 구버전과 열구조 동일</span>
+
+save_xlsx(A, OUT/<span class="s">'SIF_신버전_기존열구조_3459건.xlsx'</span>, <span class="s">'기존열구조_15열'</span>)
+A.to_csv(OUT/<span class="s">'SIF_신버전_기존열구조_3459건.csv'</span>, index=<span class="k">False</span>, encoding=<span class="s">'utf-8-sig'</span>)
+json.dump(to_records(A), open(OUT/<span class="s">'SIF_신버전_기존열구조_3459건.json'</span>, <span class="s">'w'</span>, encoding=<span class="s">'utf-8'</span>),
+          ensure_ascii=<span class="k">False</span>, indent=<span class="s">1</span>)</pre>
+<p><code>to_records</code>는 numpy 타입을 파이썬 기본형으로 바꿉니다. 그대로 내보내면 <code>true</code> 대신 문자열이 되거나 정수가 <code>1.0</code>으로 나가서 사이트에서 <code>=== true</code> 비교가 조용히 깨집니다.</p>
+<pre>INT_COLS = {<span class="s">'id','위험도순위','발생연도','발생월','감소대책_항목수','재해개요_글자수'</span>}
+<span class="k">for</span> k, v <span class="k">in</span> r.items():
+    <span class="k">if</span>   isinstance(v, (np.bool_, bool)):       v = bool(v)
+    <span class="k">elif</span> isinstance(v, np.integer):            v = int(v)
+    <span class="k">elif</span> isinstance(v, (float, np.floating)):  v = <span class="k">None</span> <span class="k">if</span> pd.isna(v) <span class="k">else</span> (int(v) <span class="k">if</span> k <span class="k">in</span> INT_COLS <span class="k">else</span> float(v))</pre>
+<div class="check"><b>확인</b> — 3,459행 15열. 구버전 JSON과 열 이름·순서 일치. xlsx는 첫 행 고정·자동필터, csv는 utf-8-sig.</div>
+
+<div class="step"><span class="n">10</span><h2>확장 열구조 완성 (28열) → xlsx · csv · json 저장</h2></div>
+<p>15열에 파생 13열(분류코드 3 · 발생시점 4 · 재해종류 · 재해정도 · 복수재해자 · 추락고 · 감소대책 항목수 · 글자수 · 익명처리)을 더합니다. 기존 15열의 값은 9단계 파일과 완전히 같아야 합니다.</p>
+<pre>B = new[COLS_B].copy()
+<span class="k">assert</span> len(B) == len(A) == <span class="s">3459</span>
+<span class="k">for</span> c <span class="k">in</span> COLS_A:
+    <span class="k">assert</span> B[c].equals(A[c])                  <span class="c"># 공통 15열 값 동일</span>
+
+save_xlsx(B, OUT/<span class="s">'SIF_신버전_확장열_3459건.xlsx'</span>, <span class="s">'확장열_28열'</span>)
+B.to_csv(OUT/<span class="s">'SIF_신버전_확장열_3459건.csv'</span>, index=<span class="k">False</span>, encoding=<span class="s">'utf-8-sig'</span>)
+json.dump(to_records(B), open(OUT/<span class="s">'SIF_신버전_확장열_3459건.json'</span>, <span class="s">'w'</span>, encoding=<span class="s">'utf-8'</span>), ensure_ascii=<span class="k">False</span>, indent=<span class="s">1</span>)</pre>
+<div class="check"><b>확인</b> — 3,459행 28열. 공통 15열이 기존열구조와 동일.</div>
+
+<div class="step"><span class="n">11</span><h2>최종 검증</h2></div>
+<p>구버전 JSON과 열별 타입을 하나씩 대조하고, 저장한 파일을 다시 읽어 원본과 값이 같은지 확인합니다.</p>
+<table>
+<tr><th>항목</th><th>결과</th></tr>
+<tr><td>행수</td><td>3,459 (두 파일 동일)</td></tr>
+<tr><td>열 이름·순서</td><td>구버전과 일치</td></tr>
+<tr><td>타입</td><td>구버전과 일치 (bool · int/null · str)</td></tr>
+<tr><td>본문 3열</td><td>원본 CSV와 문자 단위 일치</td></tr>
+<tr><td>xlsx ↔ json 값</td><td>일치</td></tr>
+</table>
+
+<h2>남은 작업</h2>
+<p>변환 자체는 모두 확정됐습니다. 남은 것은 시스템 탑재 단계의 사람 판단입니다.</p>
+<ul>
+<li><code>T4_대표사례</code>의 <code>하위유형명</code> — 군집이 실제로 다른 상황인지 보고 이름을 붙이는 일</li>
+<li><code>T5_감소대책항목</code> — 유사 문장을 묶어 표준 대책 목록을 만드는 일</li>
+<li>위험성평가 시스템의 기인물 목록과 SIF 57종 사이 대응표</li>
+</ul>
+
+<footer>
+  SIF 아카이브 신버전 변환 가이드 · 함께 제공된 <code>SIF_변환_검증_노트북.ipynb</code>의 셀 순서와 동일
+</footer>
+
+</div>
+</body>
+</html>

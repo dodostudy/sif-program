@@ -1,0 +1,175 @@
+<!DOCTYPE html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>SIF 시스템 탑재 테이블 변환 가이드</title><style>
+:root{--ink:#16191d;--ink2:#4a5158;--ink3:#767d85;--paper:#fbfaf7;--panel:#fff;--rule:#dcd8cf;--acc:#1f4e79;--cbg:#1b1f24;--cink:#dfe4ea;--k:#89b4ff;--s:#b5d99c;--c:#7d8794;--mark:#7a5c00;--markbg:#fdf6dd;--markrule:#e3d190;--ok:#1f5c3d}
+*{box-sizing:border-box}body{margin:0;background:var(--paper);color:var(--ink);font-family:"Pretendard","Malgun Gothic","Apple SD Gothic Neo",sans-serif;font-size:16px;line-height:1.75;letter-spacing:-.01em}
+.wrap{max-width:53rem;margin:0 auto;padding:0 1.4rem 6rem}
+header{padding:4.5rem 0 2rem;border-bottom:2px solid var(--ink)}header h1{font-size:2rem;line-height:1.25;margin:0 0 .7rem}header p{margin:0;color:var(--ink2);max-width:44rem}
+.meta{margin-top:1.4rem;display:flex;flex-wrap:wrap;gap:.3rem 1.6rem;font-size:.86rem;color:var(--ink3)}.meta b{color:var(--ink);font-weight:600}
+h2{font-size:1.28rem;margin:3.2rem 0 .9rem;padding-top:1.4rem;border-top:1px solid var(--rule)}h3{font-size:1rem;margin:1.8rem 0 .5rem;color:var(--ink2)}
+p{margin:.7rem 0}ul{margin:.6rem 0;padding-left:1.15rem}li{margin:.3rem 0}
+.step{display:flex;align-items:baseline;gap:.75rem;margin:3.4rem 0 .9rem;padding-top:1.4rem;border-top:1px solid var(--rule)}.step .n{flex:0 0 auto;font-size:.8rem;font-weight:700;color:#fff;background:var(--ink);border-radius:2px;padding:.12rem .5rem}.step h2{margin:0;border:0;padding:0}
+pre{background:var(--cbg);color:var(--cink);border-radius:5px;padding:1rem 1.1rem;overflow-x:auto;margin:1rem 0;font-family:"D2Coding",Consolas,monospace;font-size:.83rem;line-height:1.66}
+code{font-family:"D2Coding",Consolas,monospace;font-size:.88em}p code,li code,td code{background:#efece5;border:1px solid var(--rule);border-radius:3px;padding:.05rem .3rem}
+.k{color:var(--k)}.s{color:var(--s)}.c{color:var(--c)}
+table{border-collapse:collapse;width:100%;margin:1rem 0;font-size:.9rem}th,td{border-bottom:1px solid var(--rule);padding:.48rem .6rem;text-align:left;vertical-align:top}th{background:#f2efe8;font-weight:600;border-bottom:1.5px solid var(--ink3)}td.n{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+.check{background:var(--panel);border:1px solid var(--rule);border-left:3px solid var(--ok);border-radius:3px;padding:.85rem 1rem;margin:1rem 0;font-size:.92rem}.check b{color:var(--ok)}
+.hold{background:var(--markbg);border:1px solid var(--markrule);border-radius:3px;padding:.85rem 1rem;margin:1rem 0;font-size:.92rem}.hold b{color:var(--mark)}
+.idea{background:var(--panel);border:1px solid var(--rule);border-left:3px solid var(--acc);border-radius:3px;padding:.9rem 1.05rem;margin:1rem 0}.idea b{color:var(--acc)}.idea .tag{font-size:.78rem;color:var(--ink3);margin-left:.4rem}
+.flow{background:var(--panel);border:1px solid var(--rule);border-radius:4px;padding:1rem 1.1rem;margin:1.2rem 0;font-family:"D2Coding",Consolas,monospace;font-size:.85rem;line-height:1.8;white-space:pre;overflow-x:auto}
+footer{margin-top:4rem;padding-top:1.2rem;border-top:1px solid var(--rule);font-size:.84rem;color:var(--ink3)}
+@media(max-width:640px){body{font-size:15px}header{padding:2.6rem 0 1.4rem}header h1{font-size:1.5rem}h2,.step h2{font-size:1.12rem}pre{font-size:.76rem}table{font-size:.82rem}th,td{padding:.4rem .4rem}}
+</style></head><body><div class="wrap">
+<header><h1>SIF 시스템 탑재 테이블 변환 가이드</h1>
+<p>확장열 파일(3,459건 28열)에서 시스템에 심을 테이블 7개를 어떻게 뽑았는지, 순서대로 코드와 함께 적었습니다. 전부 <code>build_tables.py</code> 한 파일에 들어 있고, 입력을 바꿔 다시 돌리면 같은 규칙으로 재생성됩니다.</p>
+<div class="meta"><span><b>입력</b> SIF_신버전_확장열_3459건.json</span><span><b>출력</b> T1~T6 · T4m (xlsx · csv · json)</span><span><b>코드</b> build_tables.py</span></div></header>
+
+<h2>전체 흐름</h2>
+<div class="flow">확장열 28열 (T0)
+   ├─ T1 기인물프로파일     기인물 × 재해형태 교차표 → long 형 + 유형 판정
+   ├─ T2 공종기인물후보     공종별 기인물 순위 · 누적비율
+   ├─ T3 고위험조합         공종×기인물×재해형태 빈도 → 등급 + 표준화잔차
+   ├─ T4 대표사례           칸별 군집 → medoid
+   │   └─ T4m 매핑          모든 사례 id → 하위유형 소속
+   ├─ T5 감소대책항목       ▶ 단위 분해 + 출현건수
+   └─ T6 기인물마스터       사망건수 순 정렬 + 드롭다운 라벨</div>
+<p>T1~T3·T5·T6는 집계이고 결정적입니다. 같은 입력이면 항상 같은 결과가 나옵니다. T4만 군집 알고리즘이 들어가는데 <code>random_state=0</code>으로 고정해 재현됩니다.</p>
+
+<h2>준비</h2>
+<pre><span class="k">import</span> pandas <span class="k">as</span> pd, numpy <span class="k">as</span> np, json
+<span class="k">from</span> scipy.stats <span class="k">import</span> chi2_contingency
+<span class="k">from</span> sklearn.feature_extraction.text <span class="k">import</span> TfidfVectorizer
+<span class="k">from</span> sklearn.cluster <span class="k">import</span> KMeans
+<span class="k">from</span> sklearn.metrics.pairwise <span class="k">import</span> cosine_similarity
+
+d = pd.DataFrame(json.load(open(<span class="s">'SIF_신버전_확장열_3459건.json'</span>, encoding=<span class="s">'utf-8'</span>)))
+N = len(d)      <span class="c"># 3459</span></pre>
+<p>기존열구조(15열)가 아니라 확장열을 입력으로 쓰는 이유는 T6의 최근5년건수에 <code>발생연도</code>가, T4 정보충실도에 <code>추락고_m</code>·<code>감소대책_항목수</code>가 필요하기 때문입니다.</p>
+
+<div class="step"><span class="n">T1</span><h2>기인물프로파일 — 기인물 × 재해형태 분포</h2></div>
+<p>교차표를 만든 뒤 세로로 풀어 <b>기인물 한 종 × 재해형태 한 종 = 한 행</b>이 되게 합니다. 시스템에서 <code>WHERE 기인물 = ?</code>로 조회하면 그 기인물의 재해형태 분포가 그대로 나옵니다.</p>
+<pre>ct = pd.crosstab(d[<span class="s">'기인물'</span>], d[<span class="s">'재해형태'</span>])
+meta = d.drop_duplicates(<span class="s">'기인물'</span>).set_index(<span class="s">'기인물'</span>)[[<span class="s">'기인물분류'</span>,<span class="s">'12대기인물'</span>]]
+rows = []
+<span class="k">for</span> k <span class="k">in</span> ct.index:
+    r = ct.loc[k]; n = int(r.sum()); top = r.idxmax(); tp = r.max() / n
+    유형 = <span class="s">'단일형'</span> <span class="k">if</span> tp &gt;= .8 <span class="k">else</span> (<span class="s">'혼합형'</span> <span class="k">if</span> tp &gt;= .5 <span class="k">else</span> <span class="s">'분산형'</span>)
+    <span class="k">for</span> f, c <span class="k">in</span> r[r &gt; 0].sort_values(ascending=<span class="k">False</span>).items():
+        rows.append([k, meta.loc[k,<span class="s">'기인물분류'</span>], bool(meta.loc[k,<span class="s">'12대기인물'</span>]),
+                     n, 유형, top, round(tp*100,1), f, int(c), round(c/n*100,1)])
+T1 = pd.DataFrame(rows, columns=[<span class="s">'기인물','기인물분류','12대기인물','기인물건수','프로파일유형',
+                                 '1위재해형태','1위비율','재해형태','건수','비율'</span>])</pre>
+<table><tr><th>프로파일유형</th><th>기준</th><th class="n">기인물 수</th><th>예</th></tr>
+<tr><td>단일형</td><td>1위 재해형태 80% 이상</td><td class="n">20</td><td>비계 · 사다리 · 지붕 · 슬라브단부</td></tr>
+<tr><td>혼합형</td><td>50~80%</td><td class="n">14</td><td>고소작업대(차) · 철골자재</td></tr>
+<tr><td>분산형</td><td>50% 미만</td><td class="n">23</td><td>굴착기 · 트럭류 · 이동식크레인 · 거푸집</td></tr></table>
+<div class="check"><b>확인</b> — 242행. 기인물 57종 × 실제 발생한 재해형태 조합만 들어 있습니다(0건 조합은 제외). 기인물별 비율 합은 100입니다.</div>
+
+<div class="step"><span class="n">T2</span><h2>공종기인물후보 — 공종별 기인물 순위</h2></div>
+<p>공종마다 기인물을 건수 순으로 세우고 누적비율을 붙입니다. 시스템에서 공종만 알 때 <code>누적비율 &lt;= 80</code>으로 끊으면 그 공종의 주요 기인물 후보가 나옵니다.</p>
+<pre>rows = []
+<span class="k">for</span> (code, name), sub <span class="k">in</span> d.groupby([<span class="s">'공종코드'</span>, <span class="s">'공종'</span>]):
+    vc = sub[<span class="s">'기인물'</span>].value_counts(); cum = 0
+    <span class="k">for</span> k, (kk, c) <span class="k">in</span> enumerate(vc.items(), 1):
+        p = c / len(sub) * 100; cum += p
+        rows.append([code, name, len(sub), k, kk, int(c), round(p,1), round(cum,1)])
+T2 = pd.DataFrame(rows, columns=[<span class="s">'공종코드','공종','공종건수','순위','기인물','건수','공종내비율','누적비율'</span>])</pre>
+<table><tr><th>공종</th><th class="n">건수</th><th>1위</th><th>2위</th><th>3위</th></tr>
+<tr><td>조경공사</td><td class="n">60</td><td>수목 33.3%</td><td>굴착기(백호우) 13.3%</td><td>암석 8.3%</td></tr></table>
+<div class="check"><b>확인</b> — 347행. 누적 80%에 도달하는 데 필요한 기인물 수는 공종당 중앙값 11종입니다.</div>
+
+<div class="step"><span class="n">T3</span><h2>고위험조합 — 등급과 표준화잔차</h2></div>
+<p>공종×기인물×재해형태 3항 조합의 빈도를 세고 두 가지 지표를 붙입니다.</p>
+<h3>등급 — 누적비율로</h3>
+<pre>c = d.groupby([<span class="s">'공종코드','공종','기인물','재해형태'</span>]).size().sort_values(ascending=<span class="k">False</span>).reset_index()
+c.columns = [<span class="s">'공종코드','공종','기인물','재해형태','건수'</span>]
+c[<span class="s">'비율'</span>] = (c[<span class="s">'건수'</span>] / N * 100).round(2)
+c[<span class="s">'누적비율'</span>] = c[<span class="s">'비율'</span>].cumsum().round(1)
+c[<span class="s">'등급'</span>] = np.where(c[<span class="s">'누적비율'</span>] &lt;= 50, <span class="s">'A'</span>, np.where(c[<span class="s">'누적비율'</span>] &lt;= 80, <span class="s">'B'</span>, <span class="s">'C'</span>))</pre>
+<h3>표준화잔차 — 공종 크기를 감안한 특이성</h3>
+<p>빈도만 보면 큰 공종이 항상 위에 옵니다. 공종×기인물 교차표에서 카이제곱 기대빈도를 구하고, 관측이 기대보다 얼마나 큰지를 표준화잔차로 봅니다. 3 이상이면 통계적으로 유의하게 과다한 조합입니다.</p>
+<pre>ctg = pd.crosstab(d[<span class="s">'공종'</span>], d[<span class="s">'기인물'</span>])
+chi2, p, dof, exp = chi2_contingency(ctg)
+res = pd.DataFrame((ctg - exp) / np.sqrt(exp), index=ctg.index, columns=ctg.columns)
+c[<span class="s">'공종기인물_표준화잔차'</span>] = [round(res.loc[a, b], 1) <span class="k">for</span> a, b <span class="k">in</span> zip(c[<span class="s">'공종'</span>], c[<span class="s">'기인물'</span>])]
+c[<span class="s">'특이조합'</span>] = c[<span class="s">'공종기인물_표준화잔차'</span>] &gt;= 3</pre>
+<table><tr><th>순위</th><th>공종</th><th>기인물</th><th>재해형태</th><th class="n">건수</th><th>등급</th><th class="n">잔차</th></tr>
+<tr><td>1</td><td>철골공사</td><td>철골구조물</td><td>떨어짐</td><td class="n">129</td><td>A</td><td class="n">39.7</td></tr>
+<tr><td>2</td><td>마감공사</td><td>지붕(처마,홈통)</td><td>떨어짐</td><td class="n">97</td><td>A</td><td class="n">10.2</td></tr>
+<tr><td>3</td><td>마감공사</td><td>달비계</td><td>떨어짐</td><td class="n">88</td><td>A</td><td class="n">13.2</td></tr></table>
+<div class="check"><b>확인</b> — 672행. A 44 · B 152 · C 476. 특이조합 223. χ²(672)=11,651, Cramer's V=.53.</div>
+
+<div class="step"><span class="n">T4</span><h2>대표사례 — 칸별 군집과 medoid</h2></div>
+<p>기인물×재해형태 한 칸에 사례가 100건 넘게 몰리는 경우가 있어, 그대로 보여주면 쓸 수 없습니다. 칸 안에서 <code>재해유발요인</code> 문장을 군집화해 <b>상황이 다른 하위 유형</b>을 나누고, 각 유형에서 가장 전형적인 1건(medoid)을 대표로 뽑습니다.</p>
+<table><tr><th>칸 크기</th><th>군집 수</th><th class="n">해당 칸</th></tr>
+<tr><td>100건 이상</td><td>5</td><td class="n">8</td></tr><tr><td>30~99건</td><td>3</td><td class="n">18</td></tr><tr><td>30건 미만</td><td>1 (군집 없이 medoid)</td><td class="n">216</td></tr></table>
+<pre>vec = TfidfVectorizer(analyzer=<span class="s">'char_wb'</span>, ngram_range=(2,4), min_df=1)
+rows, memb = [], []
+<span class="k">for</span> (k, f), cell <span class="k">in</span> d.groupby([<span class="s">'기인물'</span>, <span class="s">'재해형태'</span>]):
+    cell = cell.reset_index(drop=<span class="k">True</span>); n = len(cell)
+    X = vec.fit_transform(cell[<span class="s">'재해유발요인'</span>]); S = cosine_similarity(X)
+    kk = 5 <span class="k">if</span> n &gt;= 100 <span class="k">else</span> (3 <span class="k">if</span> n &gt;= 30 <span class="k">else</span> 1)
+    labels = KMeans(n_clusters=kk, n_init=10, random_state=0).fit(X).labels_ <span class="k">if</span> kk &gt; 1 <span class="k">else</span> np.zeros(n, dtype=int)
+    <span class="k">for</span> g <span class="k">in</span> range(kk):
+        idx = np.where(labels == g)[0]
+        typ = S[np.ix_(idx, idx)].mean(axis=1)          <span class="c"># 군집 내 평균 유사도 = 전형성</span>
+        m = idx[typ.argmax()]                            <span class="c"># medoid</span>
+        rows.append([k, f, n, g, len(idx), int(cell.loc[m,<span class="s">'id'</span>]), cell.loc[m,<span class="s">'재해유발요인'</span>], round(float(typ.max()),3)])
+        <span class="k">for</span> i <span class="k">in</span> idx: memb.append([int(cell.loc[i,<span class="s">'id'</span>]), k, f, g, i == m])
+T4  = pd.DataFrame(rows, columns=[<span class="s">'기인물','재해형태','칸건수','하위유형번호','하위유형건수','대표사례id','대표사례_재해유발요인','전형성'</span>])
+T4[<span class="s">'하위유형명'</span>] = <span class="s">''</span>          <span class="c"># 사람이 붙임</span>
+T4m = pd.DataFrame(memb, columns=[<span class="s">'id','기인물','재해형태','하위유형번호','대표사례여부'</span>])</pre>
+<p>글자 2~4그램 TF-IDF를 쓰는 이유는 형태소 분석기 없이도 한국어 유사도가 잘 잡히고, 환경 의존성이 없어서입니다. <code>random_state=0</code>이라 다시 돌려도 같은 군집이 나옵니다.</p>
+<div class="hold"><b>사람이 할 일</b> — <code>하위유형명</code>은 비어 있습니다. 군집이 실제로 다른 상황인지는 대표사례 문장을 읽고 판단해 이름을 붙이셔야 합니다. 예: 비계×떨어짐의 5개 군집은 "이동 중 · 개구부 · 단부 · 수평재 위 · 안전대 미착용"으로 갈립니다.</div>
+<div class="check"><b>확인</b> — T4 310행(칸 242개), T4m 3,459행. 모든 사례가 정확히 한 하위유형에 속하고, 하위유형마다 대표사례가 1건씩입니다.</div>
+
+<div class="step"><span class="n">T5</span><h2>감소대책항목 — 문장 단위 분해</h2></div>
+<p>원본 감소대책은 한 셀에 <code>▶</code>로 구분된 여러 항목이 들어 있습니다. 한 항목 = 한 행으로 풀고, 같은 문장이 전체에서 몇 번 나오는지 붙입니다.</p>
+<pre>rows = []
+<span class="k">for</span> _, x <span class="k">in</span> d.iterrows():
+    items = [s.replace(<span class="s">'▶'</span>, <span class="s">''</span>).strip() <span class="k">for</span> s <span class="k">in</span> x[<span class="s">'위험성감소대책'</span>].split(<span class="s">'\n'</span>) <span class="k">if</span> s.strip()]
+    <span class="k">for</span> j, s <span class="k">in</span> enumerate(items, 1):
+        rows.append([int(x[<span class="s">'id'</span>]), j, s])
+T5 = pd.DataFrame(rows, columns=[<span class="s">'id','항목순번','감소대책문장'</span>])
+T5[<span class="s">'문장출현건수'</span>] = T5[<span class="s">'감소대책문장'</span>].map(T5[<span class="s">'감소대책문장'</span>].value_counts())</pre>
+<div class="check"><b>확인</b> — 10,578행. 고유 문장 3,149개이고 그중 2,335개는 한 번만 나옵니다. 표준화 전 단계입니다.</div>
+
+<div class="step"><span class="n">T6</span><h2>기인물마스터 — 드롭다운용</h2></div>
+<p>기인물 57종을 사망건수 내림차순으로 세우고, 선택 화면에 필요한 보조 정보를 붙입니다.</p>
+<pre>g = d.groupby(<span class="s">'기인물'</span>); ct = pd.crosstab(d[<span class="s">'기인물'</span>], d[<span class="s">'재해형태'</span>])
+T6 = pd.DataFrame({
+    <span class="s">'사망건수'</span>: g.size(),
+    <span class="s">'기인물분류'</span>: g[<span class="s">'기인물분류'</span>].first(),
+    <span class="s">'12대기인물'</span>: g[<span class="s">'12대기인물'</span>].first().astype(bool),
+    <span class="s">'위험도순위'</span>: g[<span class="s">'위험도순위'</span>].first(),
+    <span class="s">'1위재해형태'</span>: ct.idxmax(axis=1),
+    <span class="s">'1위비율'</span>: (ct.max(axis=1) / ct.sum(axis=1) * 100).round(1),
+    <span class="s">'주요공종'</span>: g[<span class="s">'공종'</span>].agg(<span class="k">lambda</span> s: s.value_counts().index[0].split(<span class="s">'. '</span>,1)[-1]),
+    <span class="s">'최근5년건수'</span>: d[d[<span class="s">'발생연도'</span>] &gt;= 2019].groupby(<span class="s">'기인물'</span>).size(),
+}).fillna({<span class="s">'최근5년건수'</span>: 0})
+T6 = T6.sort_values([<span class="s">'사망건수'</span>, <span class="s">'최근5년건수'</span>], ascending=<span class="k">False</span>).reset_index()
+T6.insert(0, <span class="s">'순위'</span>, range(1, len(T6)+1))
+T6[<span class="s">'표시명'</span>] = T6.apply(<span class="k">lambda</span> r: f<span class="s">"{r['기인물']} ({r['사망건수']}건{' ·12대' if r['12대기인물'] else ''})"</span>, axis=1)</pre>
+<div class="check"><b>확인</b> — 57행. <code>표시명</code>이 드롭다운 라벨, <code>기인물</code>이 다른 테이블과의 조인 키입니다.</div>
+
+<h2>저장</h2>
+<pre><span class="k">for</span> name, df <span class="k">in</span> [(<span class="s">'T1_기인물프로파일'</span>, T1), (<span class="s">'T2_공종기인물후보'</span>, T2), (<span class="s">'T3_고위험조합'</span>, T3),
+                 (<span class="s">'T4_대표사례'</span>, T4), (<span class="s">'T4m_사례하위유형매핑'</span>, T4m), (<span class="s">'T5_감소대책항목'</span>, T5), (<span class="s">'T6_기인물마스터_사망순'</span>, T6)]:
+    df.to_csv(f<span class="s">'{name}.csv'</span>, index=<span class="k">False</span>, encoding=<span class="s">'utf-8-sig'</span>)
+    json.dump(json.loads(df.to_json(orient=<span class="s">'records'</span>, force_ascii=<span class="k">False</span>)),
+              open(f<span class="s">'{name}.json'</span>, <span class="s">'w'</span>, encoding=<span class="s">'utf-8'</span>), ensure_ascii=<span class="k">False</span>, indent=1)</pre>
+<p>xlsx 한 권에는 스키마 시트와 7개 테이블 시트가 들어 있고, csv·json은 테이블당 하나씩입니다.</p>
+
+<h2>키 관계</h2>
+<table><tr><th>테이블</th><th>키</th><th>연결</th></tr>
+<tr><td>T0 사례마스터</td><td>id</td><td>모든 테이블의 원본</td></tr>
+<tr><td>T6 기인물마스터</td><td>기인물</td><td>T1 · T2 · T3 · T4의 기인물과 조인</td></tr>
+<tr><td>T1 기인물프로파일</td><td>기인물 + 재해형태</td><td>T4의 칸과 동일 키</td></tr>
+<tr><td>T4 대표사례</td><td>기인물 + 재해형태 + 하위유형번호</td><td>대표사례id → T0.id</td></tr>
+<tr><td>T4m 매핑</td><td>id</td><td>T0.id ↔ T4 하위유형</td></tr>
+<tr><td>T5 감소대책항목</td><td>id + 항목순번</td><td>T0.id</td></tr>
+<tr><td>T2 · T3</td><td>공종코드 (+기인물 +재해형태)</td><td>T0.공종코드</td></tr></table>
+
+<h2>재생성</h2>
+<p>사례 마스터가 갱신되면(다음 공단 배포판) 확장열 파일만 바꾸고 <code>build_tables.py</code>를 다시 실행합니다. T4의 <code>하위유형명</code>은 사람이 붙인 값이라 재생성 시 초기화되므로, 이름표는 별도 파일로 보관하고 (기인물, 재해형태, 대표사례id) 기준으로 다시 붙이는 것이 안전합니다.</p>
+
+<footer>입력: SIF_신버전_확장열_3459건.json · 코드: build_tables.py · 산출: SIF_시스템탑재_테이블_20260908.xlsx, SIF_시스템탑재_테이블_csv_json.zip</footer>
+</div></body></html>

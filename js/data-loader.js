@@ -33,16 +33,7 @@ const DataLoader = {
   },
 
   async loadDB() {
-    const data = await this.loadJSON(this._basePath('/data/db.json'));
-    // EN 모드: 서술 3개 컬럼(재해개요/유발요인/감소대책)을 영어로 오버레이
-    if (typeof I18n !== 'undefined' && I18n.isEn && !this._dbOverlaid) {
-      try {
-        await I18n.init();
-        I18n.overlayDb(data);
-        this._dbOverlaid = true;
-      } catch (e) { /* 무시 */ }
-    }
-    return data;
+    return this.loadJSON(this._basePath('/data/db.json'));
   },
 
   async loadDropdownRef() {

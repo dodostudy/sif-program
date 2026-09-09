@@ -323,7 +323,8 @@
 
     function renderByConstructionChart(data) {
       const agg = aggregateBy(data, '공종');
-      const sorted = topN(agg, 'count', 12);
+      // 공종은 고정 차원(현재 13개) — 개수를 박아두면 신규 공종이 조용히 잘린다
+      const sorted = topN(agg, 'count', agg.length);
 
       cm.create('chart-by-construction', {
         type: 'bar',

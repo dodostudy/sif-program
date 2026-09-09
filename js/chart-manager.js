@@ -70,12 +70,19 @@ const CHART_COLORS = {
     return `rgba(${r},${g},${b},${alpha})`;
   },
 
+  /**
+   * heat 색 (저위험 → 고위험 빨강).
+   * 저위험 끝은 테마 표면색으로 맞춘다 — 라이트=흰색→빨강 / 다크=어두운 표면→빨강.
+   * 고정 색을 쓰면 라이트 테마에서 빈 칸·저빈도 칸이 회색 블록으로 보인다.
+   */
   heatmapColor(value, min, max) {
-    if (value === 0) return 'rgba(55, 65, 81, 0.3)';
+    if (!value) return 'transparent';
+    const isLight = typeof getCurrentTheme === 'function' && getCurrentTheme() === 'light';
+    const [br, bg_, bb] = isLight ? [255, 255, 255] : [55, 65, 81];
     const ratio = Math.min((value - min) / (max - min || 1), 1);
-    const r = Math.round(239 * ratio + 55 * (1 - ratio));
-    const g = Math.round(68 * ratio + 65 * (1 - ratio));
-    const b = Math.round(68 * ratio + 81 * (1 - ratio));
+    const r = Math.round(239 * ratio + br * (1 - ratio));
+    const g = Math.round(68 * ratio + bg_ * (1 - ratio));
+    const b = Math.round(68 * ratio + bb * (1 - ratio));
     return `rgba(${r},${g},${b},${0.3 + ratio * 0.7})`;
   }
 };

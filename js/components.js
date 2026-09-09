@@ -114,7 +114,7 @@ function renderSidebar() {
         ${navHtml}
       </nav>
       <div class="p-4 border-t border-gray-800 space-y-1">
-        <p class="text-xs text-white font-medium">산업재해 고위험요인 (2013년~2021년)</p>
+        <p class="text-xs text-white font-medium">산업재해 고위험요인 (2013년~2023년)</p>
         <p class="text-xs text-white">출처: 한국산업안전보건공단</p>
         <p class="text-xs text-amber-300 font-medium pt-1 border-t border-gray-800">⚠ 상업적 이용 및 내용에 대한 변경 금지</p>
       </div>
@@ -148,9 +148,6 @@ function renderSidebar() {
     mobileBtn.innerHTML = ICONS.menu;
   });
 
-  // 언어 토글 (한국어 / EN) — 테마 버튼 좌측 고정
-  renderLangToggle();
-
   // 테마 토글 버튼 (우측 상단 고정)
   const themeToggle = document.createElement('button');
   themeToggle.id = 'theme-toggle-fixed';
@@ -163,30 +160,6 @@ function renderSidebar() {
 
   // 렌더된 사이드바/토글 정적 텍스트 영어 치환
   if (typeof I18n !== 'undefined') I18n.refresh();
-}
-
-/**
- * 언어 토글: 한국어 / English 세그먼트 버튼 (우측 상단, 테마 버튼 좌측 고정)
- */
-function renderLangToggle() {
-  if (document.getElementById('lang-toggle-fixed')) return;
-  const cur = (typeof I18n !== 'undefined') ? I18n.lang : 'ko';
-  const on = 'bg-blue-600 text-white';
-  const off = 'text-gray-400 hover:text-gray-200';
-  const wrap = document.createElement('div');
-  wrap.id = 'lang-toggle-fixed';
-  wrap.className = 'no-print fixed top-3 right-16 z-50 flex items-center bg-gray-800/90 border border-gray-700 rounded-lg overflow-hidden text-xs font-semibold backdrop-blur-sm';
-  wrap.innerHTML = `
-    <button type="button" data-lang="ko" class="px-2.5 py-2 transition-colors ${cur === 'ko' ? on : off}">한국어</button>
-    <button type="button" data-lang="en" class="px-2.5 py-2 transition-colors ${cur === 'en' ? on : off}">EN</button>
-  `;
-  wrap.querySelectorAll('button').forEach(btn => {
-    btn.addEventListener('click', () => {
-      const lang = btn.getAttribute('data-lang');
-      if (typeof I18n !== 'undefined' && lang !== I18n.lang) I18n.setLang(lang);
-    });
-  });
-  document.body.appendChild(wrap);
 }
 
 function renderPageHeader(title, subtitle = '', options = {}) {
