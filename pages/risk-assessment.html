@@ -939,9 +939,7 @@
             backgroundColor: disasterSorted.map((_, i) => CHART_COLORS.getColor(i)), borderWidth: 0 }] },
         options: { cutout: '50%', plugins: {
           legend: { position: 'right', labels: { boxWidth: 10, font: { size: 10 } } },
-          datalabels: { display: true, color: '#fff', font: { size: 9, weight: 'bold' },
-            formatter: (value, ctx) => { const t = ctx.dataset.data.reduce((a,b)=>a+b,0); const p=(value/t*100).toFixed(1); return p<5?'':`${value}${I18n.isEn ? '' : '건'}\n${p}%`; },
-            textAlign: 'center' } } },
+          datalabels: donutDatalabels({ canvasId: 'chart-risk-disaster' }) } },
         plugins: [ChartDataLabels]
       });
     }

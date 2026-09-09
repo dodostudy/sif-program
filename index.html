@@ -337,18 +337,7 @@
                 }
               }
             },
-            datalabels: {
-              display: true,
-              color: '#fff',
-              font: { size: 10, weight: 'bold' },
-              formatter: (value, ctx) => {
-                const total = ctx.dataset.data.reduce((a, b) => a + b, 0);
-                const pct = (value / total * 100).toFixed(1);
-                if (pct < 5) return '';
-                return `${dl(value)}\n${pct}%`;
-              },
-              textAlign: 'center',
-            }
+            datalabels: donutDatalabels({ canvasId: 'chart-disaster-type', cutout: 0.55 })
           }
         },
         plugins: [ChartDataLabels]
@@ -500,12 +489,7 @@
           cutout: '50%',
           plugins: {
             legend: { position: 'right', labels: { boxWidth: 10, font: { size: 10 } } },
-            datalabels: {
-              display: true,
-              color: '#fff', font: { size: 9, weight: 'bold' },
-              formatter: (value, ctx) => { const t = ctx.dataset.data.reduce((a,b)=>a+b,0); const p=(value/t*100).toFixed(1); return p<5?'':`${dl(value)}\n${p}%`; },
-              textAlign: 'center',
-            }
+            datalabels: donutDatalabels({ canvasId: 'chart-drill-disaster' })
           }
         },
         plugins: [ChartDataLabels]
@@ -524,12 +508,7 @@
           cutout: '50%',
           plugins: {
             legend: { position: 'right', labels: { boxWidth: 10, font: { size: 10 } } },
-            datalabels: {
-              display: true,
-              color: '#fff', font: { size: 9, weight: 'bold' },
-              formatter: (value, ctx) => { const t = ctx.dataset.data.reduce((a,b)=>a+b,0); const p=(value/t*100).toFixed(1); return p<5?'':`${dl(value)}\n${p}%`; },
-              textAlign: 'center',
-            }
+            datalabels: donutDatalabels({ canvasId: 'chart-drill-cause' })
           }
         },
         plugins: [ChartDataLabels]

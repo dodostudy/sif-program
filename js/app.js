@@ -83,6 +83,101 @@ function barDatalabels(total) {
   };
 }
 
+/**
+ * 도넛 조각 라벨.
+ *
+ * 조각이 얇은데 "324건 / 9.4%" 2줄을 그대로 찍으면 라벨이 조각 폭을 넘어 이웃
+ * 조각 위로 올라가 글자끼리 겹친다(부딪힘 접촉 5.1% · 무너짐 5.2% 구간에서 실측).
+ * 비율 임계값만으로는 차트 크기에 따라 결과가 달라지므로, 그 조각이 라벨을 실제로
+ * 담을 수 있는지를 **호 길이**로 판단해 단계적으로 줄인다.
+ *   넉넉하면 건수+비율 2줄 → 좁으면 비율 1줄 → 아주 좁으면 생략(툴팁으로 확인)
+ */
+function donutDatalabels(opts = {}) {
+  const { totalOverride = null, canvasId = null, cutout = 0.5,
+          minTwoLine = 46, minOneLine = 30 } = opts;
+
+  // 조각의 호 길이를 알려면 반지름이 필요한데, 라벨 문구는 차트가 그려지기 "전"에
+  // 한 번 정해진다(그 시점엔 원호 반지름이 아직 0이라 조각 크기를 못 읽는다).
+  // 캔버스 컨테이너는 높이가 고정돼 있으므로 여기서 미리 재 둔다 — 실측과 일치한다.
+  // 캔버스 자체는 Chart.js가 크기를 잡기 전이라 기본값(150px)이므로, 높이가 지정된
+  // 부모 컨테이너를 먼저 본다.
+  let midRadius = null;
+  if (canvasId) {
+    const el = document.getElementById(canvasId);
+    const h = el
+      ? Math.max(
+          el.parentElement ? el.parentElement.getBoundingClientRect().height : 0,
+          el.getBoundingClientRect().height)
+      : 0;
+    if (h > 0) {
+      const outer = h / 2;
+      midRadius = (outer + outer * cutout) / 2;
+    }
+  }
+
+  return {
+    display: true,
+    color: '#fff',
+    font: { size: 10, weight: 'bold' },
+    textAlign: 'center',
+    // Chart.js는 함수형 옵션을 scriptable로 보고, 레이아웃 전에 불완전한 컨텍스트로
+    // 한 번 호출한다. 거기서 예외가 나면 라벨이 통째로 안 그려지므로 전부 방어한다.
+    formatter: (value, ctx) => {
+      if (!value) return '';
+      const di = (ctx && ctx.datasetIndex) || 0;
+      const ds = (ctx && ctx.dataset)
+        || (ctx && ctx.chart && ctx.chart.data && ctx.chart.data.datasets
+            ? ctx.chart.data.datasets[di] : null);
+      const total = totalOverride != null
+        ? totalOverride
+        : (ds && Array.isArray(ds.data) ? ds.data.reduce((a, b) => a + (+b || 0), 0) : 0);
+      if (!total) return '';
+      const pct = value / total * 100;
+      const text = pct.toFixed(1);
+
+      // 이 조각이 라벨을 담을 수 있는 폭(px). 반지름을 못 재면 비율로 보수적 판단.
+      if (midRadius == null) return pct < 10 ? '' : `${value}건\n${text}%`;
+      const room = 2 * Math.PI * midRadius * (pct / 100);
+      if (room >= minTwoLine) return `${value}건\n${text}%`;
+      if (room >= minOneLine) return `${text}%`;
+      return '';
+    },
+  };
+}
+
+/**
+ * 세로 막대 라벨 — 막대 위에 얹는다.
+ * barDatalabels는 가로 막대(indexAxis:'y')용이라 세로에 쓰면 긴 막대의 라벨이
+ * 막대 안쪽으로 뒤집혀 기준선·눈금과 겹친다. 세로 차트는 이 설정과 함께
+ * y축에 여유(suggestedMax)를 줘서 라벨이 항상 위에 들어가게 한다.
+ */
+function verticalBarDatalabels(total) {
+  return {
+    display: true,
+    anchor: 'end',
+    align: 'end',
+    offset: 2,
+    clamp: true,
+    clip: false,
+    color: () => (getCurrentTheme() === 'light' ? '#1F2937' : '#E5E7EB'),
+    textStrokeColor: () => (getCurrentTheme() === 'light' ? 'rgba(255,255,255,0.9)' : 'rgba(17,24,39,0.9)'),
+    textStrokeWidth: 3,
+    font: { size: 10, weight: '600' },
+    formatter: (value) => {
+      if (!value) return '';
+      const cnt = (typeof I18n !== 'undefined') ? I18n.cases(value) : `${value}건`;
+      const pct = total ? (value / total * 100) : 0;
+      return pct < 2 ? cnt : `${cnt} (${pct.toFixed(1)}%)`;
+    },
+  };
+}
+
+/** 막대 라벨이 잘리지 않도록 y축 상한에 여유를 준다 */
+function headroom(values, ratio = 1.18) {
+  const max = values.reduce((m, v) => Math.max(m, +v || 0), 0);
+  return max ? Math.ceil(max * ratio) : undefined;
+}
+
 function updateThemeToggleUI() {
   const isLight = getCurrentTheme() === 'light';
   if (typeof THEME_ICONS !== 'undefined') {

@@ -395,10 +395,11 @@
           onClick: (e, els) => { if (els.length) selectBand(rows[els[0].index].key); },
           plugins: {
             legend: { display: false },
-            datalabels: barDatalabels(denom),
+            // 세로 막대는 라벨을 막대 위에 얹고, y축에 여유를 줘서 잘리지 않게 한다
+            datalabels: verticalBarDatalabels(denom),
             tooltip: { callbacks: { label: c => `${I18n.cases(c.parsed.y)} (${formatPercent(c.parsed.y, denom)})` } },
           },
-          scales: { y: { beginAtZero: true } },
+          scales: { y: { beginAtZero: true, suggestedMax: headroom(rows.map(b => b.count)) } },
         },
       });
     }
