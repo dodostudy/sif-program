@@ -1,0 +1,558 @@
+<!DOCTYPE html>
+<html lang="ko" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SIF 건설재해 위험성평가 - 추락높이 분석</title>
+  <script>if(localStorage.getItem('sif-theme')==='light'){document.documentElement.classList.replace('dark','light')}</script>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"></script>
+  <link rel="stylesheet" href="../css/style.css">
+  <style>
+    /* 높이 구간 세그먼트 토글 */
+    .band-bar {
+      display: flex; flex-wrap: wrap; gap: 0.5rem;
+    }
+    .band-btn {
+      display: flex; flex-direction: column; align-items: flex-start; gap: 0.125rem;
+      padding: 0.5rem 0.875rem; min-width: 96px;
+      background: #1F2937; border: 1px solid #374151; border-radius: 0.5rem;
+      cursor: pointer; transition: all .15s; text-align: left;
+    }
+    .band-btn:hover { border-color: #6B7280; }
+    .band-btn .band-name { font-size: 0.75rem; color: #9CA3AF; font-weight: 600; }
+    .band-btn .band-count { font-size: 1.0625rem; color: #E5E7EB; font-weight: 700; line-height: 1.1; }
+    .band-btn .band-pct { font-size: 0.6875rem; color: #6B7280; }
+    .band-btn.active { background: #1E3A8A; border-color: #3B82F6; }
+    .band-btn.active .band-name { color: #93C5FD; }
+    .band-btn.active .band-count { color: #FFFFFF; }
+    .band-btn.active .band-pct { color: #BFDBFE; }
+    .band-btn.unknown { border-style: dashed; }
+    .band-btn:disabled { opacity: .4; cursor: default; }
+
+    html.light .band-btn { background: #F3F4F6; border-color: #D1D5DB; }
+    html.light .band-btn .band-name { color: #4B5563; }
+    html.light .band-btn .band-count { color: #111827; }
+    html.light .band-btn.active { background: #DBEAFE; border-color: #3B82F6; }
+    html.light .band-btn.active .band-name { color: #1D4ED8; }
+    html.light .band-btn.active .band-count { color: #1E3A8A; }
+    html.light .band-btn.active .band-pct { color: #2563EB; }
+
+    /* 자동 인사이트 */
+    .insight-box {
+      background: rgba(30, 58, 138, .18); border: 1px solid #1E40AF;
+      border-radius: .5rem; padding: .75rem 1rem;
+    }
+    .insight-box li { font-size: .8125rem; color: #BFDBFE; line-height: 1.7; }
+    html.light .insight-box { background: #EFF6FF; border-color: #BFDBFE; }
+    html.light .insight-box li { color: #1E40AF; }
+
+    /* 기인물 × 높이구간 히트맵 */
+    #cause-height-heatmap table { width: 100%; border-collapse: collapse; }
+    #cause-height-heatmap th, #cause-height-heatmap td {
+      padding: .375rem .5rem; font-size: .75rem; text-align: center; white-space: nowrap;
+    }
+    #cause-height-heatmap td.row-label { text-align: left; color: #9CA3AF; }
+    #cause-height-heatmap th { color: #9CA3AF; font-weight: 500; }
+    html.light #cause-height-heatmap td.row-label,
+    html.light #cause-height-heatmap th { color: #4B5563; }
+
+    @media (max-width: 767px) {
+      .filter-bar { flex-direction: column; gap: .5rem; }
+      .filter-row { flex-direction: column; gap: .5rem; }
+      .filter-group { width: 100%; }
+      .filter-group select, .ms-dropdown { width: 100%; min-width: 0; }
+      .band-bar { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .band-btn { min-width: 0; width: 100%; }
+      #btn-reset { width: 100%; }
+    }
+  </style>
+</head>
+<body class="bg-gray-950 text-gray-100 min-h-screen">
+  <div id="sidebar"></div>
+
+  <main id="content" class="p-4 lg:p-6">
+    <div id="page-header"></div>
+
+    <!-- 필터 바 -->
+    <div class="filter-bar mb-4" style="flex-direction:column; align-items:stretch;">
+      <div class="filter-row" style="display:flex; flex-wrap:wrap; gap:.5rem; align-items:flex-end;">
+        <div class="filter-group" id="koen-toggle-wrap"></div>
+        <div class="filter-group">
+          <label>공종</label>
+          <div id="ms-gz"></div>
+        </div>
+        <div class="filter-group">
+          <label>기인물</label>
+          <div id="ms-cause"></div>
+        </div>
+        <div class="filter-group">
+          <label>작업명</label>
+          <div id="ms-work"></div>
+        </div>
+        <button id="btn-reset" class="px-4 py-2 bg-gray-700 hover:bg-gray-600 text-sm rounded-lg transition-colors" style="margin-left:auto;">초기화</button>
+      </div>
+    </div>
+    <div id="keyword-search-wrap" class="mb-4"></div>
+
+    <!-- 높이 구간 토글 -->
+    <div class="chart-container mb-4">
+      <div class="flex items-center justify-between mb-3 flex-wrap gap-2">
+        <h3 class="text-sm font-semibold text-gray-300">추락 높이 구간</h3>
+        <label class="flex items-center gap-2 text-xs text-gray-400 cursor-pointer no-print">
+          <input type="checkbox" id="chk-exclude-unknown" checked class="accent-blue-600">
+          높이 미상 제외하고 비율 계산
+        </label>
+      </div>
+      <div class="band-bar" id="band-bar"></div>
+      <p class="text-xs text-gray-500 mt-3" id="band-note"></p>
+    </div>
+
+    <!-- 요약 카드 -->
+    <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-4" id="summary-cards"></div>
+
+    <!-- 자동 인사이트 -->
+    <div class="insight-box mb-4" id="insight-box"></div>
+
+    <!-- 구간 분포 + 히스토그램 -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-4">
+      <div class="chart-container">
+        <h3 class="text-sm font-semibold text-gray-300 mb-3">높이 구간별 사망·중상 건수</h3>
+        <div style="height:320px"><canvas id="chart-bands"></canvas></div>
+      </div>
+      <div class="chart-container">
+        <div class="flex items-center justify-between mb-3">
+          <h3 class="text-sm font-semibold text-gray-300">추락 높이 분포</h3>
+          <span class="text-xs text-gray-500">1m 단위 · 주황 = 2m 미만 · 빨간 선 = 2m 기준</span>
+        </div>
+        <div style="height:320px"><canvas id="chart-hist"></canvas></div>
+      </div>
+    </div>
+
+    <!-- 기인물 × 높이구간 히트맵 -->
+    <div class="chart-container mb-4">
+      <div class="flex items-center justify-between mb-3 flex-wrap gap-2">
+        <h3 class="text-sm font-semibold text-gray-300">기인물 × 높이구간 <span class="text-gray-500 font-normal" id="heatmap-sub"></span></h3>
+        <span class="text-xs text-gray-500">행 안에서 색이 진할수록 그 기인물이 몰린 높이대</span>
+      </div>
+      <div id="cause-height-heatmap" class="overflow-x-auto"></div>
+    </div>
+
+    <!-- 선택 구간 상세 -->
+    <div class="grid grid-cols-1 xl:grid-cols-3 gap-4 mb-4">
+      <div class="chart-container">
+        <h3 class="text-sm font-semibold text-gray-300 mb-3" id="title-cause">기인물별 건수</h3>
+        <div style="height:360px"><canvas id="chart-cause"></canvas></div>
+      </div>
+      <div class="chart-container">
+        <h3 class="text-sm font-semibold text-gray-300 mb-3" id="title-gz">공종별 건수</h3>
+        <div style="height:360px"><canvas id="chart-gz"></canvas></div>
+      </div>
+      <div class="chart-container">
+        <h3 class="text-sm font-semibold text-gray-300 mb-3" id="title-work">작업명별 건수</h3>
+        <div style="height:360px"><canvas id="chart-work"></canvas></div>
+      </div>
+    </div>
+
+    <!-- 사례 테이블 -->
+    <div class="chart-container">
+      <h3 class="text-sm font-semibold text-gray-300 mb-3" id="title-table">추락 재해사례 및 감소대책</h3>
+      <div id="data-table"></div>
+    </div>
+  </main>
+
+  <script src="../js/i18n.js"></script>
+  <script src="../js/data-loader.js"></script>
+  <script src="../js/filter-manager.js"></script>
+  <script src="../js/chart-manager.js"></script>
+  <script src="../js/utils.js"></script>
+  <script src="../js/analytics.js"></script>
+  <script src="../js/multi-select.js"></script>
+  <script src="../js/components.js"></script>
+  <script src="../js/app.js"></script>
+
+  <script>
+    const cm = new ChartManager();
+    const fm = new FilterManager(['koen', '공종', '작업명', '기인물', 'keyword']);
+    fm.setDownstream('공종', ['작업명', '기인물']);
+
+    let allData = [];
+    let selectedBand = '전체';      // 높이 구간 토글 상태
+    let excludeUnknown = true;      // 비율 분모에서 '높이 미상' 제외
+    let keywordInput = null;
+    let resetKoenToggle = null;
+
+    const msGz = new MultiSelect({ containerId: 'ms-gz', placeholder: '전체 공종', showCounts: true,
+      onChange: v => fm.set('공종', v) });
+    const msCause = new MultiSelect({ containerId: 'ms-cause', placeholder: '전체 기인물', showCounts: true,
+      onChange: v => fm.set('기인물', v) });
+    const msWork = new MultiSelect({ containerId: 'ms-work', placeholder: '전체 작업명', showCounts: true,
+      onChange: v => fm.set('작업명', v) });
+
+    async function init() {
+      renderPageHeader('추락높이 분석',
+        '떨어짐 사고를 추락 높이대로 나눠 조회 — 높이별 기인물·공종·작업 분포');
+      allData = await DataLoader.loadDB();
+
+      resetKoenToggle = createKoenToggle('koen-toggle-wrap', v => fm.set('koen', v));
+      keywordInput = createKeywordSearch('keyword-search-wrap', v => fm.set('keyword', v));
+
+      document.getElementById('chk-exclude-unknown').addEventListener('change', e => {
+        excludeUnknown = e.target.checked;
+        renderAll();
+      });
+      document.getElementById('btn-reset').addEventListener('click', resetAll);
+
+      fm.onDataChange(() => { refreshDropdowns(); renderAll(); });
+
+      refreshDropdowns();
+      applyDeepLinkParams();
+      renderAll();
+    }
+
+    /** 재해형태분석·위험지도에서 넘어오는 딥링크 (?band=&기인물=&공종=) */
+    function applyDeepLinkParams() {
+      const q = new URLSearchParams(location.search);
+      const band = q.get('band');
+      if (band && [...HEIGHT_BANDS.map(b => b.key), HEIGHT_UNKNOWN, '전체'].includes(band)) selectedBand = band;
+      const c = q.get('기인물'); if (c) msCause.setValues([c]);
+      const g = q.get('공종'); if (g) msGz.setValues([g]);
+    }
+
+    function resetAll() {
+      selectedBand = '전체';
+      msGz.setValues([]); msCause.setValues([]); msWork.setValues([]);
+      if (keywordInput) keywordInput.value = '';
+      if (resetKoenToggle) resetKoenToggle();
+      fm.reset();          // → onDataChange 가 드롭다운·화면을 다시 그린다
+    }
+
+    /* ── 데이터 파이프라인 ──
+       filterDB(스코프) → 떨어짐만 → 선택 구간 */
+    function scopeData() {
+      return filterDB(allData, fm.getAll());
+    }
+    function fallData() {
+      return scopeData().filter(r => r['재해형태'] === '떨어짐');
+    }
+    function bandData() {
+      return filterByBand(fallData(), selectedBand);
+    }
+
+    /** 상위 필터가 걸린 상태에서 각 드롭다운 옵션을 건수 내림차순으로 채운다 */
+    function refreshDropdowns() {
+      const f = fm.getAll();
+      const optsFor = (key) => {
+        const partial = { ...f };
+        delete partial[key];
+        const base = filterDB(allData, partial).filter(r => r['재해형태'] === '떨어짐');
+        const agg = aggregateBy(base, key);
+        return topN(agg, 'count', agg.length).map(a => ({ value: a.key, label: a.key, count: a.count }));
+      };
+      msGz.setOptions(optsFor('공종'));
+      msCause.setOptions(optsFor('기인물'));
+      msWork.setOptions(optsFor('작업명'));
+    }
+
+    function renderAll() {
+      const fall = fallData();
+      const stats = fallHeightStats(scopeData());
+      renderBandBar(stats);
+      renderSummary(stats);
+      renderInsights(stats);
+      renderBandChart(stats);
+      renderHistogram(fall);
+      renderHeatmap(fall);
+
+      const data = bandData();
+      const label = selectedBand === '전체' ? '' : ` — ${selectedBand}`;
+      renderBarChart('chart-cause', 'title-cause', '기인물', data, label);
+      renderBarChart('chart-gz', 'title-gz', '공종', data, label);
+      renderBarChart('chart-work', 'title-work', '작업명', data, label);
+      renderTable(data, label);
+    }
+
+    /* ── 높이 구간 토글 ── */
+    function renderBandBar(stats) {
+      const denom = excludeUnknown ? stats.known : stats.total;
+      const items = [
+        { key: '전체', count: stats.total, pct: null },
+        ...stats.bands.map(b => ({ key: b.key, count: b.count, pct: denom ? b.count / denom * 100 : 0 })),
+      ];
+      document.getElementById('band-bar').innerHTML = items.map(it => {
+        const isUnknown = it.key === HEIGHT_UNKNOWN;
+        // 미상은 높이가 확인된 건 기준 비율에 넣을 수 없다
+        const showPct = it.pct != null && !(isUnknown && excludeUnknown);
+        return `<button class="band-btn ${selectedBand === it.key ? 'active' : ''} ${isUnknown ? 'unknown' : ''}"
+                  ${it.count === 0 ? 'disabled' : ''} onclick="selectBand('${it.key}')">
+          <span class="band-name">${it.key}</span>
+          <span class="band-count">${formatNumber(it.count)}</span>
+          <span class="band-pct">${showPct ? it.pct.toFixed(1) + '%' : '&nbsp;'}</span>
+        </button>`;
+      }).join('');
+
+      const base = excludeUnknown ? '높이가 확인된 사례' : '떨어짐 전건';
+      document.getElementById('band-note').innerHTML =
+        `비율 분모: <b class="text-gray-400">${base} ${formatNumber(excludeUnknown ? stats.known : stats.total)}건</b> · ` +
+        `추락 높이는 재해개요 원문에 표기가 있는 경우에만 추출되어 ${formatNumber(stats.unknown)}건은 미상입니다. ` +
+        `떨어짐 이외 사고에 기록된 높이(낙하물·붕괴 등)는 사람이 떨어진 높이가 아니므로 제외했습니다.`;
+    }
+
+    function selectBand(key) {
+      selectedBand = key;
+      renderAll();
+    }
+
+    /* ── 요약 카드 ── */
+    function renderSummary(stats) {
+      const total = allData.filter(r => r['재해형태'] === '떨어짐').length;
+      const under2 = stats.bands.find(b => b.key === '2m 미만').count;
+      const card = (label, value, sub, accent = 'text-white') => `
+        <div class="stat-card">
+          <p class="text-xs text-gray-500 uppercase tracking-wide">${label}</p>
+          <p class="text-2xl font-bold ${accent} mt-2">${value}</p>
+          <p class="text-xs text-gray-500 mt-1">${sub}</p>
+        </div>`;
+      document.getElementById('summary-cards').innerHTML = [
+        card('떨어짐 사망·중상', formatNumber(stats.total),
+             `떨어짐 전체 ${formatNumber(total)}건 대비 ${formatPercent(stats.total, total)}`),
+        card('높이 확인', formatNumber(stats.known),
+             `${formatPercent(stats.known, stats.total)} · 미상 ${formatNumber(stats.unknown)}건`),
+        card('중앙값 높이', stats.median != null ? stats.median.toFixed(1) + 'm' : '-',
+             stats.max != null ? `최저 ${stats.min}m · 최고 ${stats.max}m` : '-'),
+        card('2m 미만', formatNumber(under2),
+             '추락 방호조치 의무 기준(2m) 미만', 'text-amber-400'),
+      ].join('');
+    }
+
+    /* ── 자동 인사이트 (스코프에서 계산, 고정 문구 아님) ── */
+    function renderInsights(stats) {
+      const lines = [];
+      const data = bandData();
+      const scopeName = selectedBand === '전체' ? '이 조건' : `${selectedBand} 구간`;
+
+      if (data.length) {
+        // 이미 그 축으로 필터가 걸려 값이 하나뿐이면 "100%"만 말하는 꼴이라 건너뛴다
+        const top = (key) => {
+          const agg = aggregateBy(data, key);
+          return agg.length > 1 ? topN(agg, 'count', 1)[0] : null;
+        };
+        const topCause = top('기인물');
+        if (topCause) lines.push(`${scopeName}의 최다 기인물은 <b>${topCause.key}</b> ${formatNumber(topCause.count)}건 (${formatPercent(topCause.count, data.length)}).`);
+        const topGz = top('공종');
+        if (topGz) lines.push(`가장 많은 공종은 <b>${topGz.key.replace(/^\d+\.\s*/, '')}</b> ${formatNumber(topGz.count)}건 (${formatPercent(topGz.count, data.length)}).`);
+        const topWork = top('작업명');
+        if (topWork && !topGz) lines.push(`가장 많은 작업은 <b>${topWork.key.replace(/^\d+(\.\d+)*\s*/, '')}</b> ${formatNumber(topWork.count)}건 (${formatPercent(topWork.count, data.length)}).`);
+      }
+
+      // 저층 추락 — 2m 기준 미만이 존재하면 그 자체가 메시지다
+      const under2 = stats.bands.find(b => b.key === '2m 미만').count;
+      if (under2 > 0) {
+        const u2 = filterByBand(fallData(), '2m 미만');
+        const c = topN(aggregateBy(u2, '기인물'), 'count', 1)[0];
+        lines.push(`2m 미만에서도 <b>${formatNumber(under2)}건</b>이 사망·중상으로 이어졌습니다${c ? ` (최다 기인물 ${c.key} ${c.count}건)` : ''}.`);
+      }
+
+      // 선택 구간이 없을 때: 기인물별 높이 성향 한 줄
+      if (selectedBand === '전체') {
+        const hbc = heightByCause(scopeData(), 30);
+        const low = hbc.causes.filter(c => c.total >= 20)
+          .map(c => ({ key: c.key, r: (c.cells['2m 미만'] + c.cells['2~5m']) / c.total }))
+          .sort((a, b) => b.r - a.r)[0];
+        const high = hbc.causes.filter(c => c.total >= 20)
+          .map(c => ({ key: c.key, r: (c.cells['10~20m'] + c.cells['20m 이상']) / c.total }))
+          .sort((a, b) => b.r - a.r)[0];
+        if (low) lines.push(`저층 집중: <b>${low.key}</b> — 사고의 ${(low.r * 100).toFixed(0)}%가 5m 미만.`);
+        if (high) lines.push(`고층 집중: <b>${high.key}</b> — 사고의 ${(high.r * 100).toFixed(0)}%가 10m 이상.`);
+      }
+
+      document.getElementById('insight-box').innerHTML =
+        lines.length ? `<ul class="list-disc pl-4 space-y-0.5">${lines.map(l => `<li>${l}</li>`).join('')}</ul>`
+                     : '<p class="text-xs text-gray-500">조건에 해당하는 사례가 없습니다.</p>';
+    }
+
+    /* ── 구간별 막대 (선택 구간 강조) ── */
+    function renderBandChart(stats) {
+      const rows = stats.bands.filter(b => b.key !== HEIGHT_UNKNOWN || !excludeUnknown);
+      const denom = excludeUnknown ? stats.known : stats.total;
+      const ACCENT = '#3B82F6';
+      cm.create('chart-bands', {
+        type: 'bar',
+        data: {
+          labels: rows.map(b => b.key),
+          datasets: [{
+            data: rows.map(b => b.count),
+            backgroundColor: rows.map(b => selectedBand === '전체'
+              ? CHART_COLORS.getAlpha(ACCENT, 0.55)
+              : (b.key === selectedBand ? ACCENT : CHART_COLORS.getAlpha(ACCENT, 0.18))),
+            borderColor: rows.map(b => (selectedBand === '전체' || b.key === selectedBand) ? '#1D4ED8' : 'rgba(59,130,246,.3)'),
+            borderWidth: 1,
+          }],
+        },
+        options: {
+          responsive: true, maintainAspectRatio: false,
+          onClick: (e, els) => { if (els.length) selectBand(rows[els[0].index].key); },
+          plugins: {
+            legend: { display: false },
+            datalabels: barDatalabels(denom),
+            tooltip: { callbacks: { label: c => `${I18n.cases(c.parsed.y)} (${formatPercent(c.parsed.y, denom)})` } },
+          },
+          scales: { y: { beginAtZero: true } },
+        },
+      });
+    }
+
+    /* ── 히스토그램 ──
+       2m(추락 방호조치 의무 기준) 위치에 수직 기준선을 긋는다.
+       값이 한 점뿐인 line 데이터셋은 이을 선분이 없어 아무것도 그려지지 않으므로,
+       annotation 플러그인을 새로 들이는 대신 인라인 플러그인으로 직접 그린다. */
+    const vLinePlugin = {
+      id: 'vline',
+      afterDatasetsDraw(chart, args, opts) {
+        if (opts.index == null) return;
+        const x = chart.scales.x.getPixelForTick(opts.index);
+        if (x == null || Number.isNaN(x)) return;
+        const { top, bottom } = chart.chartArea;
+        const ctx = chart.ctx;
+        ctx.save();
+        ctx.strokeStyle = '#EF4444';
+        ctx.lineWidth = 1.5;
+        ctx.setLineDash([4, 3]);
+        ctx.beginPath(); ctx.moveTo(x, top); ctx.lineTo(x, bottom); ctx.stroke();
+        ctx.setLineDash([]);
+        ctx.fillStyle = '#EF4444';
+        ctx.font = '600 10px sans-serif';
+        ctx.textAlign = 'left';
+        ctx.fillText(opts.label || '', x + 4, top + 11);
+        ctx.restore();
+      },
+    };
+
+    function renderHistogram(fall) {
+      const bins = fallHeightHistogram(fall);
+      const markIdx = bins.findIndex(b => b.from === 2);
+      cm.create('chart-hist', {
+        type: 'bar',
+        plugins: [vLinePlugin],
+        data: {
+          labels: bins.map(b => (b.to === Infinity ? b.label : `${b.from}`)),
+          datasets: [{
+            label: '건수', data: bins.map(b => b.count),
+            backgroundColor: bins.map(b => b.from < 2 ? 'rgba(245,158,11,.8)' : 'rgba(59,130,246,.55)'),
+            borderColor: bins.map(b => b.from < 2 ? '#D97706' : '#1D4ED8'), borderWidth: 1,
+          }],
+        },
+        options: {
+          responsive: true, maintainAspectRatio: false,
+          plugins: {
+            legend: { display: false },
+            datalabels: { display: false },
+            vline: { index: markIdx, label: '2m' },
+            tooltip: { callbacks: { title: c => bins[c[0].dataIndex].label, label: c => I18n.cases(c.parsed.y) } },
+          },
+          scales: {
+            x: { title: { display: true, text: '추락 높이 (m)', color: '#6B7280', font: { size: 10 } },
+                 ticks: { maxRotation: 0, autoSkip: true, maxTicksLimit: 16 } },
+            y: { beginAtZero: true },
+          },
+        },
+      });
+    }
+
+    /* ── 기인물 × 높이구간 히트맵 ──
+       행(기인물) 안에서 정규화한다. 기인물마다 총 건수가 크게 달라 전체 최대값 기준으로
+       칠하면 상위 몇 개만 진하고 나머지는 전부 흐려져 성향이 안 보이기 때문. */
+    function renderHeatmap(fall) {
+      const { causes, bands } = heightByCause(fall, 15);
+      const el = document.getElementById('cause-height-heatmap');
+      document.getElementById('heatmap-sub').textContent =
+        causes.length ? `(높이 확인 사례 상위 ${causes.length}개 기인물)` : '';
+
+      if (!causes.length) {
+        el.innerHTML = '<p class="text-sm text-gray-500">높이가 확인된 사례가 없습니다.</p>';
+        return;
+      }
+
+      let html = '<table><thead><tr><th class="text-left">기인물</th>';
+      bands.forEach(b => { html += `<th>${b}</th>`; });
+      html += '<th>계</th></tr></thead><tbody>';
+
+      causes.forEach(c => {
+        const rowMax = Math.max(...bands.map(b => c.cells[b]));
+        html += `<tr><td class="row-label">${c.key}</td>`;
+        bands.forEach(b => {
+          const v = c.cells[b];
+          const bg = CHART_COLORS.heatmapColor(v, 0, rowMax);
+          html += `<td style="background:${bg}" title="${c.key} · ${b}: ${I18n.cases(v)}">${v || ''}</td>`;
+        });
+        html += `<td class="text-gray-400 font-medium">${c.total}</td></tr>`;
+      });
+      html += '</tbody></table>';
+      el.innerHTML = html;
+    }
+
+    /* ── 선택 구간의 축별 막대 ── */
+    function renderBarChart(canvasId, titleId, key, data, label) {
+      const agg = aggregateBy(data, key);
+      const sorted = topN(agg, 'count', 10);
+      document.getElementById(titleId).textContent =
+        `${key === '공종' ? '공종별' : key === '기인물' ? '기인물별' : '작업명별'} 건수${label}` +
+        (agg.length > 10 ? ' (Top 10)' : '');
+
+      if (!sorted.length) { cm.create(canvasId, { type: 'bar', data: { labels: [], datasets: [{ data: [] }] },
+        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } } }); return; }
+
+      cm.create(canvasId, {
+        type: 'bar',
+        data: {
+          labels: sorted.map(a => a.key.replace(/^\d+(\.\d+)*\.?\s*/, '')),
+          datasets: [{
+            data: sorted.map(a => a.count),
+            backgroundColor: sorted.map((_, i) => CHART_COLORS.getAlpha(CHART_COLORS.getColor(i), 0.6)),
+            borderColor: sorted.map((_, i) => CHART_COLORS.getColor(i)), borderWidth: 1,
+          }],
+        },
+        options: {
+          indexAxis: 'y', responsive: true, maintainAspectRatio: false,
+          plugins: {
+            legend: { display: false },
+            datalabels: barDatalabels(data.length),
+            tooltip: { callbacks: { label: c => `${I18n.cases(c.parsed.x)} (${formatPercent(c.parsed.x, data.length)})` } },
+          },
+          scales: { x: { beginAtZero: true } },
+        },
+      });
+    }
+
+    /* ── 사례 테이블 ── */
+    function renderTable(data, label) {
+      document.getElementById('title-table').textContent = `추락 재해사례 및 감소대책${label}`;
+      const columns = [
+        { key: '추락고_m', label: '추락고', width: 62,
+          format: v => v == null ? '<span class="text-gray-600">미상</span>'
+                                 : `<span class="font-semibold text-amber-300">${v}m</span>` },
+        { key: '공종', label: '공종', width: 110, format: v => (v || '').replace(/^\d+\.\s*/, '') },
+        { key: '작업명', label: '작업명', width: 130 },
+        { key: '기인물', label: '기인물', width: 120 },
+        // 연도는 buildTable 기본 숫자 포맷(천단위 콤마)을 타면 "2,023"이 된다
+        { key: '발생연도', label: '연도', width: 58, format: v => (v == null ? '-' : String(v)) },
+        { key: '재해개요', label: '재해개요', minWidth: 240, wrap: true,
+          format: v => `<div class="text-xs text-gray-300">${v || '-'}</div>` },
+        { key: '위험성감소대책', label: '감소대책', minWidth: 240, wrap: true,
+          format: v => `<div class="text-xs text-gray-300">${v || '-'}</div>` },
+      ];
+      // buildTable은 정렬·페이지·컬럼필터 상태를 스스로 재렌더링하며 관리한다.
+      // 여기서는 진입 상태만 준다 — 높이 큰 순이 이 페이지의 기본 관심사다.
+      buildTable('data-table', columns, data, {
+        pageSize: 10,
+        sortKey: '추락고_m',
+        sortDir: 'desc',
+        filterColumns: ['공종', '기인물', '작업명'],
+      });
+    }
+
+    init();
+  </script>
+</body>
+</html>

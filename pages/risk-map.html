@@ -478,8 +478,9 @@
             <button type="button" class="table-excel-btn text-xs text-emerald-400 hover:text-emerald-300 px-3 py-1 border border-emerald-700 hover:border-emerald-500 rounded transition-colors" id="rm-excel-btn">📥 엑셀 다운로드</button>
           </div>
           <div id="rm-cases" class="flex flex-col gap-2"></div>
-          <div class="mt-4 pt-3 border-t border-gray-800">
+          <div class="mt-4 pt-3 border-t border-gray-800 flex flex-wrap items-center gap-x-5 gap-y-2">
             <a class="rm-deeplink" id="rm-deeplink" href="${deepLinkFor(focus)}">전체 사례·필터 →</a>
+            ${fallHeightLink(focus)}
           </div>
         </div>
       `;
@@ -642,6 +643,17 @@
         { key: '재해유발요인', label: '재해유발요인' },
         { key: '위험성감소대책', label: '위험성감소대책' },
       ];
+    }
+
+    /* 스코프에 '떨어짐'이 걸려 있으면 추락높이 분석으로 넘어갈 수 있음을 알린다.
+       (전체 사례·필터 링크와 목적이 달라 나란히 둔다) */
+    function fallHeightLink(focus) {
+      const f = (focus && focus.filters) || {};
+      if (f['재해형태'] !== '떨어짐') return '';
+      const p = new URLSearchParams();
+      if (f['공종']) p.set('공종', f['공종']);
+      if (f['기인물']) p.set('기인물', f['기인물']);
+      return `<a class="rm-deeplink" href="fall-height.html${p.toString() ? '?' + p : ''}">추락높이 분석 →</a>`;
     }
 
     // 기존 페이지 딥링크 (스코프를 걸고 이동, 공존 원칙)

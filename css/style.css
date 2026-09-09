@@ -1900,3 +1900,17 @@ html.light .text-red-400 {
 html.light .text-cyan-400 {
   color: #0891B2 !important;
 }
+
+/* 라이트 테마에서 어두운 배경 유틸(bg-gray-700/800)을 쓴 버튼은 글자색이 본문색을
+   따라가면서 배경과 같은 명도가 되어 보이지 않는다 (초기화 버튼 등 전 페이지 공통). */
+html.light .bg-gray-700,
+html.light .bg-gray-800 {
+  background-color: #E5E7EB !important;
+  color: #1F2937;
+}
+html.light .bg-gray-700:hover,
+html.light .bg-gray-800:hover,
+html.light .hover\:bg-gray-600:hover,
+html.light .hover\:bg-gray-700:hover {
+  background-color: #D1D5DB !important;
+}

@@ -94,6 +94,9 @@
     <!-- 요약 카드 -->
     <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-4" id="summary-cards"></div>
 
+    <!-- 떨어짐 선택 시 노출되는 추락높이 분석 딥링크 -->
+    <div id="fall-height-link" class="hidden mb-4"></div>
+
     <!-- 전체 요약 바 차트 (재해형태 미선택 시) -->
     <div id="overview-section" class="chart-container mb-4">
       <h3 class="text-sm font-semibold text-gray-300 mb-3">재해형태별 사고건수</h3>
@@ -472,6 +475,36 @@
           </div>
         `;
       }
+      renderFallHeightLink(data, selectedDT, filters);
+    }
+
+    /* '떨어짐'을 보고 있을 때만, 추락 높이대로 더 파고들 수 있음을 알린다.
+       현재 걸린 공종·기인물 스코프를 그대로 넘겨 이어서 보게 한다. */
+    function renderFallHeightLink(data, selectedDT, filters) {
+      const wrap = document.getElementById('fall-height-link');
+      if (!wrap) return;
+      const sel = Array.isArray(selectedDT) ? selectedDT : (selectedDT ? [selectedDT] : []);
+      const isFall = sel.length === 1 && sel[0] === '떨어짐';
+      if (!isFall) { wrap.classList.add('hidden'); return; }
+
+      const withH = data.filter(r => r['추락고_m'] != null).length;
+      const q = new URLSearchParams();
+      const one = (k) => {
+        const v = filters[k];
+        if (Array.isArray(v) && v.length === 1) q.set(k, v[0]);
+        else if (typeof v === 'string' && v) q.set(k, v);
+      };
+      one('공종'); one('기인물');
+      wrap.classList.remove('hidden');
+      wrap.innerHTML = `
+        <a href="fall-height.html${q.toString() ? '?' + q : ''}"
+           class="flex items-center justify-between gap-3 px-4 py-3 rounded-lg border border-blue-800 bg-blue-900/20 hover:bg-blue-900/35 transition-colors no-print">
+          <span class="text-sm text-blue-200">
+            <b>떨어짐</b> ${formatNumber(data.length)}건 중 <b>${formatNumber(withH)}건</b>은 추락 높이가 확인됩니다 —
+            높이대별로 기인물·공종을 나눠 보기
+          </span>
+          <span class="text-sm font-semibold text-blue-300 whitespace-nowrap">추락높이 분석 →</span>
+        </a>`;
     }
 
     function renderOverviewChart(filters) {
