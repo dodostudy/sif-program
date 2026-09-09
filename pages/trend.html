@@ -252,7 +252,7 @@
     /* ── 해설 ── 수치는 현재 스코프에서 계산해 화면과 어긋나지 않게 한다 */
     function renderGuide() {
       const win = windowData();
-      const ts = timeSeries(win, '발생연도', { from: YEAR_FROM, to: YEAR_TO });
+      const ts = timeSeries(scopeData(), '발생연도', { from: YEAR_FROM, to: YEAR_TO });
       const prevN = win.filter(r => r['발생연도'] < RECENT_FROM).length;
       const recentN = win.length - prevN;
       const grown = periodDelta(win, '기인물').filter(r => r.prev >= 10 && r.deltaPct > 0)
@@ -384,7 +384,8 @@
     /* ── 연도 추이 (막대 + 추세선) ── */
     function renderYearChart() {
       const win = windowData();
-      const ts = timeSeries(win, '발생연도', { from: YEAR_FROM, to: YEAR_TO });
+      // 범위 밖 건수는 창을 자르기 전 데이터에서 세야 한다 (win으로 세면 항상 0)
+      const ts = timeSeries(scopeData(), '발생연도', { from: YEAR_FROM, to: YEAR_TO });
       document.getElementById('year-note').textContent =
         `${YEAR_FROM}~${YEAR_TO}년 집계 · 범위 밖 ${formatNumber(ts.outOfRange)}건 제외 · 막대를 누르면 그 해로 좁힙니다`;
 
@@ -396,30 +397,22 @@
         type: 'bar',
         data: {
           labels,
-          datasets: [
-            {
-              type: 'bar', data: values,
-              backgroundColor: labels.map(y => selectedYear && y !== selectedYear
-                ? 'rgba(59,130,246,.18)' : CHART_COLORS.getAlpha(ACCENT, .6)),
-              borderColor: labels.map(y => selectedYear && y !== selectedYear
-                ? 'rgba(59,130,246,.3)' : '#1D4ED8'),
-              borderWidth: 1, order: 2,
-            },
-            {
-              type: 'line', data: values, borderColor: '#F59E0B', borderWidth: 2,
-              pointRadius: 3, pointBackgroundColor: '#F59E0B', fill: false, tension: .25, order: 1,
-            },
-          ],
+          datasets: [{
+            data: values,
+            backgroundColor: labels.map(y => selectedYear && y !== selectedYear
+              ? 'rgba(59,130,246,.18)' : CHART_COLORS.getAlpha(ACCENT, .6)),
+            borderColor: labels.map(y => selectedYear && y !== selectedYear
+              ? 'rgba(59,130,246,.3)' : '#1D4ED8'),
+            borderWidth: 1,
+          }],
         },
         options: {
           responsive: true, maintainAspectRatio: false,
           onClick: (e, els) => { if (els.length) { selectedYear = selectedYear === labels[els[0].index] ? null : labels[els[0].index]; renderAll(); } },
           plugins: {
             legend: { display: false },
-            datalabels: { display: ctx => ctx.datasetIndex === 0,
-              ...verticalBarDatalabels(win.length, { canvasId: 'chart-year', count: labels.length }) },
-            tooltip: { filter: c => c.datasetIndex === 0,
-              callbacks: { label: c => `${I18n.cases(c.parsed.y)} (${formatPercent(c.parsed.y, win.length)})` } },
+            datalabels: verticalBarDatalabels(win.length, { canvasId: 'chart-year', count: labels.length }),
+            tooltip: { callbacks: { label: c => `${I18n.cases(c.parsed.y)} (${formatPercent(c.parsed.y, win.length)})` } },
           },
           scales: { y: { beginAtZero: true, suggestedMax: headroom(values) } },
         },
