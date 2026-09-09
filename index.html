@@ -94,6 +94,7 @@
   <script src="./js/filter-manager.js"></script>
   <script src="./js/chart-manager.js"></script>
   <script src="./js/utils.js"></script>
+  <script src="./js/analytics.js"></script>
   <script src="./js/components.js"></script>
   <script src="./js/app.js"></script>
 
@@ -263,6 +264,12 @@
           <p class="text-xs text-gray-500 uppercase tracking-wide">총 재해건수</p>
           <p class="text-3xl font-bold text-white mt-2">${formatNumber(total)}</p>
           <p class="text-xs text-gray-500 mt-1">2013~2023년 사망·중상</p>
+          <p class="text-xs text-gray-600 mt-0.5">${(() => {
+            // SIF는 사망·중상 선별 아카이브지만 실제 구성은 사망이 압도적이다 — 그대로 밝힌다
+            const c = {};
+            data.forEach(r => { if (r['재해정도']) c[r['재해정도']] = (c[r['재해정도']] || 0) + 1; });
+            return ['사망','부상','미상'].filter(k => c[k]).map(k => `${k} ${formatNumber(c[k])}`).join(' · ');
+          })()}</p>
         </div>
         <div class="stat-card relative cursor-pointer select-none" id="card-gongzong" onclick="toggleCardDropdown('gongzong')">
           <div class="flex items-center justify-between">

@@ -486,6 +486,7 @@
       const sel = Array.isArray(selectedDT) ? selectedDT : (selectedDT ? [selectedDT] : []);
       const isFall = sel.length === 1 && sel[0] === '떨어짐';
       if (!isFall) { wrap.classList.add('hidden'); return; }
+      // (떨어짐이 아닌 재해형태는 추락 높이가 의미 없어 배너를 띄우지 않는다)
 
       const withH = data.filter(r => r['추락고_m'] != null).length;
       const q = new URLSearchParams();
@@ -708,6 +709,10 @@
         { key: '단위작업명', label: '단위작업명', width: 110, wrap: true },
         { key: '기인물', label: '기인물', width: 90, wrap: true },
         { key: '재해형태', label: '재해형태', width: 70 },
+        // 공단 원어(추락/낙하/붕괴)를 함께 보여 준다 — 사이트 표기는 구버전 어휘(떨어짐/맞음/무너짐)라
+        // 공단 자료와 대조할 때 어느 쪽 용어인지 헷갈리기 쉽다
+        { key: '재해종류', label: '공단 원어', width: 68,
+          format: (v) => `<span class="text-xs text-gray-500">${v || '-'}</span>` },
         { key: '재해개요', label: '재해개요', minWidth: 220, wrap: true,
           format: (v) => `<div class="text-xs text-gray-300">${v || '-'}</div>` },
         { key: '재해유발요인', label: '재해유발요인', minWidth: 180, wrap: true,

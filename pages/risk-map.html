@@ -49,6 +49,7 @@
   <script src="../js/filter-manager.js"></script>
   <script src="../js/chart-manager.js"></script>
   <script src="../js/utils.js"></script>
+  <script src="../js/analytics.js"></script>
   <script src="../js/components.js"></script>
   <script src="../js/app.js"></script>
 
@@ -565,20 +566,16 @@
       }
     }
 
-    // 대표 사례 5건 — 위험도순위(고위험) 우선 정렬 + '기인물·재해형태' 조합 중복 제거로 다양성 확보.
-    //  · 위험도순위는 기인물 묶음에 부여된 SIF 고위험 등급이라 같은 값이 다수 → dedup 없으면 동일 조합이 반복됨.
-    //  · 조합이 5종 미만이면 있는 만큼만 노출(중복 채우기 안 함).
+    /* 대표 사례 5건.
+       전에는 위험도순위로 정렬하고 '기인물·재해형태' 중복만 걸렀는데, 위험도순위는
+       기인물 묶음에 부여된 값이라 같은 순위가 수십 건이라 사실상 임의 선택이었다.
+       지금은 공단 전처리에서 문장 군집의 중심(medoid)으로 뽑아 db.json에 실어 둔
+       '대표사례여부'를 쓴다 — 같은 칸 안에서도 상황이 다른 유형별로 1건씩 나온다.
+       스코프에 대표사례가 부족하면 남은 실제 사례로 채운다. */
     function renderRepresentativeCases(data) {
-      const sorted = [...data].sort((a, b) => (a['위험도순위'] || 999) - (b['위험도순위'] || 999));
-      const seen = new Set();
-      const primary = [], rest = [];
-      for (const r of sorted) {
-        const key = `${r['기인물']}|${r['재해형태']}`;
-        if (seen.has(key)) rest.push(r);        // 이미 나온 조합 → 후순위
-        else { seen.add(key); primary.push(r); } // 새 조합 → 우선
-      }
-      // 다양성 우선(조합별 대표 1건) → 조합이 5종 미만이면 남은 실제 사례로 5건까지 채움
-      const cases = primary.concat(rest).slice(0, 5);
+      const reps = representativeCases(data, { limit: 5 });
+      const fill = data.filter(r => !r['대표사례여부']).slice(0, Math.max(0, 5 - reps.length));
+      const cases = reps.concat(fill);
       const el = document.getElementById('rm-cases');
       if (cases.length === 0) {
         el.innerHTML = `<div class="text-sm text-gray-500 py-4">사례가 없습니다.</div>`;
@@ -586,8 +583,11 @@
       }
       el.innerHTML = cases.map(r => {
         const summary = `${catLabel('기인물', r['기인물'])} · ${catLabel('재해형태', r['재해형태'])} — ${esc((r['재해개요'] || '').slice(0, 60))}`;
+        const badge = r['대표사례여부'] && r._n > 1
+          ? `<span class="rm-case-rank-badge" title="같은 유형의 사례 수">유사 ${r._n}건</span>`
+          : `<span class="rm-case-rank-badge">${r['추락고_m'] != null ? r['추락고_m'] + 'm' : (r['발생연도'] || '-')}</span>`;
         return `<div class="rm-case-row" data-case-id="${r.id}">
-          <span class="rm-case-rank-badge">${r['위험도순위'] != null ? r['위험도순위'] + '위' : '-'}</span>
+          ${badge}
           <span class="rm-case-row-text">${summary}</span>
         </div>`;
       }).join('');

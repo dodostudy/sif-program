@@ -151,7 +151,21 @@ function donutDatalabels(opts = {}) {
  * 막대 안쪽으로 뒤집혀 기준선·눈금과 겹친다. 세로 차트는 이 설정과 함께
  * y축에 여유(suggestedMax)를 줘서 라벨이 항상 위에 들어가게 한다.
  */
-function verticalBarDatalabels(total) {
+function verticalBarDatalabels(total, opts = {}) {
+  const { canvasId = null, count = 0 } = opts;
+
+  // 막대 하나에 배정된 가로 폭(px). 좁은 화면에서 "437건 (31.6%)"를 그대로 찍으면
+  // 옆 막대의 라벨과 글자가 붙어버린다(모바일 390px에서 실측). 컨테이너 폭을
+  // 막대 수로 나눠, 들어가는 만큼만 표시한다.
+  let slot = null;
+  if (canvasId && count > 0) {
+    const el = document.getElementById(canvasId);
+    const w = el ? Math.max(
+      el.parentElement ? el.parentElement.getBoundingClientRect().width : 0,
+      el.getBoundingClientRect().width) : 0;
+    if (w > 0) slot = w / count;
+  }
+
   return {
     display: true,
     anchor: 'end',
@@ -167,7 +181,11 @@ function verticalBarDatalabels(total) {
       if (!value) return '';
       const cnt = (typeof I18n !== 'undefined') ? I18n.cases(value) : `${value}건`;
       const pct = total ? (value / total * 100) : 0;
-      return pct < 2 ? cnt : `${cnt} (${pct.toFixed(1)}%)`;
+      const full = pct < 2 ? cnt : `${cnt} (${pct.toFixed(1)}%)`;
+      if (slot == null) return full;
+      if (slot >= 96) return full;      // 건수 + 비율
+      if (slot >= 52) return cnt;       // 건수만
+      return `${value}`;                // 숫자만
     },
   };
 }

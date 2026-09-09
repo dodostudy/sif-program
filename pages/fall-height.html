@@ -48,6 +48,22 @@
     html.light .insight-box { background: #EFF6FF; border-color: #BFDBFE; }
     html.light .insight-box li { color: #1E40AF; }
 
+    /* 해설 */
+    .guide h4 { font-size:.85rem; font-weight:700; color:#93C5FD; margin:0 0 .5rem; }
+    .guide section + section { margin-top:1.5rem; padding-top:1.25rem; border-top:1px solid #1F2937; }
+    .guide p, .guide li { font-size:.8125rem; color:#D1D5DB; line-height:1.75; }
+    .guide ul, .guide ol { padding-left:1.15rem; }
+    .guide .callout { background:rgba(30,58,138,.18); border-left:3px solid #3B82F6;
+                      padding:.6rem .9rem; border-radius:.25rem; margin-top:.6rem; }
+    .guide .callout p { color:#BFDBFE; margin:0; }
+    .guide .caveat { font-size:.75rem; color:#9CA3AF; }
+    html.light .guide h4 { color:#1D4ED8; }
+    html.light .guide p, html.light .guide li { color:#374151; }
+    html.light .guide section + section { border-color:#E5E7EB; }
+    html.light .guide .callout { background:#EFF6FF; }
+    html.light .guide .callout p { color:#1E40AF; }
+    html.light .guide .caveat { color:#6B7280; }
+
     /* 기인물 × 높이구간 히트맵 */
     #cause-height-heatmap table { width: 100%; border-collapse: collapse; }
     #cause-height-heatmap th, #cause-height-heatmap td {
@@ -156,9 +172,15 @@
     </div>
 
     <!-- 사례 테이블 -->
-    <div class="chart-container">
+    <div class="chart-container mb-4">
       <h3 class="text-sm font-semibold text-gray-300 mb-3" id="title-table">추락 재해사례 및 감소대책</h3>
       <div id="data-table"></div>
+    </div>
+
+    <!-- 해설 -->
+    <div class="chart-container">
+      <h3 class="text-sm font-semibold text-gray-300 mb-4">이 화면을 읽는 법</h3>
+      <div class="guide" id="guide-body"></div>
     </div>
   </main>
 
@@ -271,6 +293,75 @@
       renderBarChart('chart-gz', 'title-gz', '공종', data, label);
       renderBarChart('chart-work', 'title-work', '작업명', data, label);
       renderTable(data, label);
+      renderGuide(stats);
+    }
+
+    /* ── 해설 ── 수치는 현재 스코프에서 계산해 화면과 어긋나지 않게 한다 */
+    function renderGuide(stats) {
+      const under2 = stats.bands.find(b => b.key === '2m 미만').count;
+      const hbc = heightByCause(scopeData(), 30);
+      const low = hbc.causes.filter(c => c.total >= 20)
+        .map(c => ({ key: c.key, r: (c.cells['2m 미만'] + c.cells['2~5m']) / c.total, n: c.total }))
+        .sort((a, b) => b.r - a.r)[0];
+      const high = hbc.causes.filter(c => c.total >= 20)
+        .map(c => ({ key: c.key, r: (c.cells['10~20m'] + c.cells['20m 이상']) / c.total, n: c.total }))
+        .sort((a, b) => b.r - a.r)[0];
+
+      document.getElementById('guide-body').innerHTML = `
+        <section>
+          <h4>추락 높이는 어디서 온 값인가</h4>
+          <p>공단 원본에 높이 항목이 따로 있는 것이 아니라, <b>재해개요 문장에서 읽어낸 값</b>입니다.
+             “약 4.7m 아래 바닥으로”, “H≒18.0m” 처럼 높이를 가리키는 표현이 있을 때만 뽑았고,
+             “1.5m 간격으로”(간격) · “L=8m”(부재 길이) 같은 숫자는 제외했습니다.</p>
+          <div class="callout">
+            <p>그래서 떨어짐 <b>${formatNumber(stats.total)}건</b> 중
+               높이를 알 수 있는 것은 <b>${formatNumber(stats.known)}건(${formatPercent(stats.known, stats.total)})</b>이고,
+               나머지 <b>${formatNumber(stats.unknown)}건</b>은 ‘높이 미상’입니다.
+               비율은 기본적으로 <b>높이가 확인된 건</b>을 분모로 계산합니다 —
+               상단 체크박스로 전환할 수 있습니다.</p>
+          </div>
+        </section>
+
+        <section>
+          <h4>왜 2m가 첫 칸인가</h4>
+          <p>산업안전보건기준에 관한 규칙상 <b>2m 이상</b>에서 추락 방호조치(안전난간·작업발판·추락방호망 등)
+             의무가 발생합니다. 그 기준 아래에서 얼마나 죽는지를 바로 볼 수 있도록 첫 칸을 2m로 끊었습니다.</p>
+          <div class="callout">
+            <p>현재 조건에서 <b>2m 미만 ${formatNumber(under2)}건</b>이 사망·중상으로 이어졌습니다.
+               “낮으니 괜찮다”가 성립하지 않는다는 근거로 쓰실 수 있습니다.</p>
+          </div>
+        </section>
+
+        <section>
+          <h4>히트맵 보는 법</h4>
+          <p>가로는 높이대, 세로는 기인물입니다. 색은 <b>그 줄(기인물) 안에서만</b> 진하기를 비교합니다
+             — 기인물마다 총 건수가 크게 달라 전체 기준으로 칠하면 상위 몇 개만 진해져
+             정작 보려는 “이 기인물은 어느 높이에서 위험한가”가 묻히기 때문입니다.</p>
+          ${low && high ? `<p style="margin-top:.5rem">지금 조건에서는
+             <b>${low.key}</b>가 ${(low.r * 100).toFixed(0)}%로 5m 미만에 몰려 있고,
+             <b>${high.key}</b>는 ${(high.r * 100).toFixed(0)}%가 10m 이상입니다.
+             같은 ‘떨어짐’이라도 필요한 대책이 다르다는 뜻입니다.</p>` : ''}
+        </section>
+
+        <section>
+          <h4>이렇게 쓰시면 됩니다</h4>
+          <ul>
+            <li>상단 <b>높이 구간</b>을 누르면 아래 차트·표가 모두 그 구간으로 바뀝니다.</li>
+            <li>담당 <b>공종·기인물</b>을 필터에 걸면 구간 건수도 그 범위로 다시 계산됩니다.</li>
+            <li>TBM에서는 히트맵 한 장으로 “우리 작업 높이대에서 무엇이 위험한가”를 설명할 수 있습니다.</li>
+            <li>사례 표는 추락고 높은 순으로 정렬돼 있고, 엑셀로 내려받아 교육자료에 첨부할 수 있습니다.</li>
+          </ul>
+        </section>
+
+        <section>
+          <h4>알아두실 점</h4>
+          <ul class="caveat">
+            <li>떨어짐이 아닌 사고(낙하물·붕괴 등)에 기록된 높이는 <b>사람이 떨어진 높이가 아니어서</b>
+                집계에서 제외했습니다.</li>
+            <li>‘높이 미상’ ${formatNumber(stats.unknown)}건은 높이가 없었다는 뜻이 아니라
+                <b>원문에 적히지 않았다</b>는 뜻입니다. 구간별 비율을 해석할 때 감안해 주세요.</li>
+          </ul>
+        </section>`;
     }
 
     /* ── 높이 구간 토글 ── */
@@ -334,16 +425,20 @@
 
       if (data.length) {
         // 이미 그 축으로 필터가 걸려 값이 하나뿐이면 "100%"만 말하는 꼴이라 건너뛴다
-        const top = (key) => {
+        const top3 = (key, strip) => {
           const agg = aggregateBy(data, key);
-          return agg.length > 1 ? topN(agg, 'count', 1)[0] : null;
+          if (agg.length <= 1) return null;
+          return topN(agg, 'count', 3)
+            .map(a => `<b>${a.key.replace(strip, '')}</b> ${formatNumber(a.count)}건(${formatPercent(a.count, data.length)})`)
+            .join(' · ');
         };
-        const topCause = top('기인물');
-        if (topCause) lines.push(`${scopeName}의 최다 기인물은 <b>${topCause.key}</b> ${formatNumber(topCause.count)}건 (${formatPercent(topCause.count, data.length)}).`);
-        const topGz = top('공종');
-        if (topGz) lines.push(`가장 많은 공종은 <b>${topGz.key.replace(/^\d+\.\s*/, '')}</b> ${formatNumber(topGz.count)}건 (${formatPercent(topGz.count, data.length)}).`);
-        const topWork = top('작업명');
-        if (topWork && !topGz) lines.push(`가장 많은 작업은 <b>${topWork.key.replace(/^\d+(\.\d+)*\s*/, '')}</b> ${formatNumber(topWork.count)}건 (${formatPercent(topWork.count, data.length)}).`);
+        const NUM = /^\d+(\.\d+)*\.?\s*/;
+        const causes = top3('기인물', '');
+        if (causes) lines.push(`${scopeName}의 최다 기인물 — ${causes}`);
+        const gz = top3('공종', NUM);
+        if (gz) lines.push(`최다 공종 — ${gz}`);
+        const work = top3('작업명', NUM);
+        if (work && !gz) lines.push(`최다 작업 — ${work}`);
       }
 
       // 저층 추락 — 2m 기준 미만이 존재하면 그 자체가 메시지다
@@ -396,7 +491,7 @@
           plugins: {
             legend: { display: false },
             // 세로 막대는 라벨을 막대 위에 얹고, y축에 여유를 줘서 잘리지 않게 한다
-            datalabels: verticalBarDatalabels(denom),
+            datalabels: verticalBarDatalabels(denom, { canvasId: 'chart-bands', count: rows.length }),
             tooltip: { callbacks: { label: c => `${I18n.cases(c.parsed.y)} (${formatPercent(c.parsed.y, denom)})` } },
           },
           scales: { y: { beginAtZero: true, suggestedMax: headroom(rows.map(b => b.count)) } },

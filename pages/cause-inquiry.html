@@ -101,6 +101,7 @@
   <script src="../js/filter-manager.js"></script>
   <script src="../js/chart-manager.js"></script>
   <script src="../js/utils.js"></script>
+  <script src="../js/analytics.js"></script>
   <script src="../js/multi-select.js"></script>
   <script src="../js/components.js"></script>
   <script src="../js/app.js"></script>
@@ -310,9 +311,28 @@
         document.getElementById('cause-name').textContent = cause;
         document.getElementById('cause-count').textContent = formatNumber(data.length) + '건';
         document.getElementById('cause-rank').textContent = rank ? `${rank}위 / ${sorted.length}개` : '-';
-        document.getElementById('cause-badge-12').innerHTML = is12
-          ? '<span class="badge-12">12대 기인물 (중점관리대상)</span>'
-          : '';
+        // 프로파일 — 이 기인물이 한 가지 재해로 죽는지, 여러 갈래로 죽는지.
+        // 분산형(굴착기 등)은 재해형태를 하나로 못 정하므로 화면에서 분포로 봐야 한다.
+        const prof = causeProfile(allData)[cause];
+        const master = causeMaster(allData).find(m => m.기인물 === cause);
+        const TYPE_STYLE = {
+          '단일형': 'background:#064E3B;color:#6EE7B7;border:1px solid #059669',
+          '혼합형': 'background:#78350F;color:#FCD34D;border:1px solid #B45309',
+          '분산형': 'background:#7F1D1D;color:#FCA5A5;border:1px solid #B91C1C',
+        };
+        const bits = [];
+        if (is12) bits.push('<span class="badge-12">12대 기인물 (중점관리대상)</span>');
+        if (prof) {
+          bits.push(`<span style="${TYPE_STYLE[prof.type]};font-size:.7rem;font-weight:700;padding:.15rem .45rem;border-radius:.25rem"
+            title="1위 재해형태 비중 ${prof.topPct.toFixed(1)}% — 80% 이상 단일형, 50~80% 혼합형, 미만 분산형">${prof.type}</span>`);
+          bits.push(`<span class="text-xs text-gray-400">주 재해 <b class="text-gray-300">${prof.top}</b> ${prof.topPct.toFixed(0)}%</span>`);
+        }
+        if (master) {
+          bits.push(`<span class="text-xs text-gray-400">최근 5년 <b class="text-gray-300">${formatNumber(master.recentN)}건</b></span>`);
+          if (master.주요공종) bits.push(`<span class="text-xs text-gray-400">주요 공종 <b class="text-gray-300">${master.주요공종.replace(/^\d+\.\s*/, '')}</b></span>`);
+        }
+        document.getElementById('cause-badge-12').innerHTML =
+          `<div class="flex flex-wrap items-center gap-2">${bits.join('')}</div>`;
       } else {
         document.getElementById('cause-name').textContent = `${causeList.length}개 기인물 선택`;
         document.getElementById('cause-count').textContent = formatNumber(data.length) + '건';

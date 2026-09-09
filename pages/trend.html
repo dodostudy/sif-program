@@ -1,0 +1,609 @@
+<!DOCTYPE html>
+<html lang="ko" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SIF 건설재해 위험성평가 - 발생시기 분석</title>
+  <script>if(localStorage.getItem('sif-theme')==='light'){document.documentElement.classList.replace('dark','light')}</script>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"></script>
+  <link rel="stylesheet" href="../css/style.css">
+  <style>
+    /* 기간 비교 표 */
+    #period-table table { width: 100%; border-collapse: collapse; }
+    #period-table th, #period-table td { padding: .45rem .6rem; font-size: .78rem; white-space: nowrap; }
+    #period-table th { color: #9CA3AF; font-weight: 500; text-align: right; border-bottom: 1px solid #374151; }
+    #period-table th:first-child, #period-table td:first-child { text-align: left; }
+    #period-table td { text-align: right; border-bottom: 1px solid #1F2937; }
+    #period-table td.name { color: #E5E7EB; }
+    .delta-up { color: #F87171; font-weight: 700; }
+    .delta-down { color: #34D399; font-weight: 700; }
+    .delta-flat { color: #9CA3AF; }
+    html.light #period-table th { color: #4B5563; border-color: #D1D5DB; }
+    html.light #period-table td { border-color: #E5E7EB; }
+    html.light #period-table td.name { color: #111827; }
+    html.light .delta-up { color: #DC2626; }
+    html.light .delta-down { color: #059669; }
+
+    /* 해설 */
+    .guide h4 { font-size:.85rem; font-weight:700; color:#93C5FD; margin:0 0 .5rem; }
+    .guide section + section { margin-top:1.5rem; padding-top:1.25rem; border-top:1px solid #1F2937; }
+    .guide p, .guide li { font-size:.8125rem; color:#D1D5DB; line-height:1.75; }
+    .guide ul, .guide ol { padding-left:1.15rem; }
+    .guide .callout { background:rgba(30,58,138,.18); border-left:3px solid #3B82F6;
+                      padding:.6rem .9rem; border-radius:.25rem; margin-top:.6rem; }
+    .guide .callout p { color:#BFDBFE; margin:0; }
+    .guide .caveat { font-size:.75rem; color:#9CA3AF; }
+    html.light .guide h4 { color:#1D4ED8; }
+    html.light .guide p, html.light .guide li { color:#374151; }
+    html.light .guide section + section { border-color:#E5E7EB; }
+    html.light .guide .callout { background:#EFF6FF; }
+    html.light .guide .callout p { color:#1E40AF; }
+    html.light .guide .caveat { color:#6B7280; }
+
+    @media (max-width: 767px) {
+      .filter-bar { flex-direction: column; gap: .5rem; }
+      .filter-row { flex-direction: column; gap: .5rem; }
+      .filter-group { width: 100%; }
+      .filter-group select, .ms-dropdown { width: 100%; min-width: 0; }
+      #btn-reset { width: 100%; }
+    }
+  </style>
+</head>
+<body class="bg-gray-950 text-gray-100 min-h-screen">
+  <div id="sidebar"></div>
+
+  <main id="content" class="p-4 lg:p-6">
+    <div id="page-header"></div>
+
+    <!-- 필터 바 -->
+    <div class="filter-bar mb-4" style="flex-direction:column; align-items:stretch;">
+      <div class="filter-row" style="display:flex; flex-wrap:wrap; gap:.5rem; align-items:flex-end;">
+        <div class="filter-group" id="koen-toggle-wrap"></div>
+        <div class="filter-group">
+          <label>공종</label>
+          <div id="ms-gz"></div>
+        </div>
+        <div class="filter-group">
+          <label>기인물</label>
+          <div id="ms-cause"></div>
+        </div>
+        <div class="filter-group">
+          <label>재해형태</label>
+          <div id="ms-disaster"></div>
+        </div>
+        <button id="btn-reset" class="px-4 py-2 bg-gray-700 hover:bg-gray-600 text-sm rounded-lg transition-colors" style="margin-left:auto;">초기화</button>
+      </div>
+    </div>
+    <div id="keyword-search-wrap" class="mb-4"></div>
+
+    <!-- 요약 카드 -->
+    <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-4" id="summary-cards"></div>
+
+    <!-- 자동 인사이트 -->
+    <div class="insight-box mb-4" id="insight-box"
+         style="background:rgba(30,58,138,.18);border:1px solid #1E40AF;border-radius:.5rem;padding:.75rem 1rem"></div>
+
+    <!-- 연도 추이 -->
+    <div class="chart-container mb-4">
+      <div class="flex items-center justify-between mb-3 flex-wrap gap-2">
+        <h3 class="text-sm font-semibold text-gray-300">연도별 사망·중상 건수</h3>
+        <span class="text-xs text-gray-500" id="year-note"></span>
+      </div>
+      <div style="height:300px"><canvas id="chart-year"></canvas></div>
+    </div>
+
+    <!-- 월 / 계절 -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-4">
+      <div class="lg:col-span-2 chart-container">
+        <div class="flex items-center justify-between mb-3 flex-wrap gap-2">
+          <h3 class="text-sm font-semibold text-gray-300">월별 사망·중상 건수</h3>
+          <span class="text-xs text-gray-500">주황 = 혹서기(6~8월) · 파랑 = 혹한기(12~2월)</span>
+        </div>
+        <div style="height:300px"><canvas id="chart-month"></canvas></div>
+      </div>
+      <div class="chart-container">
+        <h3 class="text-sm font-semibold text-gray-300 mb-3">계절 분포</h3>
+        <div style="height:300px"><canvas id="chart-season"></canvas></div>
+      </div>
+    </div>
+
+    <!-- 연도 × 재해형태 구성비 -->
+    <div class="chart-container mb-4">
+      <div class="flex items-center justify-between mb-3 flex-wrap gap-2">
+        <h3 class="text-sm font-semibold text-gray-300">연도별 재해형태 구성비</h3>
+        <span class="text-xs text-gray-500">각 해 100% 기준 — 재해형태 비중이 어떻게 달라졌는지</span>
+      </div>
+      <div style="height:320px"><canvas id="chart-year-type"></canvas></div>
+    </div>
+
+    <!-- 기간 비교 -->
+    <div class="chart-container mb-4">
+      <div class="flex items-center justify-between mb-3 flex-wrap gap-2">
+        <h3 class="text-sm font-semibold text-gray-300">기간 비교 — 무엇이 늘고 무엇이 줄었나</h3>
+        <div class="flex items-center gap-2">
+          <label class="text-xs text-gray-400">기준</label>
+          <select id="sel-dim" class="bg-gray-800 border border-gray-700 rounded px-2 py-1 text-xs">
+            <option value="기인물">기인물</option>
+            <option value="공종">공종</option>
+            <option value="재해형태">재해형태</option>
+            <option value="작업명">작업명</option>
+          </select>
+        </div>
+      </div>
+      <p class="text-xs text-gray-500 mb-3" id="period-note"></p>
+      <div id="period-table" class="overflow-x-auto"></div>
+    </div>
+
+    <!-- 사례 테이블 -->
+    <div class="chart-container mb-4">
+      <h3 class="text-sm font-semibold text-gray-300 mb-3" id="title-table">재해사례 및 감소대책</h3>
+      <div id="data-table"></div>
+    </div>
+
+    <!-- 해설 -->
+    <div class="chart-container">
+      <h3 class="text-sm font-semibold text-gray-300 mb-4">이 화면을 읽는 법</h3>
+      <div class="guide" id="guide-body"></div>
+    </div>
+  </main>
+
+  <script src="../js/i18n.js"></script>
+  <script src="../js/data-loader.js"></script>
+  <script src="../js/filter-manager.js"></script>
+  <script src="../js/chart-manager.js"></script>
+  <script src="../js/utils.js"></script>
+  <script src="../js/analytics.js"></script>
+  <script src="../js/multi-select.js"></script>
+  <script src="../js/components.js"></script>
+  <script src="../js/app.js"></script>
+
+  <script>
+    const cm = new ChartManager();
+    const fm = new FilterManager(['koen', '공종', '기인물', '재해형태', 'keyword']);
+
+    // 집계 창 — 원본 연도는 재해개요 표기에서 뽑은 값이라 2013~2015(38건)·2024(1건)처럼
+    // 수집 대상이 아닌 해가 소량 섞여 있다. 추이 차트는 이 창 안에서만 그린다.
+    const YEAR_FROM = 2016, YEAR_TO = 2023;
+    // 최근/이전 기간 경계 — "최근 5년"과 같은 기준(2019~)
+    const RECENT_FROM = 2019;
+
+    let allData = [];
+    let keywordInput = null;
+    let resetKoenToggle = null;
+    let selectedYear = null;   // 연도 막대 클릭 시 그 해로 좁힘
+
+    const msGz = new MultiSelect({ containerId: 'ms-gz', placeholder: '전체 공종', showCounts: true,
+      onChange: v => fm.set('공종', v) });
+    const msCause = new MultiSelect({ containerId: 'ms-cause', placeholder: '전체 기인물', showCounts: true,
+      onChange: v => fm.set('기인물', v) });
+    const msDisaster = new MultiSelect({ containerId: 'ms-disaster', placeholder: '전체 재해형태', showCounts: true,
+      onChange: v => fm.set('재해형태', v) });
+
+    async function init() {
+      renderPageHeader('발생시기 분석', '연도·월·계절로 본 재해 추이 — 무엇이 늘고 무엇이 줄었는지');
+      allData = await DataLoader.loadDB();
+
+      resetKoenToggle = createKoenToggle('koen-toggle-wrap', v => fm.set('koen', v));
+      keywordInput = createKeywordSearch('keyword-search-wrap', v => fm.set('keyword', v));
+      document.getElementById('btn-reset').addEventListener('click', resetAll);
+      document.getElementById('sel-dim').addEventListener('change', renderPeriodTable);
+
+      fm.onDataChange(() => { selectedYear = null; refreshDropdowns(); renderAll(); });
+
+      refreshDropdowns();
+      applyDeepLinkParams();
+      renderAll();
+    }
+
+    function applyDeepLinkParams() {
+      const q = new URLSearchParams(location.search);
+      const g = q.get('공종'); if (g) msGz.setValues([g]);
+      const c = q.get('기인물'); if (c) msCause.setValues([c]);
+      const d = q.get('재해형태'); if (d) msDisaster.setValues([d]);
+    }
+
+    function resetAll() {
+      selectedYear = null;
+      msGz.setValues([]); msCause.setValues([]); msDisaster.setValues([]);
+      if (keywordInput) keywordInput.value = '';
+      if (resetKoenToggle) resetKoenToggle();
+      fm.reset();
+    }
+
+    /** 필터 스코프 */
+    function scopeData() { return filterDB(allData, fm.getAll()); }
+    /** 집계 창(2016~2023) 안의 데이터 — 추이 계산의 기준 */
+    function windowData(data) {
+      return (data || scopeData()).filter(r => r['발생연도'] >= YEAR_FROM && r['발생연도'] <= YEAR_TO);
+    }
+    /** 화면 하단 테이블·기간비교에 쓰는 데이터 (연도 선택 반영) */
+    function currentData() {
+      const d = windowData();
+      return selectedYear ? d.filter(r => r['발생연도'] === selectedYear) : d;
+    }
+
+    function refreshDropdowns() {
+      const f = fm.getAll();
+      const optsFor = (key) => {
+        const partial = { ...f };
+        delete partial[key];
+        const agg = aggregateBy(filterDB(allData, partial), key);
+        return topN(agg, 'count', agg.length).map(a => ({ value: a.key, label: a.key, count: a.count }));
+      };
+      msGz.setOptions(optsFor('공종'));
+      msCause.setOptions(optsFor('기인물'));
+      msDisaster.setOptions(optsFor('재해형태'));
+    }
+
+    function renderAll() {
+      renderSummary();
+      renderInsights();
+      renderYearChart();
+      renderMonthChart();
+      renderSeasonChart();
+      renderYearTypeChart();
+      renderPeriodTable();
+      renderTable();
+      renderGuide();
+    }
+
+    /* ── 해설 ── 수치는 현재 스코프에서 계산해 화면과 어긋나지 않게 한다 */
+    function renderGuide() {
+      const win = windowData();
+      const ts = timeSeries(win, '발생연도', { from: YEAR_FROM, to: YEAR_TO });
+      const prevN = win.filter(r => r['발생연도'] < RECENT_FROM).length;
+      const recentN = win.length - prevN;
+      const grown = periodDelta(win, '기인물').filter(r => r.prev >= 10 && r.deltaPct > 0)
+        .sort((a, b) => b.deltaPct - a.deltaPct)[0];
+
+      document.getElementById('guide-body').innerHTML = `
+        <section>
+          <h4>어느 기간을 보고 있나</h4>
+          <p>발생연도는 재해개요 원문의 연·월 표기에서 뽑은 값입니다. 원문에
+             2013~2015년(소수)과 2024년 표기가 섞여 있지만 공단이 그 해를 집계한 것은 아니라,
+             추이 차트는 <b>${YEAR_FROM}~${YEAR_TO}년</b>만 그리고 범위 밖
+             <b>${formatNumber(ts.outOfRange)}건</b>은 제외했습니다.</p>
+        </section>
+
+        <section>
+          <h4>기간 비교를 건수가 아니라 ‘비중’으로 보는 이유</h4>
+          <p>두 기간의 사례 수가 다릅니다 —
+             ${YEAR_FROM}~${RECENT_FROM - 1}년 <b>${formatNumber(prevN)}건</b> vs
+             ${RECENT_FROM}~${YEAR_TO}년 <b>${formatNumber(recentN)}건</b>.
+             건수만 비교하면 전체가 줄어든 탓에 <b>거의 모든 항목이 줄어든 것처럼</b> 보입니다.
+             그래서 각 기간 안에서 차지하는 <b>비중(%)</b>이 어떻게 달라졌는지를 봅니다.</p>
+          <div class="callout">
+            <p>비중이 올랐다는 것은 <b>“전체가 줄어드는 와중에도 이건 줄지 않았다”</b>는 뜻입니다.
+               ${grown ? `예를 들어 <b>${grown.key}</b>는 ${grown.prevShare.toFixed(1)}% → ${grown.recentShare.toFixed(1)}%로 올랐습니다 —
+               최근에 상대적으로 더 문제가 되고 있는 기인물입니다.` : ''}</p>
+          </div>
+        </section>
+
+        <section>
+          <h4>이렇게 쓰시면 됩니다</h4>
+          <ul>
+            <li>연도 막대를 <b>누르면</b> 그 해의 사례만 아래 표와 월별 차트에 반영됩니다.</li>
+            <li>기간 비교표의 <b>기준</b>을 기인물 · 공종 · 재해형태 · 작업명으로 바꿔가며
+                무엇이 늘고 줄었는지 확인하세요.</li>
+            <li><b>월별 차트</b>의 주황(혹서기 6~8월) · 하늘색(혹한기 12~2월)은
+                계절별 안전대책 수립 시기를 잡는 근거로 쓸 수 있습니다.</li>
+          </ul>
+        </section>
+
+        <section>
+          <h4>알아두실 점</h4>
+          <ul class="caveat">
+            <li>사고 <b>발생</b> 연도이지 공단 <b>배포</b> 연도가 아닙니다. 최근 연도는 아직 아카이브에
+                덜 반영됐을 수 있어, 마지막 해의 감소를 곧바로 ‘개선’으로 읽으면 안 됩니다.</li>
+            <li>월·계절은 원문에 월 표기가 있는 사례에서만 뽑았습니다(전건 추출 성공).</li>
+          </ul>
+        </section>`;
+    }
+
+    /* ── 요약 카드 ── */
+    function renderSummary() {
+      const scope = scopeData();
+      const win = windowData(scope);
+      const ts = timeSeries(scope, '발생연도', { from: YEAR_FROM, to: YEAR_TO });
+      const recent = win.filter(r => r['발생연도'] >= RECENT_FROM).length;
+      const 혹서 = win.filter(r => r['혹서기'] === '혹서기').length;
+      const 복수 = win.filter(r => r['복수재해자']).length;
+      const months = timeSeries(win, '발생월');
+      const topMonth = months.rows.slice().sort((a, b) => b.count - a.count)[0];
+
+      const card = (label, value, sub, accent = 'text-white') => `
+        <div class="stat-card">
+          <p class="text-xs text-gray-500 uppercase tracking-wide">${label}</p>
+          <p class="text-2xl font-bold ${accent} mt-2">${value}</p>
+          <p class="text-xs text-gray-500 mt-1">${sub}</p>
+        </div>`;
+
+      document.getElementById('summary-cards').innerHTML = [
+        card('집계 대상', formatNumber(win.length),
+             `${YEAR_FROM}~${YEAR_TO}년 · 범위 밖 ${formatNumber(ts.outOfRange)}건 제외`),
+        card('최근 5년', formatNumber(recent),
+             `${RECENT_FROM}년 이후 · 전체 대비 ${formatPercent(recent, win.length)}`),
+        card('최다 발생월', topMonth ? `${topMonth.key}월` : '-',
+             topMonth ? `${formatNumber(topMonth.count)}건 (${formatPercent(topMonth.count, win.length)})` : '-'),
+        card('혹서기(6~8월)', formatNumber(혹서),
+             `${formatPercent(혹서, win.length)} · 복수재해자 ${formatNumber(복수)}건`, 'text-amber-400'),
+      ].join('');
+    }
+
+    /* ── 자동 인사이트 (스코프에서 계산) ── */
+    function renderInsights() {
+      const win = windowData();
+      const lines = [];
+      if (!win.length) {
+        document.getElementById('insight-box').innerHTML =
+          '<p class="text-xs text-gray-500">조건에 해당하는 사례가 없습니다.</p>';
+        return;
+      }
+
+      const ts = timeSeries(win, '발생연도', { from: YEAR_FROM, to: YEAR_TO });
+      const first = ts.rows[0], last = ts.rows[ts.rows.length - 1];
+      if (first && last && first.key !== last.key && first.count) {
+        const diff = last.count - first.count;
+        const rate = (diff / first.count * 100).toFixed(0);
+        lines.push(`${first.key}년 ${formatNumber(first.count)}건 → ${last.key}년 ${formatNumber(last.count)}건 ` +
+          `<b class="${diff < 0 ? 'delta-down' : diff > 0 ? 'delta-up' : ''}">(${diff > 0 ? '+' : ''}${rate}%)</b>`);
+      }
+
+      // 기간 비교 — 최근이 이전보다 두드러지게 늘어난 항목
+      const grown = periodDelta(win, '기인물')
+        .filter(r => r.prev >= 10 && r.deltaPct > 0)
+        .sort((a, b) => b.deltaPct - a.deltaPct)[0];
+      if (grown) {
+        lines.push(`${RECENT_FROM}년 이후 비중이 가장 커진 기인물 — <b>${grown.key}</b> ` +
+          `${grown.prevShare.toFixed(1)}% → ${grown.recentShare.toFixed(1)}%`);
+      }
+      const shrunk = periodDelta(win, '기인물')
+        .filter(r => r.prev >= 10 && r.deltaPct < 0)
+        .sort((a, b) => a.deltaPct - b.deltaPct)[0];
+      if (shrunk) {
+        lines.push(`가장 줄어든 기인물 — <b>${shrunk.key}</b> ` +
+          `${shrunk.prevShare.toFixed(1)}% → ${shrunk.recentShare.toFixed(1)}%`);
+      }
+
+      // 계절성 — 최다/최소 월 격차
+      const m = timeSeries(win, '발생월').rows.slice().sort((a, b) => b.count - a.count);
+      if (m.length >= 2 && m[m.length - 1].count > 0) {
+        const hi = m[0], lo = m[m.length - 1];
+        lines.push(`월별 편차: 최다 <b>${hi.key}월</b> ${formatNumber(hi.count)}건 · ` +
+          `최소 <b>${lo.key}월</b> ${formatNumber(lo.count)}건 (${(hi.count / lo.count).toFixed(1)}배)`);
+      }
+
+      document.getElementById('insight-box').innerHTML =
+        `<ul class="list-disc pl-4 space-y-0.5" style="font-size:.8125rem;color:#BFDBFE;line-height:1.7">
+           ${lines.map(l => `<li>${l}</li>`).join('')}
+         </ul>`;
+    }
+
+    /* ── 연도 추이 (막대 + 추세선) ── */
+    function renderYearChart() {
+      const win = windowData();
+      const ts = timeSeries(win, '발생연도', { from: YEAR_FROM, to: YEAR_TO });
+      document.getElementById('year-note').textContent =
+        `${YEAR_FROM}~${YEAR_TO}년 집계 · 범위 밖 ${formatNumber(ts.outOfRange)}건 제외 · 막대를 누르면 그 해로 좁힙니다`;
+
+      const labels = ts.rows.map(r => r.key);
+      const values = ts.rows.map(r => r.count);
+      const ACCENT = '#3B82F6';
+
+      cm.create('chart-year', {
+        type: 'bar',
+        data: {
+          labels,
+          datasets: [
+            {
+              type: 'bar', data: values,
+              backgroundColor: labels.map(y => selectedYear && y !== selectedYear
+                ? 'rgba(59,130,246,.18)' : CHART_COLORS.getAlpha(ACCENT, .6)),
+              borderColor: labels.map(y => selectedYear && y !== selectedYear
+                ? 'rgba(59,130,246,.3)' : '#1D4ED8'),
+              borderWidth: 1, order: 2,
+            },
+            {
+              type: 'line', data: values, borderColor: '#F59E0B', borderWidth: 2,
+              pointRadius: 3, pointBackgroundColor: '#F59E0B', fill: false, tension: .25, order: 1,
+            },
+          ],
+        },
+        options: {
+          responsive: true, maintainAspectRatio: false,
+          onClick: (e, els) => { if (els.length) { selectedYear = selectedYear === labels[els[0].index] ? null : labels[els[0].index]; renderAll(); } },
+          plugins: {
+            legend: { display: false },
+            datalabels: { display: ctx => ctx.datasetIndex === 0,
+              ...verticalBarDatalabels(win.length, { canvasId: 'chart-year', count: labels.length }) },
+            tooltip: { filter: c => c.datasetIndex === 0,
+              callbacks: { label: c => `${I18n.cases(c.parsed.y)} (${formatPercent(c.parsed.y, win.length)})` } },
+          },
+          scales: { y: { beginAtZero: true, suggestedMax: headroom(values) } },
+        },
+      });
+    }
+
+    /* ── 월별 (혹서기·혹한기 색 구분) ── */
+    function renderMonthChart() {
+      const win = currentData();
+      const rows = timeSeries(win, '발생월').rows;
+      const values = rows.map(r => r.count);
+      const colorOf = (m) => m >= 6 && m <= 8 ? 'rgba(245,158,11,.75)'
+                          : (m === 12 || m <= 2) ? 'rgba(56,189,248,.7)'
+                          : 'rgba(59,130,246,.5)';
+      const borderOf = (m) => m >= 6 && m <= 8 ? '#D97706'
+                           : (m === 12 || m <= 2) ? '#0284C7' : '#1D4ED8';
+
+      cm.create('chart-month', {
+        type: 'bar',
+        data: {
+          labels: rows.map(r => `${r.key}월`),
+          datasets: [{
+            data: values,
+            backgroundColor: rows.map(r => colorOf(r.key)),
+            borderColor: rows.map(r => borderOf(r.key)), borderWidth: 1,
+          }],
+        },
+        options: {
+          responsive: true, maintainAspectRatio: false,
+          plugins: {
+            legend: { display: false },
+            datalabels: verticalBarDatalabels(win.length, { canvasId: 'chart-month', count: rows.length }),
+            tooltip: { callbacks: { label: c => `${I18n.cases(c.parsed.y)} (${formatPercent(c.parsed.y, win.length)})` } },
+          },
+          scales: { y: { beginAtZero: true, suggestedMax: headroom(values) } },
+        },
+      });
+    }
+
+    /* ── 계절 도넛 ── */
+    function renderSeasonChart() {
+      const win = currentData();
+      const ORDER = ['봄', '여름', '가을', '겨울'];
+      const COLORS = { '봄': '#34D399', '여름': '#F59E0B', '가을': '#F97316', '겨울': '#38BDF8' };
+      const counts = {};
+      win.forEach(r => { if (r['계절']) counts[r['계절']] = (counts[r['계절']] || 0) + 1; });
+      const labels = ORDER.filter(s => counts[s]);
+
+      cm.create('chart-season', {
+        type: 'doughnut',
+        data: {
+          labels,
+          datasets: [{ data: labels.map(s => counts[s]),
+            backgroundColor: labels.map(s => COLORS[s]), borderWidth: 0 }],
+        },
+        options: {
+          cutout: '50%',
+          plugins: {
+            legend: { position: 'right', labels: { boxWidth: 10, font: { size: 11 } } },
+            tooltip: { callbacks: { label: c => ` ${c.label}: ${I18n.cases(c.raw)} (${formatPercent(c.raw, win.length)})` } },
+            datalabels: donutDatalabels({ canvasId: 'chart-season' }),
+          },
+        },
+        plugins: [ChartDataLabels],
+      });
+    }
+
+    /* ── 연도 × 재해형태 100% 스택 ──
+       건수는 위 차트가 보여주므로, 여기서는 "구성비가 어떻게 달라졌나"만 본다. */
+    function renderYearTypeChart() {
+      const win = windowData();
+      const years = timeSeries(win, '발생연도', { from: YEAR_FROM, to: YEAR_TO }).rows.map(r => r.key);
+      const top = topN(aggregateBy(win, '재해형태'), 'count', 6).map(a => a.key);
+      const yearTotal = {};
+      years.forEach(y => { yearTotal[y] = win.filter(r => r['발생연도'] === y).length; });
+
+      const datasets = [...top, '기타'].map((type, i) => ({
+        label: type,
+        data: years.map(y => {
+          const inYear = win.filter(r => r['발생연도'] === y);
+          const n = type === '기타'
+            ? inYear.filter(r => !top.includes(r['재해형태'])).length
+            : inYear.filter(r => r['재해형태'] === type).length;
+          return yearTotal[y] ? +(n / yearTotal[y] * 100).toFixed(1) : 0;
+        }),
+        backgroundColor: type === '기타' ? 'rgba(148,163,184,.5)' : CHART_COLORS.getAlpha(CHART_COLORS.getColor(i), .8),
+      }));
+
+      cm.create('chart-year-type', {
+        type: 'bar',
+        data: { labels: years, datasets },
+        options: {
+          responsive: true, maintainAspectRatio: false,
+          plugins: {
+            legend: { position: 'bottom', labels: { boxWidth: 10, font: { size: 10 } } },
+            datalabels: { display: false },
+            tooltip: { callbacks: { label: c => ` ${c.dataset.label}: ${c.parsed.y}%` } },
+          },
+          scales: {
+            x: { stacked: true },
+            y: { stacked: true, beginAtZero: true, max: 100, ticks: { callback: v => v + '%' } },
+          },
+        },
+      });
+    }
+
+    /* ── 기간 비교 ──
+       건수만 보면 표본이 큰 항목이 늘 위에 온다. 두 기간의 "비중"을 비교해야
+       실제로 커지고 있는 위험이 보인다(예: 고소작업대는 누적은 적어도 최근 급증). */
+    function periodDelta(win, dim) {
+      const prev = win.filter(r => r['발생연도'] < RECENT_FROM);
+      const recent = win.filter(r => r['발생연도'] >= RECENT_FROM);
+      const cnt = (arr, k) => arr.filter(r => r[dim] === k).length;
+      const keys = [...new Set(win.map(r => r[dim]).filter(Boolean))];
+      return keys.map(k => {
+        const p = cnt(prev, k), c = cnt(recent, k);
+        const ps = prev.length ? p / prev.length * 100 : 0;
+        const cs = recent.length ? c / recent.length * 100 : 0;
+        return { key: k, prev: p, recent: c, prevShare: ps, recentShare: cs, deltaPct: cs - ps, total: p + c };
+      }).sort((a, b) => b.total - a.total);
+    }
+
+    function renderPeriodTable() {
+      const dim = document.getElementById('sel-dim').value;
+      const win = windowData();
+      const prevN = win.filter(r => r['발생연도'] < RECENT_FROM).length;
+      const recentN = win.length - prevN;
+      document.getElementById('period-note').innerHTML =
+        `<b class="text-gray-400">${YEAR_FROM}~${RECENT_FROM - 1}년 ${formatNumber(prevN)}건</b> vs ` +
+        `<b class="text-gray-400">${RECENT_FROM}~${YEAR_TO}년 ${formatNumber(recentN)}건</b> — ` +
+        `기간마다 표본 크기가 달라 건수 대신 <b class="text-gray-400">비중(%)</b>의 변화로 비교합니다. 상위 12개.`;
+
+      const rows = periodDelta(win, dim).slice(0, 12);
+      const strip = s => String(s).replace(/^\d+(\.\d+)*\.?\s*/, '');
+      const delta = d => {
+        const cls = d > 0.3 ? 'delta-up' : d < -0.3 ? 'delta-down' : 'delta-flat';
+        const sign = d > 0 ? '▲' : d < 0 ? '▼' : '–';
+        return `<span class="${cls}">${sign} ${Math.abs(d).toFixed(1)}p</span>`;
+      };
+
+      document.getElementById('period-table').innerHTML = rows.length ? `
+        <table>
+          <thead><tr>
+            <th>${dim}</th>
+            <th>${YEAR_FROM}~${RECENT_FROM - 1}</th><th>비중</th>
+            <th>${RECENT_FROM}~${YEAR_TO}</th><th>비중</th>
+            <th>비중 변화</th>
+          </tr></thead>
+          <tbody>${rows.map(r => `
+            <tr>
+              <td class="name" title="${r.key}">${strip(r.key)}</td>
+              <td class="text-gray-400">${formatNumber(r.prev)}</td>
+              <td class="text-gray-500">${r.prevShare.toFixed(1)}%</td>
+              <td class="text-gray-400">${formatNumber(r.recent)}</td>
+              <td class="text-gray-500">${r.recentShare.toFixed(1)}%</td>
+              <td>${delta(r.deltaPct)}</td>
+            </tr>`).join('')}</tbody>
+        </table>` : '<p class="text-sm text-gray-500">비교할 사례가 없습니다.</p>';
+    }
+
+    /* ── 사례 테이블 ── */
+    function renderTable() {
+      const data = currentData();
+      document.getElementById('title-table').textContent =
+        `재해사례 및 감소대책${selectedYear ? ` — ${selectedYear}년` : ''}`;
+      const columns = [
+        { key: '발생연도', label: '연도', width: 58, format: v => (v == null ? '-' : String(v)) },
+        { key: '발생월', label: '월', width: 44, format: v => (v == null ? '-' : `${v}월`) },
+        { key: '공종', label: '공종', width: 110, format: v => (v || '').replace(/^\d+\.\s*/, '') },
+        { key: '작업명', label: '작업명', width: 130 },
+        { key: '기인물', label: '기인물', width: 120 },
+        { key: '재해형태', label: '재해형태', width: 84 },
+        { key: '재해개요', label: '재해개요', minWidth: 240, wrap: true,
+          format: v => `<div class="text-xs text-gray-300">${v || '-'}</div>` },
+        { key: '위험성감소대책', label: '감소대책', minWidth: 240, wrap: true,
+          format: v => `<div class="text-xs text-gray-300">${v || '-'}</div>` },
+      ];
+      buildTable('data-table', columns, data, {
+        pageSize: 10, sortKey: '발생연도', sortDir: 'desc',
+        filterColumns: ['공종', '기인물', '재해형태'],
+      });
+    }
+
+    init();
+  </script>
+</body>
+</html>
