@@ -534,7 +534,7 @@
             datalabels: barDatalabels(total),
           },
           scales: {
-            x: { grid: { color: '#1F2937' } },
+            x: { grid: { color: CHART_COLORS.grid } },
             y: { grid: { display: false }, ticks: { font: { size: 11 } } }
           },
           onClick: (e, elements) => {
@@ -573,7 +573,7 @@
             datalabels: barDatalabels(total),
           },
           scales: {
-            x: { grid: { color: '#1F2937' } },
+            x: { grid: { color: CHART_COLORS.grid } },
             y: { grid: { display: false }, ticks: { font: { size: 10 } } }
           }
         },
@@ -611,7 +611,7 @@
             datalabels: barDatalabels(total),
           },
           scales: {
-            x: { grid: { color: '#1F2937' } },
+            x: { grid: { color: CHART_COLORS.grid } },
             y: { grid: { display: false }, ticks: { font: { size: 9 }, autoSkip: false } }
           }
         },
@@ -649,7 +649,7 @@
             datalabels: barDatalabels(total),
           },
           scales: {
-            x: { grid: { color: '#1F2937' } },
+            x: { grid: { color: CHART_COLORS.grid } },
             y: { grid: { display: false }, ticks: { font: { size: 9 }, autoSkip: false } }
           }
         },
@@ -691,7 +691,7 @@
         sortedClasses.forEach(cc => {
           const val = matrix[gz][cc];
           const bg = CHART_COLORS.heatmapColor(val, 0, maxVal);  // 0이면 transparent 반환
-          html += `<td class="px-2 py-1.5 text-center font-medium text-xs" style="background:${bg}" title="${shortName} - ${cc}: ${val}건">${val || ''}</td>`;
+          html += `<td class="px-2 py-1.5 text-center font-medium text-xs" style="background:${bg}" data-heat="${val}|${maxVal}" title="${shortName} - ${cc}: ${val}건">${val || ''}</td>`;
         });
         html += `</tr>`;
       });

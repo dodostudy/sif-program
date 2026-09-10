@@ -15,12 +15,12 @@ const THEME_COLORS = {
     tooltipBorder: '#374151',
   },
   light: {
-    chartText: '#374151',
-    chartBorder: '#E5E7EB',
-    tooltipBg: 'rgba(255, 255, 255, 0.95)',
-    tooltipTitle: '#111827',
-    tooltipBody: '#374151',
-    tooltipBorder: '#D1D5DB',
+    chartText: '#41454d',
+    chartBorder: '#e6e6e6',
+    tooltipBg: 'rgba(255, 255, 255, 0.97)',
+    tooltipTitle: '#181d26',
+    tooltipBody: '#333840',
+    tooltipBorder: '#dddddd',
   }
 };
 
@@ -34,10 +34,16 @@ function applyChartTheme(theme) {
   Chart.defaults.plugins.tooltip.bodyColor = c.tooltipBody;
   Chart.defaults.plugins.tooltip.borderColor = c.tooltipBorder;
 
-  // 이미 생성된 차트 인스턴스도 업데이트
+  // 이미 생성된 차트 인스턴스도 업데이트 — 데이터셋 색을 반대 테마 팔레트로 바꾼 뒤 다시 그린다
   try {
-    Object.values(Chart.instances).forEach(chart => chart.update('none'));
+    Object.values(Chart.instances).forEach(chart => {
+      if (typeof CHART_COLORS !== 'undefined' && CHART_COLORS.remapChart) CHART_COLORS.remapChart(chart);
+      chart.update('none');
+    });
   } catch (e) { /* 무시 */ }
+  if (typeof CHART_COLORS !== 'undefined' && CHART_COLORS.repaintHeatCells) {
+    try { CHART_COLORS.repaintHeatCells(); } catch (e) { /* 무시 */ }
+  }
 }
 
 function getCurrentTheme() {
@@ -68,7 +74,7 @@ function barDatalabels(total) {
     clamp: true,          // 경계에서 라벨을 차트 영역 안으로 당김
     clip: false,
     offset: 2,
-    color: () => (getCurrentTheme() === 'light' ? '#1F2937' : '#E5E7EB'),
+    color: () => (getCurrentTheme() === 'light' ? '#181d26' : '#E5E7EB'),
     textStrokeColor: () => (getCurrentTheme() === 'light' ? 'rgba(255,255,255,0.9)' : 'rgba(17,24,39,0.9)'),
     textStrokeWidth: 3,
     font: { size: 10, weight: '600' },
@@ -173,7 +179,7 @@ function verticalBarDatalabels(total, opts = {}) {
     offset: 2,
     clamp: true,
     clip: false,
-    color: () => (getCurrentTheme() === 'light' ? '#1F2937' : '#E5E7EB'),
+    color: () => (getCurrentTheme() === 'light' ? '#181d26' : '#E5E7EB'),
     textStrokeColor: () => (getCurrentTheme() === 'light' ? 'rgba(255,255,255,0.9)' : 'rgba(17,24,39,0.9)'),
     textStrokeWidth: 3,
     font: { size: 10, weight: '600' },

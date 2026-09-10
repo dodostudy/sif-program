@@ -21,7 +21,7 @@
     <div class="print-header" id="print-title"></div>
 
     <!-- ===== GPTs 배너 (항상 표시) ===== -->
-    <div class="no-print mb-5 rounded-2xl border border-blue-700/40 p-5" style="background:linear-gradient(135deg,rgba(15,30,80,.7) 0%,rgba(13,31,92,.5) 100%);backdrop-filter:blur(12px)">
+    <div class="no-print gpts-banner mb-5 rounded-2xl border border-blue-700/40 p-5" style="background:linear-gradient(135deg,rgba(15,30,80,.7) 0%,rgba(13,31,92,.5) 100%);backdrop-filter:blur(12px)">
       <div class="flex flex-col sm:flex-row items-start sm:items-center gap-4">
         <div class="flex items-center gap-3 flex-shrink-0">
           <div class="w-10 h-10 rounded-xl bg-blue-600/30 border border-blue-500/40 flex items-center justify-center">
@@ -339,7 +339,19 @@
 
       if (isGrouped) {
         // 그룹별 색상 맵
-        const GROUP_COLORS = {
+        // 그룹 제목색 — 다크는 밝은 글자, 라이트는 흰 바탕에서 읽히는 진한 글자
+        const GROUP_COLORS = getCurrentTheme() === 'light' ? {
+          '고소':          { border: '#1b61c9', text: '#1b61c9' },
+          '중장비':        { border: '#d9a441', text: '#a26a00' },
+          '굴착':          { border: '#c2632a', text: '#a04f1e' },
+          '전기':          { border: '#f4d35e', text: '#8a6d00' },
+          '중량물':        { border: '#9297a0', text: '#41454d' },
+          '화기':          { border: '#aa2d00', text: '#aa2d00' },
+          '밀폐':          { border: '#7a4b9c', text: '#5b4b8a' },
+          '일반':          { border: '#2f7f4f', text: '#2f7f4f' },
+          '원인미상':      { border: '#e07b39', text: '#b45f24' },
+          '화학물질':      { border: '#9fb56b', text: '#5f7a2a' },
+        } : {
           '고소':          { border: '#3B82F6', text: '#93C5FD' },
           '중장비':        { border: '#F59E0B', text: '#FCD34D' },
           '굴착':          { border: '#D97706', text: '#FDE68A' },
@@ -364,7 +376,7 @@
 
           // 건수 내림차순 정렬
           const sorted = validCauses.sort((a, b) => getCauseCount(b, type) - getCauseCount(a, type));
-          const color = GROUP_COLORS[type] || { border: '#4B5563', text: '#9CA3AF' };
+          const color = GROUP_COLORS[type] || (getCurrentTheme() === 'light' ? { border: '#9297a0', text: '#41454d' } : { border: '#4B5563', text: '#9CA3AF' });
 
           html += `<div class="bg-gray-900/60 border border-gray-800 rounded-xl p-3" style="border-top: 2px solid ${color.border}">
             <div class="text-xs font-bold mb-3 pb-2 border-b border-gray-700/60 flex items-center gap-1.5" style="color:${color.text}">
@@ -757,7 +769,7 @@
       const top = measureTopN(data, 5);
       if (!top.length) return '';
       return `
-        <div class="mb-5 rounded-lg border border-gray-700 p-4" style="background:rgba(31,41,55,.35)">
+        <div class="mb-5 rounded-lg note-plain p-4">
           <div class="flex items-center justify-between mb-2 flex-wrap gap-2">
             <h4 class="text-sm font-semibold text-gray-300">권장 감소대책 (가장 자주 제시된 순)</h4>
             <span class="text-xs text-gray-500 no-print">선택한 ${formatNumber(data.length)}건에서 집계</span>
@@ -1087,7 +1099,7 @@
         },
         options: { indexAxis: 'y',
           plugins: { legend: { display: false }, datalabels: barDatalabels(data.length) },
-          scales: { x: { grid: { color: '#1F2937' } }, y: { grid: { display: false }, ticks: { font: { size: 10 } } } } },
+          scales: { x: { grid: { color: CHART_COLORS.grid } }, y: { grid: { display: false }, ticks: { font: { size: 10 } } } } },
         plugins: [ChartDataLabels]
       });
       const disasterAgg = aggregateBy(data, '재해형태');

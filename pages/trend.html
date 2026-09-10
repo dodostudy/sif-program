@@ -390,7 +390,7 @@
 
       const labels = ts.rows.map(r => r.key);
       const values = ts.rows.map(r => r.count);
-      const ACCENT = '#3B82F6';
+      const ACCENT = CHART_COLORS.info;
 
       cm.create('chart-year', {
         type: 'bar',
@@ -399,9 +399,9 @@
           datasets: [{
             data: values,
             backgroundColor: labels.map(y => selectedYear && y !== selectedYear
-              ? 'rgba(59,130,246,.18)' : CHART_COLORS.getAlpha(ACCENT, .6)),
+              ? CHART_COLORS.getAlpha(ACCENT, .18) : CHART_COLORS.getAlpha(ACCENT, .6)),
             borderColor: labels.map(y => selectedYear && y !== selectedYear
-              ? 'rgba(59,130,246,.3)' : '#1D4ED8'),
+              ? CHART_COLORS.getAlpha(ACCENT, .3) : CHART_COLORS.infoStrong),
             borderWidth: 1,
           }],
         },
@@ -423,11 +423,11 @@
       const win = currentData();
       const rows = timeSeries(win, '발생월').rows;
       const values = rows.map(r => r.count);
-      const colorOf = (m) => m >= 6 && m <= 8 ? 'rgba(245,158,11,.75)'
-                          : (m === 12 || m <= 2) ? 'rgba(56,189,248,.7)'
-                          : 'rgba(59,130,246,.5)';
-      const borderOf = (m) => m >= 6 && m <= 8 ? '#D97706'
-                           : (m === 12 || m <= 2) ? '#0284C7' : '#1D4ED8';
+      const colorOf = (m) => m >= 6 && m <= 8 ? CHART_COLORS.getAlpha(CHART_COLORS.hot, .75)
+                          : (m === 12 || m <= 2) ? CHART_COLORS.getAlpha(CHART_COLORS.cold, .7)
+                          : CHART_COLORS.getAlpha(CHART_COLORS.info, .5);
+      const borderOf = (m) => m >= 6 && m <= 8 ? CHART_COLORS.hotStrong
+                           : (m === 12 || m <= 2) ? CHART_COLORS.coldStrong : CHART_COLORS.infoStrong;
 
       cm.create('chart-month', {
         type: 'bar',
@@ -455,7 +455,7 @@
     function renderSeasonChart() {
       const win = currentData();
       const ORDER = ['봄', '여름', '가을', '겨울'];
-      const COLORS = { '봄': '#34D399', '여름': '#F59E0B', '가을': '#F97316', '겨울': '#38BDF8' };
+      const COLORS = CHART_COLORS.season;
       const counts = {};
       win.forEach(r => { if (r['계절']) counts[r['계절']] = (counts[r['계절']] || 0) + 1; });
       const labels = ORDER.filter(s => counts[s]);
@@ -497,7 +497,7 @@
             : inYear.filter(r => r['재해형태'] === type).length;
           return yearTotal[y] ? +(n / yearTotal[y] * 100).toFixed(1) : 0;
         }),
-        backgroundColor: type === '기타' ? 'rgba(148,163,184,.5)' : CHART_COLORS.getAlpha(CHART_COLORS.getColor(i), .8),
+        backgroundColor: type === '기타' ? CHART_COLORS.getAlpha(CHART_COLORS.dim, .5) : CHART_COLORS.getAlpha(CHART_COLORS.getColor(i), .8),
       }));
 
       cm.create('chart-year-type', {

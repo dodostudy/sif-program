@@ -31,13 +31,15 @@
     .band-btn.unknown { border-style: dashed; }
     .band-btn:disabled { opacity: .4; cursor: default; }
 
-    html.light .band-btn { background: #F3F4F6; border-color: #D1D5DB; }
-    html.light .band-btn .band-name { color: #4B5563; }
-    html.light .band-btn .band-count { color: #111827; }
-    html.light .band-btn.active { background: #DBEAFE; border-color: #3B82F6; }
-    html.light .band-btn.active .band-name { color: #1D4ED8; }
-    html.light .band-btn.active .band-count { color: #1E3A8A; }
-    html.light .band-btn.active .band-pct { color: #2563EB; }
+    html.light .band-btn { background: #ffffff; border-color: #dddddd; }
+    html.light .band-btn:hover { border-color: #9297a0; }
+    html.light .band-btn .band-name { color: #41454d; }
+    html.light .band-btn .band-count { color: #181d26; }
+    html.light .band-btn .band-pct { color: #5f636b; }
+    html.light .band-btn.active { background: #181d26; border-color: #181d26; }
+    html.light .band-btn.active .band-name { color: #dddddd; }
+    html.light .band-btn.active .band-count { color: #ffffff; }
+    html.light .band-btn.active .band-pct { color: #c9ccd2; }
 
     /* 자동 인사이트 */
     .insight-box {
@@ -45,8 +47,8 @@
       border-radius: .5rem; padding: .75rem 1rem;
     }
     .insight-box li { font-size: .8125rem; color: #BFDBFE; line-height: 1.7; }
-    html.light .insight-box { background: #EFF6FF; border-color: #BFDBFE; }
-    html.light .insight-box li { color: #1E40AF; }
+    html.light .insight-box { background: #f5e9d4; border-color: #eadbbd; }
+    html.light .insight-box li { color: #333840; }
 
     /* 해설 */
     .guide h4 { font-size:.85rem; font-weight:700; color:#93C5FD; margin:0 0 .5rem; }
@@ -472,7 +474,7 @@
     function renderBandChart(stats) {
       const rows = stats.bands.filter(b => b.key !== HEIGHT_UNKNOWN || !excludeUnknown);
       const denom = excludeUnknown ? stats.known : stats.total;
-      const ACCENT = '#3B82F6';
+      const ACCENT = CHART_COLORS.info;
       cm.create('chart-bands', {
         type: 'bar',
         data: {
@@ -482,7 +484,7 @@
             backgroundColor: rows.map(b => selectedBand === '전체'
               ? CHART_COLORS.getAlpha(ACCENT, 0.55)
               : (b.key === selectedBand ? ACCENT : CHART_COLORS.getAlpha(ACCENT, 0.18))),
-            borderColor: rows.map(b => (selectedBand === '전체' || b.key === selectedBand) ? '#1D4ED8' : 'rgba(59,130,246,.3)'),
+            borderColor: rows.map(b => (selectedBand === '전체' || b.key === selectedBand) ? CHART_COLORS.infoStrong : CHART_COLORS.getAlpha(ACCENT, .3)),
             borderWidth: 1,
           }],
         },
@@ -545,8 +547,8 @@
           labels: bins.map(b => (b.to === Infinity ? b.label : `${b.from}`)),
           datasets: [{
             label: '건수', data: bins.map(b => b.count),
-            backgroundColor: bins.map(b => b.from < 2 ? 'rgba(245,158,11,.8)' : 'rgba(59,130,246,.55)'),
-            borderColor: bins.map(b => b.from < 2 ? '#D97706' : '#1D4ED8'), borderWidth: 1,
+            backgroundColor: bins.map(b => b.from < 2 ? CHART_COLORS.getAlpha(CHART_COLORS.hot, .8) : CHART_COLORS.getAlpha(CHART_COLORS.info, .55)),
+            borderColor: bins.map(b => b.from < 2 ? CHART_COLORS.hotStrong : CHART_COLORS.infoStrong), borderWidth: 1,
           }],
         },
         options: {
@@ -590,7 +592,7 @@
         bands.forEach(b => {
           const v = c.cells[b];
           const bg = CHART_COLORS.heatmapColor(v, 0, rowMax);
-          html += `<td style="background:${bg}" title="${c.key} · ${b}: ${I18n.cases(v)}">${v || ''}</td>`;
+          html += `<td style="background:${bg}" data-heat="${v}|${rowMax}" title="${c.key} · ${b}: ${I18n.cases(v)}">${v || ''}</td>`;
         });
         html += `<td class="text-gray-400 font-medium">${c.total}</td></tr>`;
       });

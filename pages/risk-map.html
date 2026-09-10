@@ -127,7 +127,7 @@
     // heat 행 배경 채움색 (표면→빨강): 낮은 알파로 텍스트 가독성 확보(다크/라이트 공용)
     function heatFill(ratio) {
       const a = (0.16 + 0.62 * Math.max(0, Math.min(ratio, 1))).toFixed(3);
-      return `rgba(239,68,68,${a})`;
+      return CHART_COLORS.getAlpha(CHART_COLORS.danger, a);
     }
 
     // focus 생성기 (filters는 항상 한글 canonical)
@@ -544,8 +544,8 @@
             labels,
             datasets: [{
               data: sorted.map(a => a.count),
-              backgroundColor: CHART_COLORS.getAlpha('#3B82F6', 0.6),
-              borderColor: '#3B82F6',
+              backgroundColor: CHART_COLORS.getAlpha(CHART_COLORS.info, 0.6),
+              borderColor: CHART_COLORS.info,
               borderWidth: 1, borderRadius: 3,
             }]
           },
@@ -556,7 +556,7 @@
               datalabels: barDatalabels(scopeTotal),
             },
             scales: {
-              x: { grid: { color: '#1F2937' } },
+              x: { grid: { color: CHART_COLORS.grid } },
               y: { grid: { display: false }, ticks: { font: { size: 9 }, autoSkip: false } }
             },
             ...common,

@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SIF 데이터 갱신 방법 — 공단 아카이브 새 배포판 반영</title>
+<style>
+:root{
+  --ink:#16191d; --ink-2:#4a5158; --ink-3:#767d85;
+  --paper:#fbfaf7; --panel:#ffffff; --rule:#dcd8cf;
+  --code-bg:#1b1f24; --code-ink:#dfe4ea; --code-key:#89b4ff; --code-str:#b5d99c; --code-cmt:#7d8794;
+  --mark:#7a5c00; --mark-bg:#fdf6dd; --mark-rule:#e3d190;
+  --ok:#1f5c3d; --ok-bg:#e9f3ec; --ok-rule:#bcd8c5;
+  --warn:#8a2a12; --warn-bg:#fbeae4; --warn-rule:#e8bfb2;
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0; background:var(--paper); color:var(--ink);
+  font-family:"Pretendard","Malgun Gothic","Apple SD Gothic Neo",sans-serif; font-size:16px; line-height:1.75; letter-spacing:-.01em}
+.wrap{max-width:53rem; margin:0 auto; padding:0 1.4rem 6rem}
+header{padding:4.5rem 0 2.2rem; border-bottom:2px solid var(--ink)}
+header h1{font-size:2rem; line-height:1.25; margin:0 0 .7rem; font-weight:700}
+header p{margin:0; color:var(--ink-2); max-width:42rem}
+.meta{margin-top:1.6rem; display:flex; flex-wrap:wrap; gap:.35rem 1.6rem; font-size:.86rem; color:var(--ink-3)}
+.meta b{color:var(--ink); font-weight:600}
+h2{font-size:1.28rem; margin:3.4rem 0 .9rem; font-weight:700; line-height:1.35}
+h3{font-size:1rem; margin:2rem 0 .5rem; font-weight:700; color:var(--ink-2)}
+p{margin:.7rem 0}
+ul,ol{margin:.7rem 0; padding-left:1.15rem}
+li{margin:.3rem 0}
+.step{display:flex; align-items:baseline; gap:.75rem; margin:3.6rem 0 .9rem; padding-top:1.4rem; border-top:1px solid var(--rule)}
+.step .n{flex:none; width:2rem; height:2rem; border-radius:50%; background:var(--ink); color:#fff; font-weight:700; font-size:.9rem;
+  display:inline-flex; align-items:center; justify-content:center; position:relative; top:.35rem}
+.step h2{margin:0}
+pre{background:var(--code-bg); color:var(--code-ink); padding:1rem 1.15rem; border-radius:.5rem; overflow-x:auto;
+  font:13.5px/1.6 "SF Mono",Menlo,Consolas,monospace; margin:.9rem 0}
+code{font:.92em "SF Mono",Menlo,Consolas,monospace; background:#eeece6; padding:.08em .35em; border-radius:.25rem}
+pre code{background:none; padding:0; font-size:inherit}
+.cmt{color:var(--code-cmt)}
+.k{color:var(--code-key)} .s{color:var(--code-str)}
+.box{border:1px solid var(--rule); background:var(--panel); border-radius:.6rem; padding:1rem 1.2rem; margin:1rem 0}
+.box.mark{background:var(--mark-bg); border-color:var(--mark-rule); color:var(--mark)}
+.box.ok{background:var(--ok-bg); border-color:var(--ok-rule); color:var(--ok)}
+.box.warn{background:var(--warn-bg); border-color:var(--warn-rule); color:var(--warn)}
+.box b{font-weight:700}
+.box p{margin:.35rem 0}
+table{width:100%; border-collapse:collapse; margin:1rem 0; font-size:.93rem; background:var(--panel)}
+th,td{border:1px solid var(--rule); padding:.55rem .7rem; text-align:left; vertical-align:top}
+th{background:#f1efe9; font-weight:700; white-space:nowrap}
+td code{white-space:nowrap}
+.flow{display:grid; grid-template-columns:1fr auto 1fr auto 1fr auto 1fr; gap:.4rem; align-items:center; margin:1.2rem 0; font-size:.9rem}
+.flow .b{border:1px solid var(--rule); background:var(--panel); border-radius:.5rem; padding:.7rem .8rem; text-align:center}
+.flow .b small{display:block; color:var(--ink-3); font-size:.78rem; margin-top:.15rem}
+.flow .a{color:var(--ink-3); text-align:center}
+.tree{font:13px/1.55 "SF Mono",Menlo,Consolas,monospace; white-space:pre; background:var(--panel); border:1px solid var(--rule); border-radius:.5rem; padding:1rem 1.15rem; overflow-x:auto}
+.chk li{list-style:none; position:relative; padding-left:1.6rem}
+.chk li::before{content:""; position:absolute; left:0; top:.5rem; width:.95rem; height:.95rem; border:1.5px solid var(--ink-2); border-radius:.2rem}
+details{border:1px solid var(--rule); border-radius:.5rem; background:var(--panel); padding:.5rem 1rem; margin:.8rem 0}
+summary{cursor:pointer; font-weight:600}
+@media (max-width:640px){ .flow{grid-template-columns:1fr} .flow .a{transform:rotate(90deg)} body{font-size:15px} }
+@media print{ body{background:#fff} pre{white-space:pre-wrap} }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <h1>SIF 데이터 갱신 방법</h1>
+  <p>공단(KOSHA)이 산업재해 고위험요인(SIF) 아카이브를 다시 배포하면, 새 엑셀 한 장을 받아 사이트 데이터로 바꾸는 절차입니다. 명령 한 줄로 전 과정이 돌아가고, 사람이 정해야 하는 것만 목록으로 돌려줍니다.</p>
+  <div class="meta">
+    <span>대상 <b>SIF 위험성평가 지원시스템</b></span>
+    <span>기준 배포판 <b>2026-04-01 (3,459건)</b></span>
+    <span>작성 <b>2026-09-10</b></span>
+  </div>
+</header>
+
+<h2>한눈에 보기</h2>
+<div class="flow">
+  <div class="b">공단 엑셀<small>아카이브(건설업) 시트</small></div><div class="a">▶</div>
+  <div class="b">A단계<small>28열 확장 · 규칙 적용</small></div><div class="a">▶</div>
+  <div class="b">하위유형·대표사례<small>군집 · medoid</small></div><div class="a">▶</div>
+  <div class="b">db.json<small>마스킹 · 검증 · 사이트 데이터</small></div>
+</div>
+<div class="box ok">
+  <p><b>이 문서로 할 수 있는 것</b> — 새 배포판 엑셀을 <code>source/</code>에 넣고 명령 한 줄을 실행하면 <code>data/db.json</code>이 새로 만들어집니다. 규칙으로 정하지 못한 항목은 <code>scripts/out/미결_*.csv</code>로 나옵니다. 그것만 사람이 채우고 다시 실행하면 됩니다.</p>
+</div>
+<p>지금 배포판(2026-04, 3,459건)으로 이 절차를 그대로 돌리면 현재 사이트의 <code>db.json</code>과 바이트 단위로 같은 파일이 나오는 것을 확인했습니다. 즉, 새 배포판에서 달라지는 것은 오직 데이터 차이뿐입니다.</p>
+
+<div class="step"><span class="n">0</span><h2>준비 — 한 번만</h2></div>
+<p>파이썬 3.9 이상과 패키지 네 개가 필요합니다. 터미널에서 프로젝트 폴더로 이동한 뒤:</p>
+<pre><code>pip3 install pandas numpy openpyxl scipy scikit-learn</code></pre>
+<p>이미 설치돼 있으면 "Requirement already satisfied"만 나오고 끝납니다. (사이트 확인용 로컬 서버는 파이썬에 내장돼 있어 따로 설치할 것이 없습니다.)</p>
+
+<div class="step"><span class="n">1</span><h2>공단 엑셀을 <code>source/</code>에 넣기</h2></div>
+<p>공공데이터포털에서 받은 파일을 그대로 <code>source/</code> 폴더에 둡니다. 파일 이름은 자유롭지만 날짜가 들어 있으면 나중에 알아보기 좋습니다.</p>
+<ul>
+  <li>시트가 세 장(개요 / 아카이브(제조업등) / 아카이브(건설업))입니다. 스크립트는 이름에 <b>"건설"</b>이 들어간 시트를 자동으로 고릅니다. 시트 이름이 바뀌었으면 <code>--sheet "시트이름"</code>으로 지정합니다.</li>
+  <li>열 순서는 연번 · 공종 · 작업명 · 단위작업명 · 재해종류 · 재해개요 · 기인물 · 재해유발요인 · 위험성 감소대책의 9열이어야 합니다. 열이 바뀌면 A단계가 "연번 헤더를 찾지 못했습니다"로 멈춥니다.</li>
+  <li>원본 파일은 절대 고치지 않습니다. 마스킹·치환은 모두 산출물에서만 일어납니다.</li>
+</ul>
+
+<div class="step"><span class="n">2</span><h2>명령 한 줄 실행</h2></div>
+<pre><code><span class="cmt"># 프로젝트 폴더에서</span>
+python3 scripts/build_all.py --xlsx <span class="s">"source/한국산업안전보건공단_산업재해 고위험요인(SIF) 아카이브_20270401.xlsx"</span></code></pre>
+<p>세 단계가 차례로 돌아갑니다. 보통 1~2분 걸립니다(하위유형 군집 계산이 대부분).</p>
+<table>
+  <tr><th>단계</th><th>하는 일</th><th>결과</th></tr>
+  <tr><td>A단계<br><code>build_stage_a.py</code></td><td>9열 원본을 28열로 확장. 기인물 파생 4열, 발생연도·월·계절, 재해형태(공단 용어→사이트 용어), 추락높이, 재해정도, 발전소(KOEN) 공정 여부 등</td><td><code>source/SIF_확장열_&lt;건수&gt;건.json</code><br><code>scripts/out/stage_a_report.md</code></td></tr>
+  <tr><td>테이블<br><code>build_tables.py</code></td><td>기인물×재해형태 칸마다 재해유발요인 문장을 군집해 하위유형을 나누고, 대표사례(가장 전형적인 사례)를 고름</td><td><code>source/T4_대표사례.json</code><br><code>source/T4m_사례하위유형매핑.json</code></td></tr>
+  <tr><td>B단계<br><code>build_dataset.py</code></td><td>개인정보 마스킹(실명·주소·나이·업체명) → 하위유형 병합 → 타입 검증 → 30열 db.json</td><td><code>data/db.json</code> · <code>data/dropdown-ref.json</code><br><code>scripts/out/build_report.md</code> · <code>pii_audit.csv</code></td></tr>
+</table>
+<p>끝나면 <code>scripts/out/갱신_리포트.md</code>에 이전 데이터와의 차이(건수, 새로 생긴 기인물·공종·재해형태, 증감 상위)가 정리됩니다. 이전 <code>db.json</code>은 <code>scripts/out/db_previous.json</code>으로 보관되므로 언제든 되돌릴 수 있습니다.</p>
+
+<div class="step"><span class="n">3</span><h2>미결이 나오면 — 사람이 정하는 것</h2></div>
+<p>A단계는 규칙으로 정할 수 없는 항목을 만나면 <b>산출물을 쓰지 않고 멈춥니다</b>. 화면에 이렇게 나옵니다.</p>
+<pre><code>[3/4] 미결 점검
+  ✗ 기인물 2건 → scripts/out/미결_기인물.csv
+  ✗ 재해형태 5건 → scripts/out/미결_재해형태.csv
+
+  미결 7건 — 산출물을 기록하지 않았습니다.</code></pre>
+<p>각 CSV의 <b>조치</b> 열에 무엇을 하면 되는지 적혀 있습니다. 종류별 처리 방법:</p>
+<table>
+  <tr><th>미결 파일</th><th>뜻</th><th>어디를 고치나</th></tr>
+  <tr><td><code>미결_기인물.csv</code></td><td>공단이 새 기인물 명칭을 썼다. 어느 분류인지, 12대 기인물인지 모른다.</td>
+      <td><b>이름만 바뀐 것</b>이면 <code>scripts/mapping/giinmul-crosswalk.json</code>의 <code>alias</code>에 <code>"새 이름": "기존 이름"</code> 추가.<br><b>진짜 새 항목</b>이면 <code>giinmul-lookup.json</code>의 <code>항목</code>에 추가.</td></tr>
+  <tr><td><code>미결_재해형태.csv</code></td><td>재해종류가 전도·화상·파열인데 원문에서 기전을 자동으로 못 읽었다.</td>
+      <td>재해개요를 읽고 재해형태를 정한 뒤 <code>scripts/mapping/jaehae-manual.json</code>의 <code>항목</code>에 추가. 키는 CSV의 <b>지문</b> 열 값을 그대로 씁니다.</td></tr>
+  <tr><td><code>미결_재해종류.csv</code></td><td>공단이 새 재해종류 용어를 썼다.</td>
+      <td><code>scripts/mapping/jaehae-term.json</code>의 <code>TERM_FIX</code>(1:1 치환) 또는 <code>KEEP</code>(같은 표기)에 추가.</td></tr>
+  <tr><td><code>미결_발생월.csv</code></td><td>재해개요에서 연·월을 못 읽었다(표기가 특이함).</td>
+      <td>대개 소수라 그대로 둬도 됩니다(발생월 없음으로 처리). 많으면 <code>build_stage_a.py</code>의 <code>MP</code> 정규식 보강.</td></tr>
+  <tr><td><code>미결_코드.csv</code></td><td>공종·작업명·단위작업명에 번호 접두("1.1.1")가 없다.</td>
+      <td>공단 원본 표기 확인. 실제로 번호가 없으면 그대로 둡니다.</td></tr>
+</table>
+
+<h3>매핑 파일에 항목을 추가하는 예</h3>
+<p><b>기인물 룩업</b> — 새 기인물 "방음벽 자재"가 나왔고, 분류는 '자재', 12대 기인물이 아니라면:</p>
+<pre><code>"방음벽 자재": {
+  <span class="k">"기인물분류"</span>: <span class="s">"자재"</span>,
+  <span class="k">"12대기인물"</span>: false,
+  <span class="k">"위험도순위"</span>: null,
+  <span class="k">"3년간사고비중"</span>: <span class="s">"해당없음"</span>
+}</code></pre>
+<p><b>재해형태 개별판정</b> — <code>미결_재해형태.csv</code>의 지문이 <code>덤프트럭이성토사면아래로전도되어운전자가...</code>이고 원문을 읽어 '깔림 뒤집힘'으로 정했다면:</p>
+<pre><code>"덤프트럭이성토사면아래로전도되어운전자가...": {
+  <span class="k">"재해형태"</span>: <span class="s">"깔림 뒤집힘"</span>,
+  <span class="k">"재해종류"</span>: <span class="s">"전도"</span>,
+  <span class="k">"사유"</span>: <span class="s">"덤프트럭이 성토사면 아래로 전도, 운전자 사망"</span>
+}</code></pre>
+<div class="box mark">
+  <p><b>왜 id가 아니라 지문인가</b> — 공단은 배포판마다 연번을 다시 매깁니다. id로 적어 두면 다음 배포판에서 엉뚱한 사례에 붙습니다. 지문은 재해개요에서 공백·마스킹 기호·숫자를 뺀 앞 40자라, 연번이 바뀌어도 같은 사례를 다시 찾습니다.</p>
+</div>
+<p>매핑을 보완했으면 2단계 명령을 <b>다시 실행</b>합니다. 미결이 0이 될 때까지 반복합니다. 급하면 <code>--allow-pending</code>을 붙여 끝까지 돌릴 수 있는데, 이때 미결 재해형태는 공단 원문값(전도·화상·파열)이 그대로 남습니다.</p>
+
+<div class="step"><span class="n">4</span><h2>결과 확인</h2></div>
+<ul class="chk">
+  <li><code>scripts/out/갱신_리포트.md</code> — 건수 변화가 상식적인가(보통 수백 건 증가). 새로 생긴 기인물·공종·재해형태가 있는가.</li>
+  <li><code>scripts/out/build_report.md</code> — "금지 패턴 잔존 0건"인가. 대표사례가 하위유형마다 1건인가.</li>
+  <li><code>scripts/out/pii_audit.csv</code> — 마스킹된 곳을 훑어본다. 실명·주소가 아닌데 지워진 것(과잉)이나, 남아 있는 고유명사(누락)가 있으면 <code>build_dataset.py</code>의 <code>PII_RULES</code>/<code>PII_OVERRIDES</code>에 반영.</li>
+  <li>사이트를 로컬에서 열어 본다:
+<pre><code>python3 -m http.server 8099
+<span class="cmt"># 브라우저에서 http://localhost:8099/ — 대시보드 총 건수, 드롭다운, 추락높이 분석·발생시기 분석 탭</span></code></pre></li>
+</ul>
+<p>마스킹이 부족해 B단계가 멈추면(<code>빌드 중단 — 금지 패턴 N건 잔존</code>) 화면에 어떤 문장이 걸렸는지 나옵니다. 그 문장에 맞는 치환을 <code>PII_OVERRIDES</code>에 한 줄 추가하고 다시 실행합니다.</p>
+
+<div class="step"><span class="n">5</span><h2>손으로 고칠 곳</h2></div>
+<p>데이터가 아닌 <b>글로 박혀 있는 숫자</b>는 자동으로 바뀌지 않습니다. 새 배포판 반영 후 아래를 확인합니다.</p>
+<table>
+  <tr><th>파일</th><th>내용</th></tr>
+  <tr><td><code>pages/intro.html</code></td><td>히어로 배지 "사망·중상 3,459건", 통계 카드 <code>data-target="3459"</code>, 연도 배지 "2013년~2023년", 공종·기인물·재해형태 개수</td></tr>
+  <tr><td><code>index.html</code></td><td>총 재해건수 카드 아래 "2013~2023년 사망·중상"</td></tr>
+  <tr><td><code>js/components.js</code></td><td>사이드바 하단 "산업재해 고위험요인 (2013년~2023년)"</td></tr>
+  <tr><td><code>pages/trend.html</code></td><td><code>YEAR_FROM / YEAR_TO / RECENT_FROM</code> — 집계 창과 "최근 5년" 기준. 새 배포판에 2024·2025년이 충분히 들어오면 늘린다</td></tr>
+  <tr><td><code>md.cf/CLAUDE.md</code></td><td>데이터 건수·배포판 날짜·파일명</td></tr>
+</table>
+
+<div class="step"><span class="n">6</span><h2>배포</h2></div>
+<pre><code>git add data/ source/ scripts/mapping/ pages/ index.html js/ md.cf/
+git commit -m <span class="s">"[데이터] 공단 아카이브 2027-04판 반영 (N건)"</span>
+git push</code></pre>
+<p>GitHub Pages가 1~2분 안에 반영합니다. 반영 여부는 대시보드 총 건수로 확인합니다. (브라우저 캐시 때문에 이전 숫자가 보이면 강력 새로고침.)</p>
+
+<h2>사람이 판단해야 하는 것 — 정리</h2>
+<ul class="chk">
+  <li><b>새 기인물의 분류와 12대 여부</b> (미결_기인물). 공단 명칭만 바뀐 것인지, 정말 새 항목인지.</li>
+  <li><b>전도·화상·파열 사례의 재해형태</b> (미결_재해형태). 원문을 읽고 사람이 떨어졌는지, 깔렸는지, 넘어졌는지 정한다.</li>
+  <li><b>개인정보 마스킹 결과 검수</b> (pii_audit.csv). 규칙은 이전 배포판 기준이라 새 문장에서 빠지는 것이 있을 수 있다.</li>
+  <li><b>발전소(KOEN) 공정 규칙</b> — 새 공종이 생기면 <code>scripts/mapping/koen-rule.json</code>의 제외 목록을 볼 것. 현재는 교량공사·하천 및 항만공사·양수발전용 댐만 제외.</li>
+  <li><b>하위유형 이름</b> (T4의 <code>하위유형명</code>) — 비어 있어도 사이트는 돌아간다. 붙이고 싶으면 Phase 5 항목.</li>
+</ul>
+
+<h2>자주 묻는 것</h2>
+<details><summary>같은 엑셀로 다시 돌리면 결과가 똑같이 나오나요?</summary>
+<p>예. 군집은 <code>random_state=0</code>으로 고정돼 있고, 대표사례가 동률이면 id가 작은 쪽을 고르므로 같은 입력이면 같은 출력입니다. 2026-04판으로 검증했습니다.</p></details>
+<details><summary>공단이 기인물 이름을 또 바꾸면?</summary>
+<p><code>giinmul-crosswalk.json</code>의 <code>alias</code>에 <code>"새 이름": "기존 이름"</code>을 넣으면 룩업이 기존 이름으로 이어집니다. 2026-04판에서 실제로 바뀐 14종은 같은 파일의 <code>history</code>에 기록돼 있습니다.</p></details>
+<details><summary>재해형태 판정은 어떤 순서로 되나요?</summary>
+<p>① 공단 재해종류를 1:1 치환(추락→떨어짐 등, <code>TERM_FIX</code>) ② 전도·화상·파열은 재해개요의 결과절에서 기전어(깔려·떨어져·맞아…)와 원인어(감전·폭발·화재…)를 읽어 자동 배정 ③ 그래도 안 되면 <code>jaehae-manual.json</code>의 개별판정 ④ 없으면 미결. <code>scripts/out/재해형태_원문판독_검토목록.csv</code>에 전도·화상·파열 전건의 배정 근거가 남습니다.</p></details>
+<details><summary>대표사례가 이전과 달라졌는데 괜찮나요?</summary>
+<p>새 사례가 들어오면 군집 경계가 움직이므로 일부 대표사례가 바뀌는 것이 정상입니다. 하위유형은 기인물×재해형태 칸 안에서만 나뉘므로 칸 건수가 100·30을 넘나들 때 하위유형 개수(5·3·1)도 바뀔 수 있습니다.</p></details>
+<details><summary>스크립트를 하나씩 따로 돌릴 수도 있나요?</summary>
+<pre><code>python3 scripts/build_stage_a.py --xlsx "source/원본.xlsx" [--out source/SIF_확장열.json] [--allow-pending]
+python3 scripts/build_tables.py  --src source/SIF_확장열_3800건.json
+python3 scripts/build_dataset.py --src source/SIF_확장열_3800건.json</code></pre>
+<p><code>build_dataset.py</code>는 인수 없이 실행하면 현재 기본 경로(2026-04판)를 씁니다.</p></details>
+<details><summary>이전 데이터로 되돌리려면?</summary>
+<p><code>git checkout -- data/ source/</code>로 커밋 전 상태로 돌아갑니다. 커밋 뒤라면 <code>scripts/out/db_previous.json</code>을 <code>data/db.json</code>으로 복사하거나 이전 커밋으로 되돌립니다.</p></details>
+
+<h2>파일 지도</h2>
+<div class="tree">scripts/
+├─ build_all.py            ← 이것만 실행하면 된다 (A → 테이블 → B)
+├─ build_stage_a.py        A단계: 공단 xlsx → 28열 확장 JSON
+├─ build_tables.py         하위유형 군집 · 대표사례 (T4 · T4m)
+├─ build_dataset.py        B단계: 마스킹 · 병합 · db.json
+├─ mapping/                사람이 정한 규칙 — 코드 안 열고 여기만 고친다
+│  ├─ giinmul-lookup.json      기인물 → 분류 · 12대 · 위험도순위 · 3년간사고비중
+│  ├─ giinmul-crosswalk.json   공단 명칭 변경 alias (+ 2026-04 변경 기록)
+│  ├─ jaehae-term.json         재해종류 → 재해형태 용어 · 기전어 · 원인어
+│  ├─ jaehae-manual.json       원문 판독 개별판정 (지문 키)
+│  └─ koen-rule.json           발전소 공정 제외 규칙
+├─ out/                    실행 산출물 (git 제외)
+│  ├─ 갱신_리포트.md · stage_a_report.md · build_report.md · pii_audit.csv
+│  ├─ 미결_*.csv               사람이 정해야 하는 것
+│  └─ db_previous.json         갱신 전 db.json 보관
+├─ notebooks/              원래 A단계를 손으로 돌리던 노트북 (참고용)
+└─ docs/                   이 문서 · 공단 배포판 변환 가이드
+
+source/                    원본 xlsx · 확장열 JSON · T4 · T4m
+data/db.json               사이트가 읽는 데이터 (30열)</div>
+
+</div>
+</body>
+</html>

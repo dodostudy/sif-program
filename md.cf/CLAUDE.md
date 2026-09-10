@@ -35,6 +35,8 @@ sif_Program/
 │   ├── process-inquiry.html       # 공정조회 (정방향)
 │   ├── cause-inquiry.html         # 기인물조회 (역방향)
 │   ├── disaster-type.html         # 재해형태 분석
+│   ├── fall-height.html           # 추락높이 분석 (높이구간 토글, 심층 분석)
+│   ├── trend.html                 # 발생시기 분석 (연도·월·계절, 심층 분석)
 │   └── risk-assessment.html       # 위험성평가 생성 (GPTs / 발전업 / 건설업 위저드)
 ├── css/style.css                  # 다크·라이트, 프린트, 히트맵, 반응형
 ├── js/
@@ -45,15 +47,22 @@ sif_Program/
 │   ├── filter-manager.js          # Observer 패턴 cascading 필터
 │   ├── multi-select.js            # 멀티셀렉트 패널
 │   ├── utils.js                   # WORK_TYPE_MAP, filterDB, aggregateBy, buildTable 등
+│   ├── analytics.js               # 런타임 분석 (추락높이·프로파일·대표사례·감소대책·시계열)
 │   └── i18n.js                    # 패스스루 스텁 (영문 모드 폐기, 2026-09)
 ├── data/
 │   ├── db.json                    # 3,459건 × 30열 (~4.9MB, minified)
 │   └── dropdown-ref.json          # 공종 계층 + 기인물분류 맵 + 12대기인물 (~13KB)
 ├── scripts/
-│   ├── build_dataset.py           # ★ 데이터 빌드 (B단계) — 데이터 갱신 시 이것만 실행
-│   ├── notebooks/                 # A단계 변환 노트북 (공단 원본 → 확장열 28열)
-│   ├── docs/                      # 변환가이드·시스템탑재 테이블 가이드·구신버전 변화보고
-│   └── out/                       # 빌드 리포트·PII 감사 로그 (gitignore)
+│   ├── build_all.py               # ★ 데이터 갱신 — 공단 xlsx 한 장으로 전 과정 (A → 테이블 → B)
+│   ├── build_stage_a.py           # A단계: 공단 xlsx → 확장열 28열 (미결은 out/미결_*.csv)
+│   ├── build_tables.py            # 하위유형 군집 · 대표사례 (T4 · T4m)
+│   ├── build_dataset.py           # B단계: PII 마스킹 · 병합 · db.json
+│   ├── mapping/                   # 사람이 정한 규칙 5종 JSON (기인물 룩업·크로스워크·재해형태·개별판정·KOEN)
+│   ├── docs/갱신방법.html         # 갱신 절차서 (사람용)
+│   ├── notebooks/                 # 원래 A단계 노트북 (참고용)
+│   ├── docs/                      # 공단 배포판 변환가이드·테이블 가이드·변화보고
+│   ├── test_analytics.mjs · audit_chart_labels.mjs   # analytics 대조 테스트 · 차트 라벨 겹침 검사
+│   └── out/                       # 빌드 리포트·PII 감사·미결 목록 (gitignore)
 ├── source/                        # 원본 (확장열 JSON, T4/T4m, 공단 xlsx)
 │   └── legacy/                    # 구 원본 2,574건 자산 (규칙 역산 참조용)
 ├── md.cf/                         # 로드맵·기획 문서 (Roadmap4.md가 현행)
@@ -84,9 +93,11 @@ app.js ────────────────────────�
 
 ```
 공단 원본 xlsx
-    ↓ A단계: scripts/notebooks/*.ipynb (사람이 실행, 파생 13열 생성)
-source/SIF_신버전_확장열_3459건.json
-    ↓ B단계: python3 scripts/build_dataset.py (PII 마스킹 + 대표사례 병합 + 검증)
+    ↓ A단계: scripts/build_stage_a.py (규칙은 scripts/mapping/*.json, 미결은 scripts/out/미결_*.csv)
+source/SIF_확장열_3459건.json
+    ↓ scripts/build_tables.py (하위유형 군집 → source/T4·T4m)
+    ↓ B단계: scripts/build_dataset.py (PII 마스킹 + 대표사례 병합 + 검증)
+    ※ 세 단계를 한 번에: python3 scripts/build_all.py --xlsx <원본>
 data/db.json (3,459건 × 30열 flat array)
 data/dropdown-ref.json (hierarchy + 기인물분류)
     ↓ DataLoader.loadDB() / loadDropdownRef()
@@ -114,7 +125,8 @@ fm.onDataChange(() => renderResults());  // 데이터 변경 시 전체 갱신
 ## 데이터 현황
 
 ### 원본 소스
-- `source/SIF_신버전_확장열_3459건.json` — 3,459건 × 28열 (공단 아카이브 2026-04-01판 전처리 산출물)
+- `source/SIF_확장열_3459건.json` — 3,459건 × 28열 (`build_stage_a.py` 산출물, 공단 아카이브 2026-04-01판)
+- `source/한국산업안전보건공단_…_20260401.xlsx` — 공단 원본 (수정 금지)
 - `source/T4_대표사례.json` · `source/T4m_사례하위유형매핑.json` — 대표사례 군집
 - `source/legacy/` — 구 2,574건 자산 (파생 규칙 역산 참조용)
 
@@ -166,16 +178,19 @@ fm.onDataChange(() => renderResults());  // 데이터 변경 시 전체 갱신
 | 추락고 확인 | 떨어짐 2,071건 중 1,383건 (66.8%), 중앙값 6.0m |
 | 대표사례 | 310건 (하위유형 310개 × 1건) |
 
-### 데이터 업데이트 방법
+### 데이터 업데이트 방법 (공단 차기 배포판)
 
 ```bash
-python3 scripts/build_dataset.py
+pip3 install pandas numpy openpyxl scipy scikit-learn        # 최초 1회
+python3 scripts/build_all.py --xlsx "source/<공단 원본>.xlsx"
 ```
-→ `data/db.json`, `data/dropdown-ref.json` 재생성 + `scripts/out/build_report.md` 검증 리포트.
-전 단계 assert(건수·타입·대표사례·**개인정보 잔존 0건**)를 통과해야 산출물이 쓰인다.
+→ A단계(확장열) → 하위유형·대표사례 → B단계(db.json)까지 한 번에. 규칙으로 못 정한 항목은
+`scripts/out/미결_*.csv` 로 나오고 멈춘다 — `scripts/mapping/*.json` 을 보완하고 재실행.
+끝나면 `scripts/out/갱신_리포트.md` 에 이전과의 차이가 정리된다. 상세 절차·손으로 고칠 곳(소개 페이지 건수,
+사이드바 기간, trend.html 연도 상수 등)은 **`scripts/docs/갱신방법.html`**. 2026-04판으로 재실행하면 현재 db.json 과 동일.
 
 공단이 새 아카이브를 배포하면 먼저 A단계(`scripts/notebooks/`의 노트북)를 다시 돌려
-`source/SIF_신버전_확장열_*.json`을 만들고, 그 다음 위 명령을 실행한다.
+`source/SIF_확장열_<N>건.json`이 먼저 만들어지고, 이어서 테이블·B단계가 돌아간다.
 데이터 교체 시 `js/utils.js`의 `WORK_TYPE_MAP`(기인물 57종 배정)도 함께 점검해야 한다.
 
 > ⚠ **개인정보**: 공단 원본은 비식별이 일관되지 않다. 실명·주소·업체명이 실제로 남아 있었고

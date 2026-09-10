@@ -44,9 +44,9 @@
   padding: 0.85rem;
 }
 html.light .drill-tint {
-  background: rgba(59, 130, 246, 0.05);
-  border-color: rgba(59, 130, 246, 0.25);
-  border-left-color: #3B82F6;
+  background: #fbf6ec;
+  border-color: #eadbbd;
+  border-left-color: #181d26;
 }
 
 /* 메인 콘텐츠 영역 */
@@ -1044,53 +1044,54 @@ html.light .drill-tint {
 
 /* 라이트 모드 */
 html.light .rm-tabs {
-  border-color: #E5E7EB;
+  border-color: #dddddd;
 }
 html.light .rm-row:hover {
-  border-color: #D1D5DB;
+  border-color: #dddddd;
 }
 html.light .rm-row.rm-row-active {
-  border-color: #3B82F6;
-  box-shadow: 0 0 0 1px #3B82F6;
+  border-color: #181d26;
+  box-shadow: 0 0 0 1px #181d26;
+  background: #fbf6ec;
 }
 html.light .rm-row-name {
-  color: #1F2937;
+  color: #262b33;
   text-shadow: 0 1px 1px rgba(255, 255, 255, 0.7);
 }
 html.light .rm-row-count {
-  color: #1F2937;
+  color: #262b33;
   text-shadow: 0 1px 1px rgba(255, 255, 255, 0.7);
 }
 html.light .rm-row-pct {
-  color: #4B5563;
+  color: #41454d;
 }
 html.light .rm-toggle {
   background: rgba(255, 255, 255, 0.85);
-  border-color: #9CA3AF;
-  color: #374151;
+  border-color: #9297a0;
+  color: #333840;
 }
 html.light .rm-detail-title {
-  color: #111827;
+  color: #181d26;
 }
 html.light .rm-case-row {
-  border-color: #E5E7EB;
+  border-color: #dddddd;
 }
 html.light .rm-case-row:hover {
-  background: #EFF6FF;
+  background: #fbf6ec;
 }
 html.light .rm-case-section {
-  border-color: #E5E7EB;
+  border-color: #dddddd;
 }
 html.light .rm-case-section p {
-  color: #374151;
+  color: #333840;
 }
 html.light .rm-case-tag {
-  background: #F3F4F6;
-  border-color: #E5E7EB;
-  color: #374151;
+  background: #eef0f3;
+  border-color: #dddddd;
+  color: #333840;
 }
 html.light .rm-back-btn:hover {
-  background: #F3F4F6;
+  background: #eef0f3;
 }
 
 /* 인쇄: 리스트/탭/브레드크럼 숨기고 상세만 */
@@ -1323,473 +1324,473 @@ html.light .rm-back-btn:hover {
 
 /* 스크롤바 - 라이트 */
 html.light ::-webkit-scrollbar-track {
-  background: #F3F4F6;
+  background: #eef0f3;
 }
 html.light ::-webkit-scrollbar-thumb {
-  background: #D1D5DB;
+  background: #dddddd;
 }
 html.light ::-webkit-scrollbar-thumb:hover {
-  background: #9CA3AF;
+  background: #9297a0;
 }
 
 /* body 배경/텍스트 */
 html.light body {
-  background: #F9FAFB !important;
-  color: #1F2937 !important;
+  background: #ffffff !important;
+  color: #333840 !important;
 }
 
 /* 사이드바 */
 html.light #sidebar-panel {
   background: #ffffff !important;
-  border-color: #E5E7EB !important;
+  border-color: #dddddd !important;
 }
 html.light #sidebar-panel .border-gray-800,
 html.light #sidebar-panel .border-b,
 html.light #sidebar-panel .border-t {
-  border-color: #E5E7EB !important;
+  border-color: #dddddd !important;
 }
 html.light #sidebar-panel h1 {
-  color: #111827 !important;
+  color: #181d26 !important;
 }
 html.light #sidebar-panel .text-blue-300 {
-  color: #2563EB !important;
+  color: #5f636b !important;
 }
 html.light #sidebar-panel .text-gray-500 {
-  color: #6B7280 !important;
+  color: #5f636b !important;
 }
 html.light #sidebar-panel .text-gray-400 {
-  color: #4B5563 !important;
+  color: #41454d !important;
 }
 html.light #sidebar-panel .text-gray-200 {
-  color: #1F2937 !important;
+  color: #262b33 !important;
 }
 html.light #sidebar-panel .text-white {
-  color: #111827 !important;
+  color: #181d26 !important;
 }
 html.light #sidebar-panel .text-xs.text-amber-300 {
-  color: #D97706 !important;
+  color: #a26a00 !important;
 }
 html.light #sidebar-panel a:hover,
 html.light #sidebar-panel button:hover {
-  background: #F3F4F6 !important;
+  background: #eef0f3 !important;
 }
 html.light #sidebar-panel a.bg-blue-600\/20,
 html.light #sidebar-panel .bg-blue-600\/10 {
-  background: rgba(59, 130, 246, 0.1) !important;
+  background: #eef0f3 !important;
 }
 html.light #sidebar-panel .text-blue-400 {
-  color: #2563EB !important;
+  color: #181d26 !important;
 }
 
 /* 모바일 햄버거 */
 html.light #mobile-menu-btn {
-  background: rgba(255, 255, 255, 0.9) !important;
-  color: #374151 !important;
+  background: rgba(255,255,255,.92) !important;
+  color: #333840 !important;
 }
 
 /* 테마 토글 버튼 - 라이트 */
 html.light .theme-toggle-btn {
   background: #ffffff;
-  border-color: #D1D5DB;
-  color: #374151;
+  border-color: #dddddd;
+  color: #333840;
 }
 html.light .theme-toggle-btn:hover {
-  background: #F3F4F6;
-  border-color: #9CA3AF;
-  color: #111827;
+  background: #eef0f3;
+  border-color: #9297a0;
+  color: #181d26;
 }
 
 /* 메인 콘텐츠 텍스트 */
 html.light .text-white {
-  color: #111827 !important;
+  color: #181d26 !important;
 }
 html.light .text-gray-100 {
-  color: #1F2937 !important;
+  color: #262b33 !important;
 }
 html.light .text-gray-200 {
-  color: #374151 !important;
+  color: #333840 !important;
 }
 html.light .text-gray-300 {
-  color: #4B5563 !important;
+  color: #41454d !important;
 }
 html.light .text-gray-400 {
-  color: #6B7280 !important;
+  color: #5f636b !important;
 }
 html.light .text-gray-500 {
-  color: #6B7280 !important;
+  color: #5f636b !important;
 }
 html.light .text-blue-300 {
-  color: #2563EB !important;
+  color: #1b61c9 !important;
 }
 html.light .text-blue-400 {
-  color: #2563EB !important;
+  color: #1b61c9 !important;
 }
 html.light .text-amber-300 {
-  color: #D97706 !important;
+  color: #a26a00 !important;
 }
 
 /* 카드 */
 html.light .stat-card {
   background: #ffffff;
-  border-color: #E5E7EB;
+  border-color: #dddddd;
 }
 html.light .stat-card:hover {
-  border-color: #D1D5DB;
+  border-color: #dddddd;
 }
 
 /* 차트 컨테이너 */
 html.light .chart-container {
   background: #ffffff;
-  border-color: #E5E7EB;
+  border-color: #dddddd;
 }
 
 /* 필터 바 */
 html.light .filter-bar {
   background: #ffffff;
-  border-color: #E5E7EB;
+  border-color: #dddddd;
 }
 html.light .filter-group label {
-  color: #4B5563;
+  color: #41454d;
 }
 html.light .filter-group select {
-  background: #F9FAFB;
-  border-color: #D1D5DB;
-  color: #1F2937;
+  background: #f8fafc;
+  border-color: #dddddd;
+  color: #262b33;
 }
 html.light .filter-group select:focus {
-  border-color: #3B82F6;
+  border-color: #181d26;
 }
 
 /* 멀티셀렉트 */
 html.light .ms-trigger {
-  background: #F9FAFB;
-  border-color: #D1D5DB;
-  color: #1F2937;
+  background: #f8fafc;
+  border-color: #dddddd;
+  color: #262b33;
 }
 html.light .ms-trigger:hover {
-  border-color: #9CA3AF;
+  border-color: #9297a0;
 }
 html.light .ms-panel {
   background: #ffffff;
-  border-color: #D1D5DB;
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+  border-color: #dddddd;
+  box-shadow: 0 10px 25px rgba(24,29,38,.1);
 }
 html.light .ms-search-input {
-  background: #F9FAFB;
-  border-color: #D1D5DB;
-  color: #1F2937;
+  background: #f8fafc;
+  border-color: #dddddd;
+  color: #262b33;
 }
 html.light .ms-option {
-  color: #374151;
+  color: #333840;
 }
 html.light .ms-option:hover {
-  background: #F3F4F6;
+  background: #eef0f3;
 }
 html.light .ms-option-count {
-  color: #9CA3AF;
+  color: #9297a0;
 }
 html.light .ms-actions {
-  border-color: #E5E7EB;
+  border-color: #dddddd;
 }
 html.light .ms-btn-all,
 html.light .ms-btn-clear {
-  color: #6B7280;
-  border-color: #D1D5DB;
+  color: #5f636b;
+  border-color: #dddddd;
 }
 html.light .ms-btn-all:hover,
 html.light .ms-btn-clear:hover {
-  color: #1F2937;
-  border-color: #9CA3AF;
-  background: #F3F4F6;
+  color: #262b33;
+  border-color: #9297a0;
+  background: #eef0f3;
 }
 
 /* tbl-ms (테이블 컬럼 필터) */
 html.light .tbl-ms-trigger {
-  background: #F9FAFB;
-  border-color: #D1D5DB;
-  color: #374151;
+  background: #f8fafc;
+  border-color: #dddddd;
+  color: #333840;
 }
 html.light .tbl-ms-trigger:hover {
-  border-color: #9CA3AF;
+  border-color: #9297a0;
 }
 html.light .tbl-ms-panel {
   background: #ffffff;
-  border-color: #D1D5DB;
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+  border-color: #dddddd;
+  box-shadow: 0 10px 25px rgba(24,29,38,.1);
 }
 html.light .tbl-ms-panel-header {
-  border-color: #E5E7EB;
+  border-color: #dddddd;
 }
 html.light .tbl-ms-panel-title {
-  color: #6B7280;
+  color: #5f636b;
 }
 html.light .tbl-ms-search-input {
-  background: #F9FAFB;
-  border-color: #D1D5DB;
-  color: #1F2937;
+  background: #f8fafc;
+  border-color: #dddddd;
+  color: #262b33;
 }
 html.light .tbl-ms-option {
-  color: #374151;
+  color: #333840;
 }
 html.light .tbl-ms-option:hover {
-  background: #F3F4F6;
+  background: #eef0f3;
 }
 html.light .tbl-ms-actions {
-  border-color: #E5E7EB;
+  border-color: #dddddd;
 }
 html.light .tbl-ms-btn {
-  color: #6B7280;
-  border-color: #D1D5DB;
+  color: #5f636b;
+  border-color: #dddddd;
 }
 html.light .tbl-ms-btn:hover {
-  color: #1F2937;
-  border-color: #9CA3AF;
-  background: #F3F4F6;
+  color: #262b33;
+  border-color: #9297a0;
+  background: #eef0f3;
 }
 
 /* 키워드 검색 */
 html.light .keyword-search-bar {
   background: #ffffff;
-  border-color: #E5E7EB;
+  border-color: #dddddd;
 }
 html.light .keyword-input {
-  background: #F9FAFB;
-  border-color: #D1D5DB;
-  color: #1F2937;
+  background: #f8fafc;
+  border-color: #dddddd;
+  color: #262b33;
 }
 html.light .keyword-input::placeholder {
-  color: #9CA3AF;
+  color: #9297a0;
 }
 
 /* 탭 */
 html.light .tab-btn {
-  color: #6B7280;
+  color: #5f636b;
 }
 html.light .tab-btn:hover {
-  color: #1F2937;
+  color: #262b33;
 }
 html.light .tab-btn.active {
-  color: #2563EB;
-  border-bottom-color: #2563EB;
+  color: #181d26;
+  border-bottom-color: #181d26;
 }
 
 /* 토글 버튼 (범용) */
 html.light .toggle-btn {
-  color: #6B7280;
-  border-color: #D1D5DB;
+  color: #5f636b;
+  border-color: #dddddd;
 }
 html.light .toggle-btn:hover {
-  color: #1F2937;
-  border-color: #9CA3AF;
+  color: #262b33;
+  border-color: #9297a0;
 }
 
 /* 인쇄 버튼 */
 html.light button[onclick="handlePrintWithCharts()"] {
   background: #ffffff !important;
-  border-color: #D1D5DB !important;
-  color: #374151 !important;
+  border-color: #dddddd !important;
+  color: #333840 !important;
 }
 html.light button[onclick="handlePrintWithCharts()"]:hover {
-  background: #F3F4F6 !important;
-  border-color: #9CA3AF !important;
-  color: #111827 !important;
+  background: #eef0f3 !important;
+  border-color: #9297a0 !important;
+  color: #181d26 !important;
 }
 
 /* 배지 */
 html.light .risk-badge.high {
-  background: rgba(239, 68, 68, 0.1);
-  color: #DC2626;
+  background: rgba(170,45,0,.08);
+  color: #aa2d00;
 }
 html.light .risk-badge.medium {
-  background: rgba(245, 158, 11, 0.1);
-  color: #D97706;
+  background: rgba(244,211,94,.32);
+  color: #a26a00;
 }
 html.light .risk-badge.low {
-  background: rgba(16, 185, 129, 0.1);
-  color: #059669;
+  background: rgba(168,216,196,.38);
+  color: #006400;
 }
 html.light .badge-12 {
-  background: rgba(139, 92, 246, 0.1);
-  color: #7C3AED;
+  background: #181d26;
+  color: #ffffff;
 }
 
 /* 위자드 카드 */
 html.light .wizard-card {
   background: #ffffff;
-  border-color: #E5E7EB;
+  border-color: #dddddd;
 }
 html.light .wizard-card:hover {
-  border-color: #3B82F6;
-  background: #EFF6FF;
+  border-color: #181d26;
+  background: #f8fafc;
 }
 html.light .wizard-card.selected {
-  border-color: #3B82F6;
-  background: #EFF6FF;
+  border-color: #181d26;
+  background: #f8fafc;
 }
 
 /* 진입 카드 */
 html.light .entry-card {
-  background: linear-gradient(135deg, #ffffff 0%, #F9FAFB 100%);
-  border-color: #E5E7EB;
+  background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+  border-color: #dddddd;
 }
 html.light .entry-card:hover {
-  border-color: #3B82F6;
-  box-shadow: 0 8px 25px rgba(59, 130, 246, 0.1);
+  border-color: #181d26;
+  box-shadow: 0 8px 25px #eef0f3;
 }
 html.light .entry-card .entry-title {
-  color: #111827;
+  color: #181d26;
 }
 html.light .entry-card .entry-desc {
-  color: #6B7280;
+  color: #5f636b;
 }
 
 /* 위자드 칩 */
 html.light .wizard-chip {
   background: #ffffff;
-  border-color: #E5E7EB;
-  color: #374151;
+  border-color: #dddddd;
+  color: #333840;
 }
 html.light .wizard-chip:hover {
-  border-color: #3B82F6;
-  background: #EFF6FF;
+  border-color: #181d26;
+  background: #f8fafc;
 }
 html.light .wizard-chip.selected {
-  border-color: #3B82F6;
-  background: #EFF6FF;
-  color: #2563EB;
+  border-color: #181d26;
+  background: #f8fafc;
+  color: #1b61c9;
 }
 html.light .wizard-chip .chip-count {
-  background: #F3F4F6;
-  color: #6B7280;
+  background: #eef0f3;
+  color: #5f636b;
 }
 
 /* 위자드 체크 목록 */
 html.light .wizard-check-item {
   background: #ffffff;
-  border-color: #E5E7EB;
+  border-color: #dddddd;
 }
 html.light .wizard-check-item:hover {
-  border-color: #D1D5DB;
-  background: #F9FAFB;
+  border-color: #dddddd;
+  background: #f8fafc;
 }
 html.light .wizard-check-item label {
-  color: #374151;
+  color: #333840;
 }
 
 /* 스텝 헤더 */
 html.light .wizard-step-title {
-  color: #111827;
+  color: #181d26;
 }
 html.light .wizard-step-desc {
-  color: #6B7280;
+  color: #5f636b;
 }
 
 /* 기인물 칩 (열방향) */
 html.light .cause-chip-row:hover {
-  background: #EFF6FF;
+  background: #f8fafc;
 }
 html.light .cause-chip-row-l4 {
-  background: rgba(239,68,68,0.06);
-  border-color: rgba(239,68,68,0.2);
+  background: rgba(170,45,0,.06);
+  border-color: rgba(170,45,0,.25);
 }
 html.light .cause-chip-row-l3 {
-  background: rgba(249,115,22,0.05);
-  border-color: rgba(249,115,22,0.15);
+  background: rgba(252,171,121,.2);
+  border-color: rgba(252,171,121,.55);
 }
 html.light .cause-chip-row-l2 {
-  background: rgba(234,179,8,0.04);
-  border-color: rgba(234,179,8,0.12);
+  background: rgba(244,211,94,.18);
+  border-color: rgba(244,211,94,.55);
 }
 
 /* 기인물 칩 (가로) */
 html.light .cause-flat-chip-l1 {
-  background: #F9FAFB;
-  border-color: #E5E7EB;
-  color: #6B7280;
+  background: #f8fafc;
+  border-color: #dddddd;
+  color: #5f636b;
 }
 
 /* 스켈레톤 */
 html.light .skeleton {
-  background: linear-gradient(90deg, #E5E7EB 25%, #F3F4F6 50%, #E5E7EB 75%);
+  background: linear-gradient(90deg, #dddddd 25%, #eef0f3 50%, #dddddd 75%);
   background-size: 200% 100%;
 }
 
 /* 브레드크럼 */
 html.light .breadcrumb {
-  color: #6B7280;
+  color: #5f636b;
 }
 html.light .breadcrumb .separator {
-  color: #D1D5DB;
+  color: #dddddd;
 }
 
 /* Tailwind 배경 클래스 오버라이드 */
 html.light .bg-gray-950 {
-  background-color: #F9FAFB !important;
+  background-color: #ffffff !important;
 }
 html.light .bg-gray-900 {
   background-color: #ffffff !important;
 }
 html.light .bg-gray-800 {
-  background-color: #F3F4F6 !important;
+  background-color: #eef0f3 !important;
 }
 html.light .bg-gray-800\/90 {
-  background-color: rgba(243, 244, 246, 0.9) !important;
+  background-color: rgba(248,250,252,.92) !important;
 }
 html.light .border-gray-800 {
-  border-color: #E5E7EB !important;
+  border-color: #dddddd !important;
 }
 html.light .border-gray-700 {
-  border-color: #D1D5DB !important;
+  border-color: #dddddd !important;
 }
 html.light .hover\:bg-gray-700:hover {
-  background-color: #E5E7EB !important;
+  background-color: #dddddd !important;
 }
 html.light .hover\:bg-gray-800:hover {
-  background-color: #F3F4F6 !important;
+  background-color: #eef0f3 !important;
 }
 html.light .hover\:border-gray-500:hover {
-  border-color: #9CA3AF !important;
+  border-color: #9297a0 !important;
 }
 html.light .hover\:text-white:hover {
-  color: #111827 !important;
+  color: #181d26 !important;
 }
 html.light .hover\:text-gray-200:hover {
-  color: #1F2937 !important;
+  color: #262b33 !important;
 }
 html.light .hover\:text-gray-300:hover {
-  color: #374151 !important;
+  color: #333840 !important;
 }
 
 /* KOEN 토글 */
 html.light .bg-gray-600 {
-  background-color: #D1D5DB !important;
+  background-color: #e0e2e6 !important;
 }
 
 /* 테이블 */
 html.light .data-table th {
-  background: #F3F4F6;
-  color: #374151;
-  border-color: #E5E7EB;
+  background: #eef0f3;
+  color: #333840;
+  border-color: #dddddd;
 }
 html.light .data-table td {
-  color: #1F2937;
-  border-color: #E5E7EB;
+  color: #262b33;
+  border-color: #dddddd;
 }
 html.light .data-table tr:hover td {
-  background: #F9FAFB;
+  background: #f8fafc;
 }
 
 /* 블루 배경 변형 */
 html.light .bg-blue-900\/20 {
-  background-color: rgba(219, 234, 254, 0.5) !important;
+  background-color: rgba(245,233,212,.5) !important;
 }
 html.light .border-blue-800 {
-  border-color: #93C5FD !important;
+  border-color: #dddddd !important;
 }
 
 /* 작업유형 그룹 */
 html.light .work-type-group-title {
-  color: #4B5563;
+  color: #41454d;
 }
 
 /* 오버레이 */
@@ -1799,29 +1800,30 @@ html.light #sidebar-overlay {
 
 /* ── 소개 페이지 (intro.html) 라이트 모드 ── */
 html.light .hero-bg {
-  background: linear-gradient(135deg, #EFF6FF 0%, #DBEAFE 35%, #C7D2FE 65%, #E0E7FF 100%) !important;
+  background: #ffffff !important;
+  border-bottom: 1px solid #dddddd;
 }
 html.light .hero-bg::before {
   background:
-    radial-gradient(ellipse at 20% 60%, rgba(59,130,246,.1) 0%, transparent 55%),
-    radial-gradient(ellipse at 80% 20%, rgba(99,102,241,.08) 0%, transparent 50%),
-    radial-gradient(ellipse at 55% 85%, rgba(16,185,129,.06) 0%, transparent 40%) !important;
+    radial-gradient(ellipse at 20% 60%, rgba(24,29,38,.08) 0%, transparent 55%),
+    radial-gradient(ellipse at 80% 20%, rgba(168,216,196,.16) 0%, transparent 50%),
+    radial-gradient(ellipse at 55% 85%, rgba(245,233,212,.5) 0%, transparent 40%) !important;
 }
 html.light .hero-bg::after {
   background-image:
-    linear-gradient(rgba(0,0,0,.03) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(0,0,0,.03) 1px, transparent 1px) !important;
+    linear-gradient(rgba(24,29,38,.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(24,29,38,.05) 1px, transparent 1px) !important;
 }
 html.light .hero-bg .text-blue-100\/90 {
-  color: #1E40AF !important;
+  color: #1a3866 !important;
 }
 html.light .pill {
-  background: rgba(59,130,246,.08) !important;
-  border-color: rgba(59,130,246,.2) !important;
-  color: #2563EB !important;
+  background: #ffffff !important;
+  border-color: #dddddd !important;
+  color: #41454d !important;
 }
 html.light .hov-card:hover {
-  box-shadow: 0 20px 40px rgba(0,0,0,.08) !important;
+  box-shadow: 0 20px 40px rgba(24,29,38,.08) !important;
 }
 
 /* 소개페이지 카드 배경 */
@@ -1839,80 +1841,80 @@ html.light .tl-dot {
 
 /* 소개페이지 히어로 버튼 */
 html.light .hero-bg .border-white\/25 {
-  border-color: rgba(59, 130, 246, 0.3) !important;
-  color: #1E40AF !important;
-  background: rgba(59, 130, 246, 0.05) !important;
+  border-color: #dddddd !important;
+  color: #1a3866 !important;
+  background: #fbf6ec !important;
 }
 html.light .hero-bg .border-white\/25:hover {
-  border-color: rgba(59, 130, 246, 0.5) !important;
-  background: rgba(59, 130, 246, 0.1) !important;
+  border-color: #9297a0 !important;
+  background: #eef0f3 !important;
 }
 html.light .hero-bg .bg-white\/5 {
-  background: rgba(59, 130, 246, 0.06) !important;
-  border-color: rgba(59, 130, 246, 0.15) !important;
+  background: #f8fafc !important;
+  border-color: #dddddd !important;
 }
 html.light .hero-bg .text-white\/35 {
-  color: rgba(30, 64, 175, 0.4) !important;
+  color: rgba(24,29,38,.35) !important;
 }
 
 /* 소개페이지 배지 배경 */
 html.light .bg-red-900\/35 {
-  background-color: rgba(254, 226, 226, 0.6) !important;
+  background-color: rgba(170,45,0,.08) !important;
 }
 html.light .bg-blue-900\/35 {
-  background-color: rgba(219, 234, 254, 0.6) !important;
+  background-color: rgba(27,97,201,.08) !important;
 }
 html.light .bg-amber-900\/35 {
-  background-color: rgba(254, 243, 199, 0.6) !important;
+  background-color: rgba(244,211,94,.3) !important;
 }
 html.light .bg-emerald-900\/35 {
-  background-color: rgba(209, 250, 229, 0.6) !important;
+  background-color: rgba(168,216,196,.35) !important;
 }
 html.light .text-red-300 {
-  color: #DC2626 !important;
+  color: #aa2d00 !important;
 }
 html.light .text-emerald-300 {
-  color: #059669 !important;
+  color: #006400 !important;
 }
 html.light .text-purple-300 {
-  color: #7C3AED !important;
+  color: #1a3866 !important;
 }
 html.light .text-cyan-300 {
-  color: #0891B2 !important;
+  color: #254fad !important;
 }
 html.light .text-blue-400,
 html.light .text-blue-300 {
-  color: #2563EB !important;
+  color: #1b61c9 !important;
 }
 html.light .text-amber-400,
 html.light .text-amber-300 {
-  color: #D97706 !important;
+  color: #a26a00 !important;
 }
 html.light .text-emerald-400 {
-  color: #059669 !important;
+  color: #006400 !important;
 }
 html.light .text-purple-400 {
-  color: #7C3AED !important;
+  color: #1a3866 !important;
 }
 html.light .text-red-400 {
-  color: #DC2626 !important;
+  color: #aa2d00 !important;
 }
 html.light .text-cyan-400 {
-  color: #0891B2 !important;
+  color: #254fad !important;
 }
 
 /* 라이트 테마에서 어두운 배경 유틸(bg-gray-700/800)을 쓴 버튼은 글자색이 본문색을
    따라가면서 배경과 같은 명도가 되어 보이지 않는다 (초기화 버튼 등 전 페이지 공통). */
 html.light .bg-gray-700,
 html.light .bg-gray-800 {
-  background-color: #E5E7EB !important;
-  color: #1F2937;
+  background-color: #e0e2e6 !important;
+  color: #181d26;
 }
 html.light .bg-gray-700:hover,
 html.light .bg-gray-800:hover,
 html.light .hover\:bg-gray-600:hover,
 html.light .hover\:bg-gray-700:hover {
-  background-color: #D1D5DB !important;
+  background-color: #dddddd !important;
 }
 
 /* 위험성평가 생성 — 대표사례 카드 (Step4 유형 선택) */
@@ -1922,8 +1924,8 @@ html.light .hover\:bg-gray-700:hover {
 }
 .rep-card:hover { border-color: #6B7280; }
 .rep-card.on { border-color: #3B82F6; background: rgba(30, 58, 138, .3); }
-html.light .rep-card { background: #F9FAFB; border-color: #E5E7EB; }
-html.light .rep-card.on { background: #DBEAFE; border-color: #3B82F6; }
+html.light .rep-card { background: #f8fafc; border-color: #dddddd; }
+html.light .rep-card.on { background: #f8fafc; border-color: #181d26; box-shadow: 0 0 0 1px #181d26; }
 
 /* 정보 상자 — 인라인 색을 쓰면 라이트 테마에서 연한 글자가 사라진다.
    페이지마다 제각각 만들던 것을 공통 클래스로 통일한다. */
@@ -1936,9 +1938,94 @@ html.light .rep-card.on { background: #DBEAFE; border-color: #3B82F6; }
 .note-green p { color: #A7F3D0; }
 .note-chip { display:inline-block; font-size:.75rem; padding:.25rem .5rem; border-radius:.25rem;
              background: rgba(30,58,138,.45); color:#BFDBFE; border:1px solid #1E40AF; }
-html.light .note-blue  { background: #EFF6FF; border-color: #BFDBFE; }
-html.light .note-green { background: #ECFDF5; border-color: #A7F3D0; }
-html.light .note-blue  .note-t, html.light .note-blue p, html.light .note-blue li { color: #1E40AF; }
-html.light .note-blue  .note-h, html.light .note-blue .note-sub { color: #1D4ED8; }
-html.light .note-green p { color: #065F46; }
-html.light .note-chip { background: #DBEAFE; color: #1E40AF; border-color: #93C5FD; }
+html.light .note-blue  { background: #f5e9d4; border-color: #eadbbd; }
+html.light .note-green { background: #e6f3ec; border-color: #a8d8c4; }
+html.light .note-blue  .note-t, html.light .note-blue p, html.light .note-blue li { color: #333840; }
+html.light .note-blue  .note-h, html.light .note-blue .note-sub { color: #181d26; }
+html.light .note-green p { color: #0a2e0e; }
+html.light .note-chip { background: #ffffff; color: #181d26; border-color: #e0d3b8; }
+
+
+/* ── 라이트 테마 배색 v2 (에디토리얼: 흰 캔버스 · 잉크 근흑 · 헤어라인 · 시그니처 코랄/머스터드/민트)
+   다크는 그대로 두고, 라이트에서만 파랑 일색 대신 근흑을 1차 액션색으로 쓴다. ── */
+html.light .bg-blue-600, html.light .bg-blue-500, html.light .bg-blue-700 {
+  background-color: #181d26 !important; color: #ffffff !important; border-color: #181d26 !important;
+}
+html.light .bg-blue-600 .text-white, html.light .bg-blue-600.text-white,
+html.light .bg-blue-500 .text-white, html.light .bg-blue-500.text-white,
+html.light .bg-blue-600 .text-blue-100, html.light .bg-blue-600 .text-blue-200 { color: #ffffff !important; }
+html.light .hover\:bg-blue-500:hover, html.light .hover\:bg-blue-700:hover,
+html.light .hover\:bg-blue-600:hover { background-color: #0d1218 !important; }
+html.light .hover\:shadow-blue-900\/50:hover, html.light .hover\:shadow-blue-900\/60:hover { box-shadow: 0 8px 20px rgba(24,29,38,.18) !important; }
+html.light .bg-green-600, html.light .bg-green-700, html.light .bg-green-500, html.light .bg-emerald-600 {
+  background-color: #006400 !important; color: #ffffff !important;
+}
+html.light .hover\:bg-green-500:hover, html.light .hover\:bg-green-700:hover { background-color: #0a2e0e !important; }
+html.light .bg-purple-600 { background-color: #1a3866 !important; color: #ffffff !important; }
+html.light .bg-amber-600, html.light .bg-amber-500 { background-color: #d9a441 !important; color: #181d26 !important; }
+html.light .bg-emerald-400 { background-color: #4b8a5c !important; }
+html.light .bg-blue-600\/70 { background-color: rgba(24,29,38,.85) !important; }
+html.light .bg-emerald-600\/70 { background-color: rgba(0,100,0,.75) !important; }
+html.light .bg-amber-600\/70 { background-color: rgba(217,164,65,.9) !important; }
+html.light .bg-purple-600\/70 { background-color: rgba(26,56,102,.85) !important; }
+html.light .bg-blue-600\/70.text-blue-100, html.light .bg-blue-600\/70 .text-blue-100 { color: #ffffff !important; }
+html.light .bg-amber-600\/70.text-amber-100, html.light .bg-amber-600\/70 .text-amber-100 { color: #181d26 !important; }
+html.light .bg-blue-600\/30, html.light .bg-blue-500\/20 { background-color: #eef0f3 !important; }
+html.light .border-blue-500\/40, html.light .border-blue-500\/45 { border-color: #9297a0 !important; }
+html.light .bg-amber-600\/20, html.light .bg-amber-500\/20 { background-color: rgba(244,211,94,.3) !important; }
+html.light .border-amber-600\/30, html.light .border-amber-500\/45 { border-color: rgba(217,164,65,.7) !important; }
+html.light .bg-emerald-600\/20, html.light .bg-emerald-500\/20 { background-color: rgba(168,216,196,.4) !important; }
+html.light .border-emerald-600\/30, html.light .border-emerald-500\/45 { border-color: #a8d8c4 !important; }
+html.light .bg-red-500\/20 { background-color: rgba(170,45,0,.08) !important; }
+html.light .border-red-500\/45 { border-color: rgba(170,45,0,.4) !important; }
+html.light .bg-purple-900\/50, html.light .bg-purple-950\/20, html.light .bg-purple-900\/60, html.light .bg-purple-800\/60 { background-color: rgba(26,56,102,.08) !important; }
+html.light .bg-amber-900\/50 { background-color: rgba(244,211,94,.25) !important; }
+html.light .bg-red-900\/50, html.light .bg-red-950\/30, html.light .bg-red-800\/60 { background-color: rgba(170,45,0,.08) !important; }
+html.light .bg-emerald-900\/50, html.light .bg-emerald-900\/60, html.light .bg-green-950\/30 { background-color: rgba(168,216,196,.35) !important; }
+html.light .bg-blue-900\/50, html.light .bg-blue-900\/60, html.light .bg-blue-900\/30 { background-color: rgba(245,233,212,.55) !important; }
+html.light .text-blue-200, html.light .text-blue-100\/90 { color: #333840 !important; }
+html.light .text-amber-200, html.light .text-amber-100 { color: #a26a00 !important; }
+html.light .text-emerald-200, html.light .text-emerald-100, html.light .text-green-300, html.light .text-green-400 { color: #006400 !important; }
+html.light .text-red-200, html.light .text-red-300 { color: #aa2d00 !important; }
+html.light .text-purple-200, html.light .text-purple-100 { color: #1a3866 !important; }
+html.light .text-sky-300, html.light .text-sky-400 { color: #254fad !important; }
+html.light .border-blue-500, html.light .border-blue-600, html.light .border-blue-400 { border-color: #181d26 !important; }
+html.light .border-amber-500, html.light .border-amber-600 { border-color: #d9a441 !important; }
+html.light .border-emerald-500, html.light .border-green-500 { border-color: #4b8a5c !important; }
+html.light .border-red-500 { border-color: #aa2d00 !important; }
+/* KOEN 스위치: 켜짐은 잉크 */
+html.light .peer:checked ~ .peer-checked\:bg-blue-600 { background-color: #181d26 !important; }
+/* 링크 */
+html.light a.text-blue-400:hover, html.light a.text-blue-300:hover { color: #1a3866 !important; }
+/* 소개 페이지 */
+html.light .sec-line { background: #181d26 !important; }
+html.light .hov-card:hover { border-color: rgba(24,29,38,.35) !important; }
+html.light .hero-bg .pill { color: #41454d !important; }
+/* 밋밋한 정보 상자 (권장 대책 등) */
+.note-plain { background: rgba(31,41,55,.35); border: 1px solid #374151; }
+html.light .note-plain { background: #f8fafc; border-color: #dddddd; }
+
+/* GPTs 배너: 라이트에서는 잉크색 카드(밝은 페이지 중간의 어두운 CTA 카드) */
+html.light .gpts-banner { background: #181d26 !important; border-color: #181d26 !important; }
+html.light .gpts-banner .text-white, html.light .gpts-banner .text-blue-100,
+html.light .gpts-banner .text-blue-300, html.light .gpts-banner .text-blue-400 { color: #ffffff !important; }
+html.light .gpts-banner .text-blue-300 { opacity: .7; }
+html.light .gpts-banner .bg-blue-600\/30 { background: rgba(255,255,255,.12) !important; }
+html.light .gpts-banner .border-blue-500\/40 { border-color: rgba(255,255,255,.25) !important; }
+html.light .gpts-banner .bg-blue-600 { background: #ffffff !important; color: #181d26 !important; }
+html.light .gpts-banner .bg-blue-600 .text-white, html.light .gpts-banner .bg-blue-600.text-white { color: #181d26 !important; }
+html.light .gpts-banner .hover\:bg-blue-500:hover { background: #e0e2e6 !important; }
+html.light .gpts-banner .bg-gray-700, html.light .gpts-banner .bg-gray-800 { background: rgba(255,255,255,.12) !important; color: #ffffff !important; border-color: rgba(255,255,255,.25) !important; }
+/* 소개 히어로 제목: 잉크 → 링크 파랑 그라데이션 */
+html.light .hero-bg .bg-clip-text { background-image: linear-gradient(135deg, #181d26 0%, #1b61c9 100%) !important; }
+html.light .bg-amber-900\/60 { background-color: rgba(244,211,94,.3) !important; }
+html.light .wizard-step-num { background: #181d26; color: #ffffff; }
+html.light .bg-emerald-600\/70.text-emerald-100, html.light .bg-emerald-600\/70 .text-emerald-100,
+html.light .bg-purple-600\/70.text-purple-100, html.light .bg-purple-600\/70 .text-purple-100 { color: #ffffff !important; }
+/* 소개 페이지 특징 카드: 다크 그라데이션 유틸리티는 라이트에서 흰 카드로 */
+html.light .bg-gradient-to-br.from-gray-900.to-gray-950 { background-image: none !important; background-color: #ffffff !important; }
+html.light .border-amber-800 { border-color: rgba(217,164,65,.6) !important; }
+html.light .border-purple-800, html.light .border-purple-700 { border-color: rgba(26,56,102,.35) !important; }
+html.light .border-emerald-800, html.light .border-green-800 { border-color: #a8d8c4 !important; }
+html.light .border-blue-800 { border-color: #dddddd !important; }
+html.light .border-red-800 { border-color: rgba(170,45,0,.35) !important; }

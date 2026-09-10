@@ -355,9 +355,9 @@
     let drillState = { 공종: null, 작업명: null, 단위작업명: null };
 
     // 선택/드릴 대상 막대만 강조(accent), 나머지는 채도 낮춘 톤으로 dim
-    const ACCENT = '#3B82F6';
-    const DIM_BG = 'rgba(148,163,184,0.22)';
-    const DIM_BD = 'rgba(148,163,184,0.45)';
+    const ACCENT = CHART_COLORS.info;
+    const DIM_BG = CHART_COLORS.getAlpha(CHART_COLORS.dim, 0.22);
+    const DIM_BD = CHART_COLORS.getAlpha(CHART_COLORS.dim, 0.45);
 
     function renderConstructionTypeChart(data, highlightKey = null) {
       const agg = aggregateBy(data, '공종');
@@ -371,7 +371,7 @@
         : (a.key === highlightKey ? ACCENT : DIM_BG));
       const bd = sorted.map(a => !highlightKey
         ? ACCENT
-        : (a.key === highlightKey ? '#1D4ED8' : DIM_BD));
+        : (a.key === highlightKey ? CHART_COLORS.infoStrong : DIM_BD));
 
       cm.create('chart-construction-type', {
         type: 'bar',
@@ -397,7 +397,7 @@
             datalabels: barDatalabels(total),
           },
           scales: {
-            x: { grid: { color: '#1F2937' }, ticks: { font: { size: 10 } } },
+            x: { grid: { color: CHART_COLORS.grid }, ticks: { font: { size: 10 } } },
             y: { grid: { display: false }, ticks: { font: { size: 10 } } }
           },
           onClick: (evt, elements) => {
@@ -470,7 +470,7 @@
               datalabels: barDatalabels(filtered.length),
             },
             scales: {
-              x: { grid: { color: '#1F2937' }, ticks: { font: { size: 10 } } },
+              x: { grid: { color: CHART_COLORS.grid }, ticks: { font: { size: 10 } } },
               y: { grid: { display: false }, ticks: { font: { size: 9 } } }
             },
             onClick: (evt, elements) => {
@@ -584,10 +584,10 @@
           datasets: [{
             data: sorted.map(a => a.count),
             backgroundColor: sorted.map(a =>
-              is12.includes(a.key) ? 'rgba(139, 92, 246, 0.6)' : 'rgba(59, 130, 246, 0.6)'
+              is12.includes(a.key) ? CHART_COLORS.getAlpha(CHART_COLORS.mark12, 0.6) : CHART_COLORS.getAlpha(CHART_COLORS.info, 0.6)
             ),
             borderColor: sorted.map(a =>
-              is12.includes(a.key) ? '#8B5CF6' : '#3B82F6'
+              is12.includes(a.key) ? CHART_COLORS.mark12 : CHART_COLORS.info
             ),
             borderWidth: 1,
             borderRadius: 4,
@@ -605,7 +605,7 @@
             datalabels: barDatalabels(data.length),
           },
           scales: {
-            x: { grid: { color: '#1F2937' }, ticks: { font: { size: 10 } } },
+            x: { grid: { color: CHART_COLORS.grid }, ticks: { font: { size: 10 } } },
             y: { grid: { display: false }, ticks: { font: { size: 10 } } }
           }
         }
@@ -647,7 +647,7 @@
         disasterTypes.forEach(dt => {
           const val = matrix[ct][dt];
           const bg = CHART_COLORS.heatmapColor(val, 0, maxVal);  // 0이면 transparent 반환
-          html += `<td class="px-2 py-1.5 text-center font-medium" style="background:${bg}" title="${shortName} - ${dt}: ${cs(val)}">${val || ''}</td>`;
+          html += `<td class="px-2 py-1.5 text-center font-medium" style="background:${bg}" data-heat="${val}|${maxVal}" title="${shortName} - ${dt}: ${cs(val)}">${val || ''}</td>`;
         });
         html += `</tr>`;
       });

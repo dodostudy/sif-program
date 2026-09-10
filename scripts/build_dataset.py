@@ -2,20 +2,23 @@
 """
 SIF 데이터셋 빌드 스크립트 (파이프라인 B단계)
 
-A단계(공단 원본 → 확장열 28열)는 scripts/notebooks/SIF_변환_검증_노트북.ipynb 가 담당하고,
-본 스크립트는 그 산출물을 사이트 배포용 데이터로 변환한다.
+A단계(공단 원본 → 확장열 28열)는 scripts/build_stage_a.py, 하위유형·대표사례는
+scripts/build_tables.py 가 만들고, 본 스크립트는 그 산출물을 사이트 배포용 데이터로 변환한다.
+전 과정을 한 번에 돌리려면 scripts/build_all.py 를 쓴다.
 
-  입력  source/SIF_신버전_확장열_3459건.json   (A단계 산출물, 3,459건 × 28열)
-        source/T4m_사례하위유형매핑.json        (사례 → 하위유형 소속)
-        source/T4_대표사례.json                 (하위유형 → 대표사례 id, 정본)
+  입력  source/SIF_확장열_<N>건.json          (A단계 산출물, N건 × 28열)  --src
+        source/T4m_사례하위유형매핑.json        (사례 → 하위유형 소속)      --t4m
+        source/T4_대표사례.json                 (하위유형 → 대표사례 id, 정본) --t4
   출력  data/db.json           (30열, minified)
         data/dropdown-ref.json (공종 계층 + 기인물분류 맵 + 12대기인물)
         scripts/out/build_report.md  검증 리포트
         scripts/out/pii_audit.csv    개인정보 마스킹 내역 (사람 확인용)
 
-실행:  python3 scripts/build_dataset.py
+실행:  python3 scripts/build_dataset.py                       (기본 경로)
+       python3 scripts/build_dataset.py --src source/SIF_확장열_3800건.json
 """
 
+import argparse
 import csv
 import json
 import os
@@ -26,7 +29,8 @@ from collections import Counter, defaultdict
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 PROJECT_DIR = os.path.dirname(SCRIPT_DIR)
 
-SRC_MAIN = os.path.join(PROJECT_DIR, "source", "SIF_신버전_확장열_3459건.json")
+# 기본 입력 경로 — 명령줄 --src/--t4m/--t4 로 바꿀 수 있다
+SRC_MAIN = os.path.join(PROJECT_DIR, "source", "SIF_확장열_3459건.json")
 SRC_T4M = os.path.join(PROJECT_DIR, "source", "T4m_사례하위유형매핑.json")
 SRC_T4 = os.path.join(PROJECT_DIR, "source", "T4_대표사례.json")
 DATA_DIR = os.path.join(PROJECT_DIR, "data")
@@ -34,7 +38,6 @@ OUT_DIR = os.path.join(SCRIPT_DIR, "out")
 DB_JSON = os.path.join(DATA_DIR, "db.json")
 DROPDOWN_JSON = os.path.join(DATA_DIR, "dropdown-ref.json")
 
-EXPECTED_ROWS = 3459
 
 # 확장열 28열 + 병합 2열 = db.json 30열 (순서 고정 — 프런트가 의존)
 COLUMNS = [
@@ -123,25 +126,22 @@ PII_RULES = [
     ("상세일자", re.compile(r"\d{4}\.\s*\d{1,2}\.\s*\d{1,2}\.\s*(?:\([월화수목금토일]\))?\s*(?:\d{1,2}:\d{2}\s*(?:분)?경)?"), ""),
 ]
 
-# 규칙으로 안전하게 일반화할 수 없는 고유명사 (업체·건물·사업명·잔여 표기)
-PII_OVERRIDES = {
-    367: [("○○현장에서㈜", "○○현장에서")],
-    529: [("한강씨엠(주) 기존공장", "○○사 기존공장")],
-    3109: [
-        ("(주)더 사옥 신축공사", "○○ 신축공사"),
-        ("효성타워(타워크레인설치)", "○○사(타워크레인설치)"),
-        (".21.(월) 12:30분경 ", ""),
-    ],
-    3125: [
-        ("시흥배곧신도시 B-11블럭 호반베르디움 신축공사", "○○ 신축공사"),
-        (". 26(월) 11:30경 ", ""),
-    ],
-    3185: [
-        ("대성동 LJ빌딩 신축공사", "○○ 신축공사"),
-        (" 17일(금) 15:40분경 ", ""),
-    ],
-    2800: [("다가구주택 개축공사", "○○ 개축공사")],
-}
+# 규칙으로 안전하게 일반화할 수 없는 고유명사 (업체·건물·사업명·잔여 표기).
+# id 가 아니라 원문 조각으로 찾는다 — 공단이 차기 배포판에서 연번을 재배정해도 같은
+# 문장에 다시 붙고, 새 배포판에 새로 들어온 문장에도 그대로 적용된다.
+# (참고: 2026-04 배포판 기준 id 367·529·3109·3125·3185·2800 에서 나온 조각들)
+PII_OVERRIDES = [
+    ("○○현장에서㈜", "○○현장에서"),
+    ("한강씨엠(주) 기존공장", "○○사 기존공장"),
+    ("(주)더 사옥 신축공사", "○○ 신축공사"),
+    ("효성타워(타워크레인설치)", "○○사(타워크레인설치)"),
+    (".21.(월) 12:30분경 ", ""),
+    ("시흥배곧신도시 B-11블럭 호반베르디움 신축공사", "○○ 신축공사"),
+    (". 26(월) 11:30경 ", ""),
+    ("대성동 LJ빌딩 신축공사", "○○ 신축공사"),
+    (" 17일(금) 15:40분경 ", ""),
+    ("다가구주택 개축공사", "○○ 개축공사"),
+]
 
 # 마스킹 후 남아 있으면 안 되는 것 — 빌드 실패 조건
 PII_FORBIDDEN = [
@@ -162,8 +162,8 @@ def mask_pii(records):
             original = rec[col] or ""
             text = original
 
-            # 1) 레코드별 명시 치환 먼저 (규칙보다 구체적)
-            for frag, repl in PII_OVERRIDES.get(rec["id"], []):
+            # 1) 명시 치환 먼저 (규칙보다 구체적)
+            for frag, repl in PII_OVERRIDES:
                 if frag in text:
                     text = text.replace(frag, repl)
                     audit.append([rec["id"], col, "override", frag, repl])
@@ -270,6 +270,14 @@ def check_types(records):
 
 
 def main():
+    global SRC_MAIN, SRC_T4M, SRC_T4
+    ap = argparse.ArgumentParser(description="SIF 데이터셋 빌드 (B단계)")
+    ap.add_argument("--src", default=SRC_MAIN, help="A단계 확장열 JSON")
+    ap.add_argument("--t4m", default=SRC_T4M, help="T4m 사례하위유형매핑 JSON")
+    ap.add_argument("--t4", default=SRC_T4, help="T4 대표사례 JSON")
+    args = ap.parse_args()
+    SRC_MAIN, SRC_T4M, SRC_T4 = args.src, args.t4m, args.t4
+
     print("SIF 데이터셋 빌드 (B단계)\n")
     for p in (SRC_MAIN, SRC_T4M, SRC_T4):
         if not os.path.exists(p):
@@ -282,8 +290,9 @@ def main():
     records = json.load(open(SRC_MAIN, encoding="utf-8"))
     t4m = json.load(open(SRC_T4M, encoding="utf-8"))
     t4 = json.load(open(SRC_T4, encoding="utf-8"))
-    assert len(records) == EXPECTED_ROWS, f"확장열 행수 불일치: {len(records)}"
-    assert len(t4m) == EXPECTED_ROWS, f"T4m 행수 불일치: {len(t4m)}"
+    assert len(records) >= 100, f"확장열 행수가 비정상적으로 적음: {len(records)}"
+    assert len(t4m) == len(records), f"T4m 행수({len(t4m)}) ≠ 확장열({len(records)}) — build_tables.py 를 다시 돌리십시오"
+    assert len({r["id"] for r in records}) == len(records), "id 중복"
     print(f"  확장열 {len(records):,}건 × {len(records[0])}열 · T4m {len(t4m):,}행 · T4 {len(t4):,}행")
 
     # ── 2. PII 마스킹
@@ -364,7 +373,7 @@ def main():
 
     lines = [
         "# SIF 데이터셋 빌드 리포트", "",
-        f"- 입력: `source/SIF_신버전_확장열_3459건.json` + `source/T4m_사례하위유형매핑.json`",
+        f"- 입력: `{os.path.relpath(SRC_MAIN, PROJECT_DIR)}` + `{os.path.relpath(SRC_T4M, PROJECT_DIR)}` + `{os.path.relpath(SRC_T4, PROJECT_DIR)}`",
         f"- 산출: `data/db.json` ({os.path.getsize(DB_JSON)/1024/1024:.2f}MB, {len(COLUMNS)}열) · `data/dropdown-ref.json`", "",
         "## 건수", "",
         f"| 항목 | 값 |", "|---|---:|",
