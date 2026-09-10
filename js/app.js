@@ -124,6 +124,9 @@ function donutDatalabels(opts = {}) {
   return {
     display: true,
     color: '#fff',
+    // 밝은 조각(노랑·피치) 위에서는 흰 글자만으로는 읽히지 않는다 — 어두운 외곽선을 둔다
+    textStrokeColor: 'rgba(17,24,39,.55)',
+    textStrokeWidth: 2,
     font: { size: 10, weight: 'bold' },
     textAlign: 'center',
     // Chart.js는 함수형 옵션을 scriptable로 보고, 레이아웃 전에 불완전한 컨텍스트로

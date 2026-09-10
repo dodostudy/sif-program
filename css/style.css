@@ -737,6 +737,13 @@ html.light .drill-tint {
   color: #E5E7EB;
   border-color: #4B5563;
 }
+/* 두 값을 오가는 세그먼트 토글(대시보드 기간 전환 등)의 선택 상태 */
+.toggle-btn.active {
+  color: #FFFFFF;
+  background: #1E3A8A;
+  border-color: #3B82F6;
+  font-weight: 600;
+}
 
 /* 브레드크럼 */
 .breadcrumb {
@@ -1420,10 +1427,10 @@ html.light .text-gray-500 {
   color: #5f636b !important;
 }
 html.light .text-blue-300 {
-  color: #1b61c9 !important;
+  color: #1a73e8 !important;
 }
 html.light .text-blue-400 {
-  color: #1b61c9 !important;
+  color: #1a73e8 !important;
 }
 html.light .text-amber-300 {
   color: #a26a00 !important;
@@ -1657,7 +1664,7 @@ html.light .wizard-chip:hover {
 html.light .wizard-chip.selected {
   border-color: #181d26;
   background: #f8fafc;
-  color: #1b61c9;
+  color: #1a73e8;
 }
 html.light .wizard-chip .chip-count {
   background: #eef0f3;
@@ -1815,7 +1822,7 @@ html.light .hero-bg::after {
     linear-gradient(90deg, rgba(24,29,38,.05) 1px, transparent 1px) !important;
 }
 html.light .hero-bg .text-blue-100\/90 {
-  color: #1a3866 !important;
+  color: #175fc9 !important;
 }
 html.light .pill {
   background: #ffffff !important;
@@ -1842,7 +1849,7 @@ html.light .tl-dot {
 /* 소개페이지 히어로 버튼 */
 html.light .hero-bg .border-white\/25 {
   border-color: #dddddd !important;
-  color: #1a3866 !important;
+  color: #175fc9 !important;
   background: #fbf6ec !important;
 }
 html.light .hero-bg .border-white\/25:hover {
@@ -1877,14 +1884,14 @@ html.light .text-emerald-300 {
   color: #006400 !important;
 }
 html.light .text-purple-300 {
-  color: #1a3866 !important;
+  color: #175fc9 !important;
 }
 html.light .text-cyan-300 {
   color: #254fad !important;
 }
 html.light .text-blue-400,
 html.light .text-blue-300 {
-  color: #1b61c9 !important;
+  color: #1a73e8 !important;
 }
 html.light .text-amber-400,
 html.light .text-amber-300 {
@@ -1894,7 +1901,7 @@ html.light .text-emerald-400 {
   color: #006400 !important;
 }
 html.light .text-purple-400 {
-  color: #1a3866 !important;
+  color: #175fc9 !important;
 }
 html.light .text-red-400 {
   color: #aa2d00 !important;
@@ -1961,7 +1968,7 @@ html.light .bg-green-600, html.light .bg-green-700, html.light .bg-green-500, ht
   background-color: #006400 !important; color: #ffffff !important;
 }
 html.light .hover\:bg-green-500:hover, html.light .hover\:bg-green-700:hover { background-color: #0a2e0e !important; }
-html.light .bg-purple-600 { background-color: #1a3866 !important; color: #ffffff !important; }
+html.light .bg-purple-600 { background-color: #175fc9 !important; color: #ffffff !important; }
 html.light .bg-amber-600, html.light .bg-amber-500 { background-color: #d9a441 !important; color: #181d26 !important; }
 html.light .bg-emerald-400 { background-color: #4b8a5c !important; }
 html.light .bg-blue-600\/70 { background-color: rgba(24,29,38,.85) !important; }
@@ -1987,7 +1994,7 @@ html.light .text-blue-200, html.light .text-blue-100\/90 { color: #333840 !impor
 html.light .text-amber-200, html.light .text-amber-100 { color: #a26a00 !important; }
 html.light .text-emerald-200, html.light .text-emerald-100, html.light .text-green-300, html.light .text-green-400 { color: #006400 !important; }
 html.light .text-red-200, html.light .text-red-300 { color: #aa2d00 !important; }
-html.light .text-purple-200, html.light .text-purple-100 { color: #1a3866 !important; }
+html.light .text-purple-200, html.light .text-purple-100 { color: #175fc9 !important; }
 html.light .text-sky-300, html.light .text-sky-400 { color: #254fad !important; }
 html.light .border-blue-500, html.light .border-blue-600, html.light .border-blue-400 { border-color: #181d26 !important; }
 html.light .border-amber-500, html.light .border-amber-600 { border-color: #d9a441 !important; }
@@ -1996,7 +2003,7 @@ html.light .border-red-500 { border-color: #aa2d00 !important; }
 /* KOEN 스위치: 켜짐은 잉크 */
 html.light .peer:checked ~ .peer-checked\:bg-blue-600 { background-color: #181d26 !important; }
 /* 링크 */
-html.light a.text-blue-400:hover, html.light a.text-blue-300:hover { color: #1a3866 !important; }
+html.light a.text-blue-400:hover, html.light a.text-blue-300:hover { color: #175fc9 !important; }
 /* 소개 페이지 */
 html.light .sec-line { background: #181d26 !important; }
 html.light .hov-card:hover { border-color: rgba(24,29,38,.35) !important; }
@@ -2017,7 +2024,7 @@ html.light .gpts-banner .bg-blue-600 .text-white, html.light .gpts-banner .bg-bl
 html.light .gpts-banner .hover\:bg-blue-500:hover { background: #e0e2e6 !important; }
 html.light .gpts-banner .bg-gray-700, html.light .gpts-banner .bg-gray-800 { background: rgba(255,255,255,.12) !important; color: #ffffff !important; border-color: rgba(255,255,255,.25) !important; }
 /* 소개 히어로 제목: 잉크 → 링크 파랑 그라데이션 */
-html.light .hero-bg .bg-clip-text { background-image: linear-gradient(135deg, #181d26 0%, #1b61c9 100%) !important; }
+html.light .hero-bg .bg-clip-text { background-image: linear-gradient(135deg, #181d26 0%, #2280f0 100%) !important; }
 html.light .bg-amber-900\/60 { background-color: rgba(244,211,94,.3) !important; }
 html.light .wizard-step-num { background: #181d26; color: #ffffff; }
 html.light .bg-emerald-600\/70.text-emerald-100, html.light .bg-emerald-600\/70 .text-emerald-100,
@@ -2029,3 +2036,27 @@ html.light .border-purple-800, html.light .border-purple-700 { border-color: rgb
 html.light .border-emerald-800, html.light .border-green-800 { border-color: #a8d8c4 !important; }
 html.light .border-blue-800 { border-color: #dddddd !important; }
 html.light .border-red-800 { border-color: rgba(170,45,0,.35) !important; }
+
+/* 세그먼트 토글 선택 상태 — 라이트는 잉크 면 */
+html.light .toggle-btn.active {
+  color: #ffffff;
+  background: #181d26;
+  border-color: #181d26;
+}
+/* 멀티셀렉트 구분선 (누적 80% 경계 등) */
+.ms-divider {
+  padding: .35rem .6rem .3rem;
+  font-size: .65rem; font-weight: 700; letter-spacing: 0;
+  color: #9CA3AF; border-top: 1px solid #374151; margin-top: .25rem;
+}
+.ms-divider:first-child { border-top: 0; margin-top: 0; }
+html.light .ms-divider { color: #5f636b; border-top-color: #dddddd; }
+
+/* 라이트에서 빠져 있던 반투명 회색 유틸 — 모바일 테이블 카드가 진회색으로 남아
+   글자가 배경에 묻히던 문제(2026-09-10 제보). */
+html.light .bg-gray-800\/70 { background-color: #ffffff !important; }
+html.light .hover\:bg-gray-800\/50:hover { background-color: #f8fafc !important; }
+html.light .border-gray-700\/60 { border-color: #ececec !important; }
+html.light .border-gray-800\/40 { border-color: #ececec !important; }
+html.light .border-gray-600 { border-color: #dddddd !important; }
+html.light .text-gray-600 { color: #5f636b !important; }

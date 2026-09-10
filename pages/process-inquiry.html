@@ -43,6 +43,8 @@
     <div id="keyword-search-wrap" class="mb-4"></div>
 
     <!-- 결과 요약 -->
+    <div id="gz-hint" class="mb-4"></div>
+
     <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-4" id="result-summary">
     </div>
 
@@ -72,6 +74,7 @@
   <script src="../js/filter-manager.js"></script>
   <script src="../js/chart-manager.js"></script>
   <script src="../js/utils.js"></script>
+  <script src="../js/analytics.js"></script>
   <script src="../js/multi-select.js"></script>
   <script src="../js/components.js"></script>
   <script src="../js/app.js"></script>
@@ -230,25 +233,50 @@
       fm.onDataChange(() => renderResults());
     }
 
-    // 상위 필터에 따라 기인물 드롭다운 범위 제한 + 건수 내림차순 정렬
+    // 상위 필터에 따라 기인물 드롭다운 범위 제한 + 건수 내림차순 정렬.
+    // 목록 중간에 누적 80% 경계를 그어 "여기까지가 이 범위 사고의 대부분"을 보이게 한다 —
+    // 기인물이 57종이라 순서만 봐서는 어디까지 챙겨야 하는지 가늠이 안 된다.
     function updateCauseDropdown() {
       const filters = fm.getAll();
       const filtersWithoutCause = { ...filters };
       delete filtersWithoutCause['기인물'];
       const filtered = filterDB(allData, filtersWithoutCause);
 
-      const causeMap = {};
-      filtered.forEach(r => {
-        const c = r['기인물'];
-        if (c) causeMap[c] = (causeMap[c] || 0) + 1;
-      });
-      const sorted = Object.entries(causeMap).sort((a, b) => b[1] - a[1]);
+      const { rows, majorCut } = gongjongCandidates(filtered, null, { cumCut: 80 });
 
-      msCause.setOptions(sorted.map(([cause, count]) => ({
-        value: cause,
-        label: cause,
-        count: count
-      })));
+      const options = [];
+      if (rows.length) options.push({ divider: true, label: `주요 기인물 ${majorCut}종 · 80%` });
+      rows.forEach((r, i) => {
+        if (i === majorCut && i < rows.length) options.push({ divider: true, label: '그 밖의 기인물' });
+        options.push({ value: r['기인물'], label: r['기인물'], count: r.count });
+      });
+      msCause.setOptions(options);
+
+      renderGzHint(rows, majorCut, filtered.length);
+    }
+
+    /** 공종을 골랐을 때 상위 3 기인물을 먼저 보여 준다 (드롭다운을 열기 전에) */
+    function renderGzHint(rows, majorCut, total) {
+      const el = document.getElementById('gz-hint');
+      if (!el) return;
+      const gz = fm.get('공종');
+      if (!gz || !rows.length) { el.innerHTML = ''; return; }
+
+      const names = (Array.isArray(gz) ? gz : [gz]).map(g => g.replace(/^\d+\.\s*/, ''));
+      const label = names.length === 1 ? names[0] : `${names[0]} 외 ${names.length - 1}개 공종`;
+      const top3 = rows.slice(0, 3)
+        .map(r => `<b>${r['기인물']}</b> ${formatNumber(r.count)}건(${r.pct.toFixed(1)}%)`)
+        .join(' · ');
+
+      el.innerHTML = `
+        <div class="note note-blue">
+          <p class="note-h text-xs font-semibold mb-1">${label} 상위 3 기인물</p>
+          <p class="text-sm">${top3}</p>
+          <p class="note-sub text-xs mt-1">
+            선택 범위 ${formatNumber(total)}건 · 기인물 ${rows.length}종 가운데
+            상위 ${majorCut}종이 사고의 80%를 차지합니다.
+          </p>
+        </div>`;
     }
 
     function renderResults() {

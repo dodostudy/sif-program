@@ -65,17 +65,20 @@ const CHART_COLORS = {
     season: { '봄': '#34D399', '여름': '#F59E0B', '가을': '#F97316', '겨울': '#38BDF8' },
   },
   _light: {
+    // 흰 바탕이라 어두운 색을 쓰면 무거워 보인다. 밝은 채도 중간 톤으로 잡는다.
+    // (2026-09-10 사용자 피드백 — 파랑·전반 색이 너무 진하다)
     primary: [
-      '#1b61c9', '#aa2d00', '#2f7f4f', '#d9a441', '#5b4b8a',
-      '#b03a5b', '#2f7f8f', '#e07b39', '#254fad', '#4b8a5c',
-      '#8c2f39', '#9fb56b', '#5b7fa6', '#9c5c8f', '#fcab79',
-      '#7fb3c9', '#7a4b9c', '#a8d8c4', '#d97a6a', '#f4d35e'
+      '#2997ff', '#f0553d', '#22b573', '#f5b73c', '#8b6ff0',
+      '#ec5f9e', '#12b5cb', '#fb8b3c', '#5b7cfa', '#19bfa8',
+      '#f0506e', '#8fc93a', '#39a7f0', '#c765e0', '#ffab6b',
+      '#3fd0e0', '#a26df0', '#4dc78f', '#f5636e', '#f7c948'
     ],
-    danger: '#aa2d00', warning: '#d9a441', success: '#2f7f4f', info: '#1b61c9',
-    infoStrong: '#1a3866', mark12: '#aa2d00', hot: '#d9a441', hotStrong: '#a26a00',
-    cold: '#5b7fa6', coldStrong: '#254fad', dim: '#9297a0', grid: '#ececec',
-    heatEnd: [170, 45, 0], heatBase: [255, 255, 255],
-    season: { '봄': '#4b8a5c', '여름': '#d9a441', '가을': '#c2632a', '겨울': '#254fad' },
+    danger: '#f0553d', warning: '#f5b73c', success: '#22b573', info: '#2997ff',
+    // 테두리·강조는 채움색보다 한 단계 진하게 — 흰 바탕에서 윤곽이 남는다
+    infoStrong: '#1a73e8', mark12: '#8b6ff0', hot: '#f5b73c', hotStrong: '#d98f0f',
+    cold: '#4bb8e8', coldStrong: '#1f8fd0', dim: '#9297a0', grid: '#ececec',
+    heatEnd: [239, 68, 68], heatBase: [255, 255, 255],
+    season: { '봄': '#4dc78f', '여름': '#f5b73c', '가을': '#fb8b3c', '겨울': '#4bb8e8' },
   },
   get _t() {
     const light = typeof getCurrentTheme === 'function' && getCurrentTheme() === 'light';
@@ -125,10 +128,14 @@ const CHART_COLORS = {
   _pairs() {
     if (this._pairCache) return this._pairCache;
     const d = this._dark, l = this._light, map = {}, rgb = {};
+    const put = (o, k, v) => { if (!(k in o)) o[k] = v; };   // 먼저 등록된 짝이 이긴다
     const add = (a, b) => {
-      map[a.toLowerCase()] = b; map[b.toLowerCase()] = a;
+      if (!a || !b) return;
+      const la = a.toLowerCase(), lb = b.toLowerCase();
+      if (la === lb) return;                                  // 두 테마가 같은 색이면 바꿀 것이 없다
+      put(map, la, b); put(map, lb, a);
       const key = h => `${parseInt(h.slice(1,3),16)},${parseInt(h.slice(3,5),16)},${parseInt(h.slice(5,7),16)}`;
-      rgb[key(a)] = b; rgb[key(b)] = a;
+      put(rgb, key(a), b); put(rgb, key(b), a);
     };
     d.primary.forEach((c, i) => add(c, l.primary[i]));
     ['danger','warning','success','info','infoStrong','mark12','hot','hotStrong','cold','coldStrong','dim','grid']

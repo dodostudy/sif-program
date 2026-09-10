@@ -252,7 +252,7 @@
             <p class="text-sm text-gray-500 uppercase tracking-widest font-semibold mb-5">시스템 구성</p>
             <div class="grid grid-cols-2 gap-4">
               <div class="rounded-2xl border border-gray-800 bg-gray-950/80 p-6 text-center hov-card">
-                <p class="text-4xl font-black text-blue-400 mb-1.5">6</p>
+                <p class="text-4xl font-black text-blue-400 mb-1.5">8</p>
                 <p class="text-sm text-gray-400">페이지 구성</p>
               </div>
               <div class="rounded-2xl border border-gray-800 bg-gray-950/80 p-6 text-center hov-card">
@@ -260,7 +260,7 @@
                 <p class="text-sm text-gray-400">이용료</p>
               </div>
               <div class="rounded-2xl border border-gray-800 bg-gray-950/80 p-6 text-center hov-card">
-                <p class="text-4xl font-black text-amber-400 mb-1.5">113</p>
+                <p class="text-4xl font-black text-amber-400 mb-1.5">112</p>
                 <p class="text-sm text-gray-400">단위작업명</p>
               </div>
               <div class="rounded-2xl border border-gray-800 bg-gray-950/80 p-6 text-center hov-card">
@@ -526,6 +526,44 @@
                   <li class="flex gap-1.5 items-start"><span class="text-purple-500 mt-0.5">•</span>발전업: 기인물 기반 단계별 위자드</li>
                   <li class="flex gap-1.5 items-start"><span class="text-purple-500 mt-0.5">•</span>건설업: 공종 → 작업명 → 단위작업명 선택</li>
                   <li class="flex gap-1.5 items-start"><span class="text-purple-500 mt-0.5">•</span>재해사례 체크박스 선택 + 인쇄 지원</li>
+                </ul>
+                <div class="mt-4 text-xs text-blue-400 font-semibold group-hover:text-blue-300 transition-colors">바로가기 →</div>
+              </a>
+            </div>
+          </div>
+
+          <!-- 심층 분석 -->
+          <div class="reveal">
+            <div class="flex items-center gap-3 mb-4">
+              <div class="h-px flex-1 bg-gray-800"></div>
+              <span class="text-sm font-bold text-emerald-300 px-4 py-1.5 rounded-full bg-emerald-900/25 border border-emerald-800/60 flex items-center gap-2">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11l-7-4-7 4 7 4 7-4z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7 4 7-4"/></svg>
+                심층 분석
+              </span>
+              <div class="h-px flex-1 bg-gray-800"></div>
+            </div>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
+              <a href="fall-height.html" class="hov-card block rounded-2xl border border-gray-800 bg-gray-950/80 p-6 group">
+                <div class="w-12 h-12 rounded-xl bg-blue-900/50 border border-blue-800 flex items-center justify-center text-blue-400 mb-4 group-hover:bg-blue-800/60 transition-colors">
+                  <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m0 0l-4-4m4 4l4-4M12 4L8 8m4-4l4 4"/></svg>
+                </div>
+                <h4 class="text-white font-bold mb-1.5">추락높이 분석</h4>
+                <p class="text-xs text-gray-500 mb-3">떨어짐 사고를 추락 높이대로 나눠 조회</p>
+                <ul class="text-xs text-gray-400 space-y-1.5">
+                  <li class="flex gap-1.5 items-start"><span class="text-blue-500 mt-0.5">•</span>2m 미만부터 20m 이상까지 높이구간 토글</li>
+                  <li class="flex gap-1.5 items-start"><span class="text-blue-500 mt-0.5">•</span>높이대별 기인물·공종·작업 분포 + 1m 단위 분포</li>
+                </ul>
+                <div class="mt-4 text-xs text-blue-400 font-semibold group-hover:text-blue-300 transition-colors">바로가기 →</div>
+              </a>
+              <a href="trend.html" class="hov-card block rounded-2xl border border-gray-800 bg-gray-950/80 p-6 group">
+                <div class="w-12 h-12 rounded-xl bg-emerald-900/50 border border-emerald-800 flex items-center justify-center text-emerald-400 mb-4 group-hover:bg-emerald-800/60 transition-colors">
+                  <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 17l6-6 4 4 7-7"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 8h6v6"/></svg>
+                </div>
+                <h4 class="text-white font-bold mb-1.5">발생시기 분석</h4>
+                <p class="text-xs text-gray-500 mb-3">연도·월·계절로 본 재해 추이 — 무엇이 늘고 무엇이 줄었는지</p>
+                <ul class="text-xs text-gray-400 space-y-1.5">
+                  <li class="flex gap-1.5 items-start"><span class="text-emerald-500 mt-0.5">•</span>연도별 추이 + 혹서기·혹한기 월별 분포</li>
+                  <li class="flex gap-1.5 items-start"><span class="text-emerald-500 mt-0.5">•</span>기간 비교 — 기인물·공종별 비중 증감</li>
                 </ul>
                 <div class="mt-4 text-xs text-blue-400 font-semibold group-hover:text-blue-300 transition-colors">바로가기 →</div>
               </a>

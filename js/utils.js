@@ -88,6 +88,7 @@ function filterDB(records, filters) {
     if (!matchFilter(filters['기인물'], r['기인물'])) return false;
     if (!matchFilter(filters['기인물분류'], r['기인물분류'])) return false;
     if (filters['12대기인물'] === true && !r['12대기인물']) return false;
+    if (filters['복수재해자'] === true && !r['복수재해자']) return false;
     if (!matchFilter(filters['재해형태'], r['재해형태'])) return false;
     if (filters['작업유형'] && typeof filters['작업유형'] === 'object') {
       if (!filters['작업유형'].includes(r['기인물'])) return false;

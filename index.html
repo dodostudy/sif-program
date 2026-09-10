@@ -73,10 +73,15 @@
     <!-- 차트 Row 2 -->
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
       <div class="chart-container">
-        <div class="flex items-center justify-between mb-3">
+        <div class="flex items-center justify-between mb-3 flex-wrap gap-2">
           <h3 class="text-sm font-semibold text-gray-300">기인물 Top 10</h3>
+          <div class="flex items-center gap-1.5 no-print">
+            <button id="btn-cause-all" class="toggle-btn active" onclick="setCauseTop10Period(false)">전체</button>
+            <button id="btn-cause-recent" class="toggle-btn" onclick="setCauseTop10Period(true)">최근 5년</button>
+          </div>
         </div>
-        <div style="height:360px"><canvas id="chart-cause-top10"></canvas></div>
+        <p id="cause-top10-note" class="text-xs text-gray-500 mb-2"></p>
+        <div style="height:340px"><canvas id="chart-cause-top10"></canvas></div>
       </div>
       <div class="chart-container">
         <div class="flex items-center justify-between mb-3">
@@ -112,6 +117,12 @@
 
     // 전역 필터 상태
     let currentKoenFilter = null;
+    // 기인물 Top10 기간 토글 — 최근 5년만 볼지 여부
+    let causeTop10Recent = false;
+    // "최근 5년"의 기준 연도. 건수가 충분한(50건 이상) 마지막 해에서 4년 전으로 잡는다.
+    // 발생연도는 재해개요 원문 표기에서 뽑은 값이라 2024년 1건처럼 튄 해가 섞여 있어,
+    // 최댓값을 그대로 쓰면 기준이 엉뚱해진다. 발생시기 분석 페이지와 같은 규칙(2019년).
+    let recentFromYear = null;
     let activeGongzongFilter = null;
     let activeDisasterFilter = null;
 
@@ -138,6 +149,7 @@
 
       allData = await DataLoader.loadDB();
       dropdownRef = await DataLoader.loadDropdownRef();
+      recentFromYear = computeRecentFrom(allData);
       renderAll();
 
       // 드롭다운 외부 클릭 시 닫기
@@ -571,11 +583,43 @@
       if (typeof I18n !== 'undefined') I18n.refresh();
     }
 
+    /** "최근 5년"의 시작 연도 — 건수 50건 이상인 마지막 해 - 4 */
+    function computeRecentFrom(data) {
+      const c = {};
+      data.forEach(r => { const y = r['발생연도']; if (y) c[y] = (c[y] || 0) + 1; });
+      const solid = Object.keys(c).map(Number).filter(y => c[y] >= 50);
+      return solid.length ? Math.max(...solid) - 4 : null;
+    }
+
+    function setCauseTop10Period(recent) {
+      if (recentFromYear == null) return;
+      causeTop10Recent = recent;
+      document.getElementById('btn-cause-all').classList.toggle('active', !recent);
+      document.getElementById('btn-cause-recent').classList.toggle('active', recent);
+      renderCauseTop10Chart(getChartData());
+    }
+
     function renderCauseTop10Chart(data) {
-      const agg = aggregateBy(data, '기인물');
+      // 기간 토글 — 최근 5년만 보면 최근에 늘어난 기인물이 드러난다
+      const scoped = (causeTop10Recent && recentFromYear != null)
+        ? data.filter(r => r['발생연도'] >= recentFromYear)
+        : data;
+
+      const note = document.getElementById('cause-top10-note');
+      if (note) {
+        note.textContent = (causeTop10Recent && recentFromYear != null)
+          ? `${recentFromYear}년 이후 ${formatNumber(scoped.length)}건 기준 · 전체 대비 ${formatPercent(scoped.length, data.length)}`
+          : `전체 ${formatNumber(scoped.length)}건 기준`;
+      }
+
+      const agg = aggregateBy(scoped, '기인물');
       const sorted = topN(agg, 'count', 10);
 
       const is12 = dropdownRef['12대기인물'] || [];
+      if (note) {
+        const n12 = sorted.filter(a => is12.includes(a.key)).length;
+        if (n12) note.textContent += ` · Top10 중 12대 기인물 ${n12}종`;
+      }
 
       cm.create('chart-cause-top10', {
         type: 'bar',
@@ -602,7 +646,7 @@
                 afterLabel: (ctx) => is12.includes(sorted[ctx.dataIndex].key) ? '(12대 기인물)' : ''
               }
             },
-            datalabels: barDatalabels(data.length),
+            datalabels: barDatalabels(scoped.length),
           },
           scales: {
             x: { grid: { color: CHART_COLORS.grid }, ticks: { font: { size: 10 } } },

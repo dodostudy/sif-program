@@ -86,7 +86,12 @@
           <label>단위작업명</label>
           <div id="ms-unit"></div>
         </div>
-        <button id="btn-reset" class="px-4 py-2 bg-gray-700 hover:bg-gray-600 text-sm rounded-lg transition-colors" style="margin-left:auto;">초기화</button>
+        <label class="flex items-center gap-2 text-xs text-gray-400 whitespace-nowrap cursor-pointer" style="margin-left:auto;"
+               title="한 사고로 2명 이상이 재해를 입은 사례만 봅니다">
+          <input type="checkbox" id="chk-multi-victim" class="accent-blue-500">
+          <span>복수재해자 사고만 <span id="multi-victim-count" class="text-gray-500"></span></span>
+        </label>
+        <button id="btn-reset" class="px-4 py-2 bg-gray-700 hover:bg-gray-600 text-sm rounded-lg transition-colors">초기화</button>
       </div>
     </div>
     <div id="keyword-search-wrap" class="mb-4"></div>
@@ -156,7 +161,7 @@
 
   <script>
     const cm = new ChartManager();
-    const fm = new FilterManager(['koen', '재해형태', '기인물', '공종', '작업명', '단위작업명', 'keyword']);
+    const fm = new FilterManager(['koen', '재해형태', '기인물', '공종', '작업명', '단위작업명', 'keyword', '복수재해자']);
     let keywordInput = null;
     fm.setDownstream('재해형태', ['기인물', '공종', '작업명', '단위작업명']);
     fm.setDownstream('기인물', ['공종', '작업명', '단위작업명']);
@@ -293,9 +298,16 @@
         msUnit.clear();
       });
 
+      // 복수재해자 — 한 사고로 2명 이상이 다친 사례. 같은 기인물이라도 피해가 커지는
+      // 상황을 따로 보려는 필터라 다른 조건 위에 겹쳐 쓴다.
+      document.getElementById('chk-multi-victim').addEventListener('change', (e) => {
+        fm.set('복수재해자', e.target.checked ? true : null);
+      });
+
       // 초기화
       document.getElementById('btn-reset').addEventListener('click', () => {
         fm.reset();
+        document.getElementById('chk-multi-victim').checked = false;
         showAllCause = false;
         showAllWork = false;
         document.getElementById('btn-cause-all').textContent = '전체 보기';
@@ -394,12 +406,21 @@
     function renderResults() {
       const filters = fm.getAll();
       const filtered = filterDB(allData, filters);
+
+      // 체크박스 옆 건수 — 이 필터를 켜면 몇 건이 남는지 미리 보여 준다
+      const mvEl = document.getElementById('multi-victim-count');
+      if (mvEl) {
+        const n = getFilteredUpTo(['복수재해자']).filter(r => r['복수재해자']).length;
+        mvEl.textContent = `(${formatNumber(n)}건)`;
+      }
       currentFiltered = filtered;
       const selectedDT = filters['재해형태'];
 
       renderSummaryCards(filtered, selectedDT);
 
-      if (!selectedDT && !filters['기인물']) {
+      // 재해형태·기인물뿐 아니라 복수재해자도 "범위를 좁힌 상태"다.
+      // 이걸 빼면 체크만 했을 때 개요 화면에 머물러 아무것도 달라지지 않는다.
+      if (!selectedDT && !filters['기인물'] && !filters['복수재해자']) {
         document.getElementById('overview-section').classList.remove('hidden');
         document.getElementById('detail-section').classList.add('hidden');
         renderOverviewChart(filters);
@@ -420,7 +441,7 @@
       const baseData = getBaseData();
       const total = baseData.length;
 
-      if (!selectedDT && !filters['기인물']) {
+      if (!selectedDT && !filters['기인물'] && !filters['복수재해자']) {
         const dtMap = {};
         baseData.forEach(r => { const dt = r['재해형태']; if (dt) dtMap[dt] = (dtMap[dt] || 0) + 1; });
         const dtCount = Object.keys(dtMap).length;
@@ -454,7 +475,8 @@
         const dtCount = new Set(data.map(r => r['재해형태'])).size;
         const dtLabel = Array.isArray(selectedDT) ? (selectedDT.length === 1 ? selectedDT[0] : `${selectedDT.length}개 재해형태`) : selectedDT;
         const causeLabel = filters['기인물'] ? (Array.isArray(filters['기인물']) ? (filters['기인물'].length === 1 ? filters['기인물'][0] : `${filters['기인물'].length}개 기인물`) : filters['기인물']) : null;
-        const label = dtLabel || causeLabel || '선택 조건';
+        const mvLabel = filters['복수재해자'] ? '복수재해자 사고' : null;
+        const label = [dtLabel, causeLabel, mvLabel].filter(Boolean).join(' · ') || '선택 조건';
         container.innerHTML = `
           <div class="stat-card">
             <p class="text-xs text-gray-500">선택 조건</p>

@@ -89,7 +89,7 @@ class MultiSelect {
     this._btnAll.addEventListener('click', (e) => {
       e.stopPropagation();
       // 검색 중이면 검색 결과만 선택
-      const visibleOptions = this._getVisibleOptions();
+      const visibleOptions = this._selectable(this._getVisibleOptions());
       visibleOptions.forEach(opt => this._selected.add(opt.value));
       this._renderOptions();
       this._updateTrigger();
@@ -101,7 +101,7 @@ class MultiSelect {
       e.stopPropagation();
       if (this._searchText) {
         // 검색 중이면 검색 결과만 해제
-        const visibleOptions = this._getVisibleOptions();
+        const visibleOptions = this._selectable(this._getVisibleOptions());
         visibleOptions.forEach(opt => this._selected.delete(opt.value));
       } else {
         this._selected.clear();
@@ -117,9 +117,15 @@ class MultiSelect {
 
   _getVisibleOptions() {
     if (!this._searchText) return this._options;
+    // 검색 중에는 구분선을 숨긴다 — 걸러진 목록에서는 경계가 의미를 잃는다
     return this._options.filter(opt =>
-      opt.label.toLowerCase().includes(this._searchText)
+      !opt.divider && opt.label.toLowerCase().includes(this._searchText)
     );
+  }
+
+  /** 실제 선택 가능한 옵션만 (구분선 제외) */
+  _selectable(list) {
+    return (list || this._options).filter(o => !o.divider);
   }
 
   _renderOptions() {
@@ -131,6 +137,8 @@ class MultiSelect {
     }
 
     this._optionsWrap.innerHTML = visible.map(opt => {
+      // 구분선 — 선택 대상이 아니라 목록을 나누는 라벨 (예: 누적 80% 경계)
+      if (opt.divider) return `<div class="ms-divider">${this._escHtml(opt.label || '')}</div>`;
       const checked = this._selected.has(opt.value) ? 'checked' : '';
       const countHtml = (this._showCounts && opt.count != null)
         ? `<span class="ms-option-count">(${opt.count}건)</span>`
@@ -165,7 +173,7 @@ class MultiSelect {
       this._trigger.classList.remove('has-selection');
     } else if (size === 1) {
       const val = [...this._selected][0];
-      const opt = this._options.find(o => o.value === val);
+      const opt = this._selectable().find(o => o.value === val);
       this._triggerText.textContent = opt ? opt.label : val;
       this._trigger.classList.add('has-selection');
     } else {
@@ -200,7 +208,7 @@ class MultiSelect {
     this._renderOptions();
 
     // 옵션 10개 이상이면 검색 표시
-    if (this._options.length >= 10) {
+    if (this._selectable().length >= 10) {
       this._searchWrap.classList.remove('hidden');
       this._searchInput.focus();
     } else {
@@ -216,13 +224,14 @@ class MultiSelect {
 
   /**
    * 옵션 목록 설정
-   * @param {Array<{value: string, label: string, count?: number}>} options
+   * @param {Array<{value: string, label: string, count?: number, divider?: boolean}>} options
+   *        divider: true 인 항목은 선택 대상이 아니라 목록을 가르는 라벨로 그려진다
    */
   setOptions(options) {
     this._options = options || [];
 
     // 기존 선택값 중 새 옵션에 없는 것 제거
-    const validValues = new Set(this._options.map(o => o.value));
+    const validValues = new Set(this._selectable().map(o => o.value));
     const removed = [];
     this._selected.forEach(v => {
       if (!validValues.has(v)) {
@@ -235,7 +244,7 @@ class MultiSelect {
     this._updateTrigger();
 
     // 옵션이 없으면 트리거 비활성화
-    if (this._options.length === 0) {
+    if (this._selectable().length === 0) {
       this._trigger.disabled = true;
       this._trigger.classList.add('disabled');
     } else {
