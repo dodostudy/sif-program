@@ -1,6 +1,8 @@
 .DS_Store
 ~$*
-.claude/
+.claude/*
+# 프로젝트 에이전트 정의는 산출물이라 형상관리에 담는다 (검토자 정의가 분류 방법론의 증빙)
+!.claude/agents/
 *.env
 *.env.local
 

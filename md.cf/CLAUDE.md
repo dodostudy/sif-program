@@ -57,8 +57,10 @@ sif_Program/
 │   ├── build_stage_a.py           # A단계: 공단 xlsx → 확장열 28열 (미결은 out/미결_*.csv)
 │   ├── build_tables.py            # 하위유형 군집 · 대표사례 (T4 · T4m)
 │   ├── build_dataset.py           # B단계: PII 마스킹 · 병합 · db.json
-│   ├── mapping/                   # 사람이 정한 규칙 5종 JSON (기인물 룩업·크로스워크·재해형태·개별판정·KOEN)
+│   ├── build_scenarios.py         # 기인물별 재해 시나리오 배정 (규칙 → 초안 문서 · 검토자료)
+│   ├── mapping/                   # 사람이 정한 규칙 (JSON 5종 + scenario_rules.py)
 │   ├── docs/갱신방법.html         # 갱신 절차서 (사람용)
+│   ├── docs/재해시나리오_분류방법론.html   # 시나리오 분류 기준·절차·검증 증빙
 │   ├── notebooks/                 # 원래 A단계 노트북 (참고용)
 │   ├── docs/                      # 공단 배포판 변환가이드·테이블 가이드·변화보고
 │   ├── test_analytics.mjs · audit_chart_labels.mjs   # analytics 대조 테스트 · 차트 라벨 겹침 검사
@@ -66,7 +68,7 @@ sif_Program/
 ├── source/                        # 원본 (확장열 JSON, T4/T4m, 공단 xlsx)
 │   └── legacy/                    # 구 원본 2,574건 자산 (규칙 역산 참조용)
 ├── md.cf/                         # 로드맵·기획 문서 (Roadmap4.md가 현행)
-└── .claude/agents/                # 프로젝트 전담 에이전트 4종
+└── .claude/agents/                # 프로젝트 전담 에이전트 5종 (형상관리 대상)
 ```
 
 ---
@@ -100,6 +102,10 @@ source/SIF_확장열_3459건.json
     ※ 세 단계를 한 번에: python3 scripts/build_all.py --xlsx <원본>
 data/db.json (3,459건 × 30열 flat array)
 data/dropdown-ref.json (hierarchy + 기인물분류)
+    ├─ (곁가지) scripts/build_scenarios.py — mapping/scenario_rules.py 규칙으로 db.json 전건을
+    │   기인물 → 재해형태 → 재해 시나리오로 배정. 57종 · 481 시나리오 · 493 규칙 · 해시 cf1e98c646f24f61
+    │   → scripts/docs/기인물_재해시나리오_초안.html · scripts/out/scenario_review.json
+    │   기준·절차·검증 증빙: scripts/docs/재해시나리오_분류방법론.html
     ↓ DataLoader.loadDB() / loadDropdownRef()
 브라우저 메모리 캐시
     ↓ filterDB(records, filters)
