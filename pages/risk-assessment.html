@@ -159,6 +159,7 @@
   <script src="../js/chart-manager.js"></script>
   <script src="../js/utils.js"></script>
   <script src="../js/analytics.js"></script>
+  <script src="../js/scenarios.js"></script>
   <script src="../js/components.js"></script>
   <script src="../js/app.js"></script>
 
@@ -171,6 +172,7 @@
       renderPageHeader('위험성평가 생성', '', { showPrint: false });
       allData = await DataLoader.loadDB();
       dropdownRef = await DataLoader.loadDropdownRef();
+      await Scenarios.load();
     }
 
     function showSection(type) {
@@ -197,7 +199,7 @@
       selectedRows: new Set(),
       currentGiinmuls: new Set(),
       milpyeCauses: [],               // 산소결핍 질식 기인물 목록 (동적)
-      repTypes: [],                   // Step4 대표사례 카드 ↔ 하위유형 매핑
+      scenarios: [],                  // Step4 시나리오 카드 ↔ 배정 사례 매핑
       currentJaehae: null,
       currentWork: null,
       processedGiinmuls: [],
@@ -214,6 +216,7 @@
       powerState.currentWork = null;
       powerState.processedGiinmuls = [];
       powerState.step4CheckedIds = new Set();
+      powerState.scenarios = [];
       powerState.viewMode = 'grouped';
     }
 
@@ -621,35 +624,40 @@
 
       powerState.step4CheckedIds = new Set(data.map(r => r.id));
 
-      /* 대표사례 카드 — 한 조합에 사례가 100건 넘게 몰리면 표만으로는 못 고른다.
-         공단 전처리에서 문장 군집의 중심으로 뽑아 db.json에 실어 둔 대표사례를
-         유형별로 보여주고, 카드를 누르면 그 유형에 속한 사례가 한 번에 선택된다. */
-      const reps = representativeCases(data, { limit: 6 });
+      /* 재해 시나리오 카드 — 한 조합에 사례가 100건 넘게 몰리면 표만으로는 못 고른다.
+         이 기인물이 어떤 방식으로 사망사고를 내는지 갈래로 보여주고, 카드를 누르면
+         그 갈래의 사례만 선택된다. 갈래는 사례 원문을 읽고 감소대책이 달라지는 지점을
+         기준으로 정한 것이다 — scripts/mapping/scenario_rules.py,
+         근거는 scripts/docs/재해시나리오_분류방법론.html. */
+      const scens = Scenarios.forCauses(names, data);
       let repHtml = '';
-      if (reps.length > 1) {
+      if (scens.length > 1) {
         repHtml = `<div class="mb-4">
           <p class="text-xs text-gray-400 mb-2">
-            ${formatNumber(data.length)}건을 상황이 다른 <b class="text-gray-200">${reps.length}가지 유형</b>으로 묶었습니다 —
-            카드를 누르면 그 유형의 사례만 선택됩니다.
+            ${formatNumber(data.length)}건이 사고 나는 방식에 따라
+            <b class="text-gray-200">${scens.length}가지 시나리오</b>로 나뉩니다 —
+            카드를 누르면 그 시나리오의 사례만 선택됩니다.
           </p>
           <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-2">
-            ${reps.map((r, i) => `
+            ${scens.map((s, i) => `
               <button type="button" class="rep-card text-left" data-rep="${i}"
-                      onclick="powerPickRepType(${i})">
+                      onclick="powerPickScenario(${i})">
                 <div class="flex items-center justify-between gap-2 mb-1">
-                  <span class="text-xs font-semibold text-blue-300">유형 ${i + 1}</span>
-                  <span class="text-xs text-gray-500">${formatNumber(r._n)}건</span>
+                  <span class="text-xs font-semibold text-blue-300">${escapeHtml(s.재해형태)}</span>
+                  <span class="text-xs text-gray-500">${formatNumber(s.건수)}건</span>
                 </div>
-                <p class="text-xs text-gray-300" style="line-height:1.55">${(r['재해유발요인'] || '').slice(0, 90)}</p>
+                <p class="text-xs font-semibold text-gray-200 mb-1" style="line-height:1.5">${escapeHtml(s.이름)}</p>
+                ${s.핵심대책.length ? `<p class="text-xs text-gray-400" style="line-height:1.5">
+                  대책 · ${escapeHtml(s.핵심대책[0][0])}</p>` : ''}
               </button>`).join('')}
           </div>
           <div class="flex gap-2 mt-2">
-            <button type="button" class="text-xs text-gray-400 hover:text-gray-200 underline" onclick="powerPickRepType(null)">전체 선택으로 되돌리기</button>
+            <button type="button" class="text-xs text-gray-400 hover:text-gray-200 underline" onclick="powerPickScenario(null)">전체 선택으로 되돌리기</button>
           </div>
         </div>`;
-        powerState.repTypes = reps.map(r => ({ 기인물: r['기인물'], 재해형태: r['재해형태'], 하위유형번호: r['하위유형번호'] }));
+        powerState.scenarios = scens;
       } else {
-        powerState.repTypes = [];
+        powerState.scenarios = [];
       }
 
       let html = `<div class="wizard-step-header">
@@ -669,17 +677,15 @@
       renderPowerStep4Table(data);
     }
 
-    /** 대표사례 카드 클릭 — 그 유형(하위유형)에 속한 사례만 체크한다. null이면 전체 */
-    function powerPickRepType(i) {
+    /** 시나리오 카드 클릭 — 그 시나리오에 배정된 사례만 체크한다. null이면 전체 */
+    function powerPickScenario(i) {
       let data = getPowerDataFiltered();
       if (powerState.currentJaehae) data = data.filter(r => powerState.currentJaehae.includes(r['재해형태']));
       if (powerState.currentWork) data = data.filter(r => powerState.currentWork.includes(r['작업명']));
 
-      const t = i == null ? null : powerState.repTypes[i];
-      const target = t
-        ? data.filter(r => r['기인물'] === t.기인물 && r['재해형태'] === t.재해형태 && r['하위유형번호'] === t.하위유형번호)
-        : data;
-      powerState.step4CheckedIds = new Set(target.map(r => r.id));
+      const s = i == null ? null : powerState.scenarios[i];
+      powerState.step4CheckedIds = new Set(
+        (s ? s.사례 : data).map(r => r.id));
 
       document.querySelectorAll('#power-step4 .rep-card').forEach(el => {
         el.classList.toggle('on', i != null && +el.dataset.rep === i);

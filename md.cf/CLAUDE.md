@@ -48,9 +48,11 @@ sif_Program/
 │   ├── multi-select.js            # 멀티셀렉트 패널
 │   ├── utils.js                   # WORK_TYPE_MAP, filterDB, aggregateBy, buildTable 등
 │   ├── analytics.js               # 런타임 분석 (추락높이·프로파일·대표사례·감소대책·시계열)
+│   ├── scenarios.js               # 기인물별 재해 시나리오 조회 (건수·대책은 db.json 과 맞춰 런타임 계산)
 │   └── i18n.js                    # 패스스루 스텁 (영문 모드 폐기, 2026-09)
 ├── data/
 │   ├── db.json                    # 3,459건 × 30열 (~4.9MB, minified)
+│   ├── scenarios.json             # 기인물별 재해 시나리오 481개 — 이름 + 사례번호만 (69KB)
 │   └── dropdown-ref.json          # 공종 계층 + 기인물분류 맵 + 12대기인물 (~13KB)
 ├── scripts/
 │   ├── build_all.py               # ★ 데이터 갱신 — 공단 xlsx 한 장으로 전 과정 (A → 테이블 → B)
@@ -104,8 +106,10 @@ data/db.json (3,459건 × 30열 flat array)
 data/dropdown-ref.json (hierarchy + 기인물분류)
     ├─ (곁가지) scripts/build_scenarios.py — mapping/scenario_rules.py 규칙으로 db.json 전건을
     │   기인물 → 재해형태 → 재해 시나리오로 배정. 57종 · 481 시나리오 · 493 규칙 · 해시 cf1e98c646f24f61
-    │   → scripts/docs/기인물_재해시나리오_초안.html · scripts/out/scenario_review.json
+    │   → data/scenarios.json (사이트용 69KB) · scripts/docs/기인물_재해시나리오_초안.html
+    │   → scripts/out/scenario_review.json (검토 에이전트용)
     │   기준·절차·검증 증빙: scripts/docs/재해시나리오_분류방법론.html
+    │   xlsx 내보내기: scripts/export_scenarios_xlsx.py (4시트)
     ↓ DataLoader.loadDB() / loadDropdownRef()
 브라우저 메모리 캐시
     ↓ filterDB(records, filters)

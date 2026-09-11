@@ -70,6 +70,22 @@ const Scenarios = {
     return out;
   },
 
+  /**
+   * 기인물 여럿을 한 번에 — 시나리오를 평평하게 펴서 건수 순으로 돌려준다.
+   * 위험성평가 위저드처럼 기인물을 복수로 고를 수 있는 자리에서 쓴다.
+   * @returns {Array} [{ 기인물, 재해형태, 이름, 건수, 사례, 대표, 핵심대책, 주요작업 }]
+   */
+  forCauses(causes, rows) {
+    const out = [];
+    causes.forEach(c => {
+      this.forCause(c, rows).forEach(f => {
+        f.시나리오.forEach(s => out.push({ ...s, 기인물: c, 재해형태: f.재해형태 }));
+      });
+    });
+    out.sort((a, b) => b.건수 - a.건수);
+    return out;
+  },
+
   /** 기인물 요약 한 줄 — "떨어짐 12개 · 맞음 1개" */
   summary(forms) {
     return forms.map(f => `${f.재해형태} ${f.시나리오.length}개`).join(' · ');
