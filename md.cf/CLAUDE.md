@@ -63,6 +63,9 @@ sif_Program/
 │   ├── mapping/                   # 사람이 정한 규칙 (JSON 5종 + scenario_rules.py)
 │   ├── docs/갱신방법.html         # 갱신 절차서 (사람용)
 │   ├── docs/재해시나리오_분류방법론.html   # 시나리오 분류 기준·절차·검증 증빙
+│   ├── docs/사용매뉴얼.html       # 탭별 사용법 + 화면 캡처 (build_manual.py 로 재생성)
+│   ├── build_manual.py            # 매뉴얼 생성 (숫자는 db.json 에서 세어 씀)
+│   ├── manual/                    # 매뉴얼용 화면 캡처 13장 (webp)
 │   ├── notebooks/                 # 원래 A단계 노트북 (참고용)
 │   ├── docs/                      # 공단 배포판 변환가이드·테이블 가이드·변화보고
 │   ├── test_analytics.mjs · audit_chart_labels.mjs   # analytics 대조 테스트 · 차트 라벨 겹침 검사
