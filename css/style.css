@@ -1926,9 +1926,12 @@ html.light .hover\:bg-gray-700:hover {
 
 /* 위험성평가 생성 — 대표사례 카드 (Step4 유형 선택) */
 .rep-card {
-  border: 1px solid #374151; border-radius: .5rem; padding: .6rem .75rem;
+  --accent: #3B82F6;
+  border: 1px solid #374151; border-left: 3px solid var(--accent);
+  border-radius: .5rem; padding: .6rem .75rem;
   background: rgba(31, 41, 55, .4); cursor: pointer; transition: all .15s;
 }
+.rep-card .form-tag { color: var(--accent); font-weight: 700; }
 .rep-card:hover { border-color: #6B7280; }
 .rep-card.on { border-color: #3B82F6; background: rgba(30, 58, 138, .3); }
 html.light .rep-card { background: #f8fafc; border-color: #dddddd; }
@@ -2065,17 +2068,26 @@ html.light .text-gray-600 { color: #5f636b !important; }
    재해 시나리오 카드 (기인물 조회 · 위험성평가 생성)
    기인물 → 재해형태(대분류) → 시나리오. 정의는 scripts/mapping/scenario_rules.py.
    ───────────────────────────────────────────────────────────── */
+/* --accent 는 재해형태별 색. 건수 순번을 차트 팔레트에 대응시킨 값이라
+   위 차트의 막대 색과 아래 상자 색이 같아진다. data-accent 로 테마 토글 시 다시 칠한다. */
 .scn-form {
+  --accent: #3B82F6;
   display: flex; align-items: baseline; gap: .6rem; flex-wrap: wrap;
   margin: 1.25rem 0 .6rem; padding: .45rem .75rem;
-  background: rgba(31, 41, 55, .5); border-left: 3px solid #3B82F6; border-radius: .3rem;
+  background: rgba(31, 41, 55, .5); border-left: 3px solid var(--accent); border-radius: .3rem;
+}
+.scn-form .dot {
+  flex: none; width: .6rem; height: .6rem; border-radius: 50%;
+  background: var(--accent); align-self: center;
 }
 .scn-form:first-of-type { margin-top: .25rem; }
 .scn-form b { font-size: .95rem; color: #E5E7EB; }
 .scn-form span { font-size: .78rem; color: #9CA3AF; }
 
 .scn {
-  border: 1px solid #1F2937; background: #0F172A; border-radius: .6rem;
+  --accent: #3B82F6;
+  border: 1px solid #1F2937; border-left: 3px solid var(--accent);
+  background: #0F172A; border-radius: .6rem;
   padding: .8rem 1rem; margin: .5rem 0 .5rem .75rem;
 }
 .scn-head { display: flex; align-items: baseline; gap: .5rem; flex-wrap: wrap; }
@@ -2086,7 +2098,7 @@ html.light .text-gray-600 { color: #5f636b !important; }
 .scn-name { font-size: .9rem; font-weight: 700; color: #F3F4F6; }
 .scn-cnt { font-size: .75rem; color: #9CA3AF; white-space: nowrap; }
 .scn-bar { height: 4px; background: #1F2937; border-radius: 999px; overflow: hidden; margin: .45rem 0 .6rem; }
-.scn-bar i { display: block; height: 100%; background: #3B82F6; }
+.scn-bar i { display: block; height: 100%; background: var(--accent); }
 .scn-lbl {
   font-size: .65rem; font-weight: 700; color: #6B7280;
   letter-spacing: .03em; margin: .55rem 0 .15rem;
@@ -2109,7 +2121,7 @@ html.light .text-gray-600 { color: #5f636b !important; }
 .scn-list { margin: .4rem 0 0; padding-left: 1.1rem; font-size: .76rem; color: #9CA3AF; list-style: disc outside; }
 .scn-list li { margin: .2rem 0; line-height: 1.55; }
 
-html.light .scn-form { background: #f1f5f9; border-left-color: #2997ff; }
+html.light .scn-form { background: #f1f5f9; }
 html.light .scn-form b { color: #181d26; }
 html.light .scn-form span { color: #5f636b; }
 html.light .scn { background: #ffffff; border-color: #dddddd; }
@@ -2117,7 +2129,6 @@ html.light .scn-rank { background: #eef0f2; color: #5f636b; }
 html.light .scn-name { color: #181d26; }
 html.light .scn-cnt { color: #767d85; }
 html.light .scn-bar { background: #eceef0; }
-html.light .scn-bar i { background: #2997ff; }
 html.light .scn-lbl { color: #767d85; }
 html.light .scn-case { background: #f8fafc; border-left-color: #dddddd; color: #41454d; }
 html.light .scn-ms li { color: #41454d; }

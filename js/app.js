@@ -44,6 +44,9 @@ function applyChartTheme(theme) {
   if (typeof CHART_COLORS !== 'undefined' && CHART_COLORS.repaintHeatCells) {
     try { CHART_COLORS.repaintHeatCells(); } catch (e) { /* 무시 */ }
   }
+  if (typeof CHART_COLORS !== 'undefined' && CHART_COLORS.repaintAccents) {
+    try { CHART_COLORS.repaintAccents(); } catch (e) { /* 무시 */ }
+  }
 }
 
 function getCurrentTheme() {

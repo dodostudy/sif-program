@@ -164,6 +164,17 @@ const CHART_COLORS = {
     Object.values(sc).forEach(ax => { if (ax && ax.grid && typeof ax.grid.color === 'string') ax.grid.color = this._swap(ax.grid.color); });
   },
   /* 열지도 셀(data-heat="값|최대")도 테마에 맞춰 다시 칠한다 */
+  /**
+   * data-accent="<순번>" 이 붙은 요소에 --accent 를 칠한다.
+   * 카드 테두리·막대 같은 인라인 색은 테마를 바꿔도 저절로 따라오지 않아서,
+   * 차트와 마찬가지로 토글 시 다시 칠해 준다(app.js applyChartTheme 이 부른다).
+   */
+  repaintAccents(root = document) {
+    root.querySelectorAll('[data-accent]').forEach(el => {
+      el.style.setProperty('--accent', this.getColor(+el.dataset.accent));
+    });
+  },
+
   repaintHeatCells(root = document) {
     root.querySelectorAll('[data-heat]').forEach(el => {
       const [v, m] = el.dataset.heat.split('|').map(Number);

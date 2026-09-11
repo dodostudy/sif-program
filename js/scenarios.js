@@ -86,6 +86,16 @@ const Scenarios = {
     return out;
   },
 
+  /**
+   * 재해형태 → 색 순번(건수 많은 순). 차트 막대 색과 카드 색을 같은 번호로 묶으려는 것이다.
+   * 차트도 같은 기준으로 정렬하므로 "떨어짐이 파랑이면 떨어짐 상자도 파랑"이 된다.
+   */
+  formOrder(rows) {
+    const c = {};
+    rows.forEach(r => { const v = r['재해형태']; if (v) c[v] = (c[v] || 0) + 1; });
+    return new Map(Object.entries(c).sort((a, b) => b[1] - a[1]).map(([k], i) => [k, i]));
+  },
+
   /** 기인물 요약 한 줄 — "떨어짐 12개 · 맞음 1개" */
   summary(forms) {
     return forms.map(f => `${f.재해형태} ${f.시나리오.length}개`).join(' · ');

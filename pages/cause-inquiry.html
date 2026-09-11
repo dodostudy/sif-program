@@ -400,13 +400,19 @@
         `${cause} 사고가 나는 방식을 ${Scenarios.summary(forms)}로 나눴습니다. ` +
         '사례 원문을 읽고 정한 것이며, 감소대책이 달라지는 지점을 기준으로 갈랐습니다.';
 
-      document.getElementById('scenario-body').innerHTML = forms.map(f => `
-        <div class="scn-form">
+      // 재해형태 색 — 위 차트의 막대 색과 같은 순번을 쓴다(건수 많은 순).
+      const order = Scenarios.formOrder(data.filter(r => r['기인물'] === cause));
+      document.getElementById('scenario-body').innerHTML = forms.map(f => {
+        const k = order.get(f.재해형태) || 0;
+        const c = CHART_COLORS.getColor(k);
+        return `
+        <div class="scn-form" data-accent="${k}" style="--accent:${c}">
+          <span class="dot"></span>
           <b>${escapeHtml(f.재해형태)}</b>
           <span>${formatNumber(f.건수)}건 · 이 기인물의 ${f.비중}% · 시나리오 ${f.시나리오.length}개</span>
         </div>
-        ${f.시나리오.map((s, i) => scenarioCard(s, i + 1)).join('')}
-      `).join('');
+        ${f.시나리오.map((s, i) => scenarioCard(s, i + 1, k, c)).join('')}`;
+      }).join('');
     }
 
     /**
@@ -441,14 +447,14 @@
       }
     }
 
-    function scenarioCard(s, rank) {
+    function scenarioCard(s, rank, accentIdx, accent) {
       const rep = s.대표;
       const work = s.주요작업.map(([w, n]) => `${escapeHtml(w)} <i>${n}건</i>`).join(' · ');
       const ms = s.핵심대책.map(([m, n]) => `<li>${escapeHtml(m)} <i>(${n}건)</i></li>`).join('');
       const rest = s.사례.filter(r => r['id'] !== rep['id']);
       const id = `scn-more-${rank}-${Math.random().toString(36).slice(2, 7)}`;
       return `
-        <div class="scn">
+        <div class="scn" data-accent="${accentIdx}" style="--accent:${accent}">
           <div class="scn-head">
             <span class="scn-rank">${rank}</span>
             <span class="scn-name">${escapeHtml(s.이름)}</span>

@@ -630,26 +630,34 @@
          기준으로 정한 것이다 — scripts/mapping/scenario_rules.py,
          근거는 scripts/docs/재해시나리오_분류방법론.html. */
       const scens = Scenarios.forCauses(names, data);
+      const order = Scenarios.formOrder(data);     // 재해형태 색 순번 — 위 차트와 같은 기준
       let repHtml = '';
       if (scens.length > 1) {
         repHtml = `<div class="mb-4">
           <p class="text-xs text-gray-400 mb-2">
             ${formatNumber(data.length)}건이 사고 나는 방식에 따라
             <b class="text-gray-200">${scens.length}가지 시나리오</b>로 나뉩니다 —
-            카드를 누르면 그 시나리오의 사례만 선택됩니다.
+            카드를 누르면 그 시나리오의 사례만 선택됩니다. 색은 재해형태, 건수 많은 순입니다.
           </p>
+          <div class="chart-container mb-3" style="padding:.75rem 1rem">
+            <div id="power-form-chart-box"><canvas id="chart-power-form"></canvas></div>
+          </div>
           <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-2">
-            ${scens.map((s, i) => `
+            ${scens.map((s, i) => {
+              const k = order.get(s.재해형태) || 0;
+              return `
               <button type="button" class="rep-card text-left" data-rep="${i}"
+                      data-accent="${k}" style="--accent:${CHART_COLORS.getColor(k)}"
                       onclick="powerPickScenario(${i})">
                 <div class="flex items-center justify-between gap-2 mb-1">
-                  <span class="text-xs font-semibold text-blue-300">${escapeHtml(s.재해형태)}</span>
+                  <span class="text-xs form-tag">${escapeHtml(s.재해형태)}</span>
                   <span class="text-xs text-gray-500">${formatNumber(s.건수)}건</span>
                 </div>
                 <p class="text-xs font-semibold text-gray-200 mb-1" style="line-height:1.5">${escapeHtml(s.이름)}</p>
                 ${s.핵심대책.length ? `<p class="text-xs text-gray-400" style="line-height:1.5">
                   대책 · ${escapeHtml(s.핵심대책[0][0])}</p>` : ''}
-              </button>`).join('')}
+              </button>`;
+            }).join('')}
           </div>
           <div class="flex gap-2 mt-2">
             <button type="button" class="text-xs text-gray-400 hover:text-gray-200 underline" onclick="powerPickScenario(null)">전체 선택으로 되돌리기</button>
@@ -674,7 +682,38 @@
       </div>`;
 
       document.getElementById('power-step4').innerHTML = html;
+      if (scens.length > 1) renderPowerFormChart(data);
       renderPowerStep4Table(data);
+    }
+
+    /** Step4 상단 전체 통계 — 재해형태별 건수. 막대 색이 아래 카드 색과 같다. */
+    function renderPowerFormChart(data) {
+      const agg = aggregateBy(data, '재해형태');
+      const sorted = topN(agg, 'count', 10);
+      document.getElementById('power-form-chart-box').style.height =
+        Math.max(150, Math.min(340, sorted.length * 46 + 66)) + 'px';
+
+      cm.create('chart-power-form', {
+        type: 'bar',
+        data: {
+          labels: sorted.map(a => a.key),
+          datasets: [{
+            data: sorted.map(a => a.count),
+            backgroundColor: sorted.map((_, i) => CHART_COLORS.getAlpha(CHART_COLORS.getColor(i), 0.7)),
+            borderColor: sorted.map((_, i) => CHART_COLORS.getColor(i)),
+            borderWidth: 1, borderRadius: 3, maxBarThickness: 44,
+          }]
+        },
+        options: {
+          indexAxis: 'y',
+          plugins: { legend: { display: false }, datalabels: barDatalabels(data.length) },
+          scales: {
+            x: { grid: { color: CHART_COLORS.grid } },
+            y: { grid: { display: false }, ticks: { font: { size: 10 } } }
+          }
+        },
+        plugins: [ChartDataLabels]
+      });
     }
 
     /** 시나리오 카드 클릭 — 그 시나리오에 배정된 사례만 체크한다. null이면 전체 */
