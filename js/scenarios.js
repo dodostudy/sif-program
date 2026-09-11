@@ -10,6 +10,7 @@
  */
 const Scenarios = {
   _raw: null,
+  _index: null,
 
   async load() {
     if (!this._raw) this._raw = await DataLoader.loadScenarios();
@@ -84,6 +85,46 @@ const Scenarios = {
     });
     out.sort((a, b) => b.건수 - a.건수);
     return out;
+  },
+
+  /**
+   * 사례번호 → 그 사례가 배정된 시나리오. 한 번 만들어 두고 재사용한다.
+   * 스코프가 여러 기인물에 걸치는 자리(위험지도의 공종·작업명 드릴다운)에서 쓴다.
+   */
+  caseIndex() {
+    if (this._index) return this._index;
+    const m = new Map();
+    Object.entries((this._raw || {})['기인물'] || {}).forEach(([기, forms]) => {
+      forms.forEach(f => f['시나리오'].forEach(s => {
+        s['사례'].forEach(id => m.set(id, { 기인물: 기, 재해형태: f['재해형태'], 이름: s['이름'], 대표id: s['대표'] }));
+      }));
+    });
+    this._index = m;
+    return m;
+  },
+
+  /**
+   * 임의 스코프에서 건수 많은 시나리오 N개. 기인물이 섞여 있어도 된다.
+   * 각 시나리오의 대표사례를 함께 돌려주되, 대표가 스코프 밖이면 스코프 안 첫 사례로 바꾼다.
+   * @returns {Array} [{ 기인물, 재해형태, 이름, 건수, 사례, 대표사례, 대표교체 }]
+   */
+  topInScope(rows, n = 5) {
+    const idx = this.caseIndex();
+    const g = new Map();
+    rows.forEach(r => {
+      const s = idx.get(r['id']);
+      if (!s) return;
+      const k = `${s.기인물}|${s.재해형태}|${s.이름}`;
+      if (!g.has(k)) g.set(k, { ...s, 사례: [] });
+      g.get(k).사례.push(r);
+    });
+    return [...g.values()]
+      .sort((a, b) => b.사례.length - a.사례.length)
+      .slice(0, n)
+      .map(x => {
+        const rep = x.사례.find(r => r['id'] === x.대표id);
+        return { ...x, 건수: x.사례.length, 대표사례: rep || x.사례[0], 대표교체: !rep };
+      });
   },
 
   /**
