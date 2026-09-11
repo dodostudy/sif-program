@@ -2060,3 +2060,75 @@ html.light .border-gray-700\/60 { border-color: #ececec !important; }
 html.light .border-gray-800\/40 { border-color: #ececec !important; }
 html.light .border-gray-600 { border-color: #dddddd !important; }
 html.light .text-gray-600 { color: #5f636b !important; }
+
+/* ─────────────────────────────────────────────────────────────
+   재해 시나리오 카드 (기인물 조회 · 위험성평가 생성)
+   기인물 → 재해형태(대분류) → 시나리오. 정의는 scripts/mapping/scenario_rules.py.
+   ───────────────────────────────────────────────────────────── */
+.scn-form {
+  display: flex; align-items: baseline; gap: .6rem; flex-wrap: wrap;
+  margin: 1.25rem 0 .6rem; padding: .45rem .75rem;
+  background: rgba(31, 41, 55, .5); border-left: 3px solid #3B82F6; border-radius: .3rem;
+}
+.scn-form:first-of-type { margin-top: .25rem; }
+.scn-form b { font-size: .95rem; color: #E5E7EB; }
+.scn-form span { font-size: .78rem; color: #9CA3AF; }
+
+.scn {
+  border: 1px solid #1F2937; background: #0F172A; border-radius: .6rem;
+  padding: .8rem 1rem; margin: .5rem 0 .5rem .75rem;
+}
+.scn-head { display: flex; align-items: baseline; gap: .5rem; flex-wrap: wrap; }
+.scn-rank {
+  flex: none; font-size: .65rem; font-weight: 700; color: #9CA3AF;
+  background: rgba(55, 65, 81, .8); border-radius: .25rem; padding: .05rem .35rem;
+}
+.scn-name { font-size: .9rem; font-weight: 700; color: #F3F4F6; }
+.scn-cnt { font-size: .75rem; color: #9CA3AF; white-space: nowrap; }
+.scn-bar { height: 4px; background: #1F2937; border-radius: 999px; overflow: hidden; margin: .45rem 0 .6rem; }
+.scn-bar i { display: block; height: 100%; background: #3B82F6; }
+.scn-lbl {
+  font-size: .65rem; font-weight: 700; color: #6B7280;
+  letter-spacing: .03em; margin: .55rem 0 .15rem;
+}
+.scn-case {
+  font-size: .8rem; line-height: 1.6; color: #D1D5DB;
+  background: rgba(31, 41, 55, .5); border-left: 2px solid #374151;
+  padding: .4rem .6rem; border-radius: .25rem;
+}
+.scn-ms { margin: .15rem 0 0; padding-left: 1.1rem; font-size: .78rem; list-style: disc outside; }
+.scn-ms li { margin: .15rem 0; color: #D1D5DB; line-height: 1.55; }
+.scn-ms li i { font-style: normal; color: #6B7280; font-size: .7rem; }
+.scn-work { font-size: .76rem; color: #D1D5DB; }
+.scn-work i { font-style: normal; color: #6B7280; }
+.scn-more {
+  margin-top: .5rem; font-size: .72rem; color: #60A5FA;
+  background: none; border: 0; padding: 0; cursor: pointer;
+}
+.scn-more:hover { text-decoration: underline; }
+.scn-list { margin: .4rem 0 0; padding-left: 1.1rem; font-size: .76rem; color: #9CA3AF; list-style: disc outside; }
+.scn-list li { margin: .2rem 0; line-height: 1.55; }
+
+html.light .scn-form { background: #f1f5f9; border-left-color: #2997ff; }
+html.light .scn-form b { color: #181d26; }
+html.light .scn-form span { color: #5f636b; }
+html.light .scn { background: #ffffff; border-color: #dddddd; }
+html.light .scn-rank { background: #eef0f2; color: #5f636b; }
+html.light .scn-name { color: #181d26; }
+html.light .scn-cnt { color: #767d85; }
+html.light .scn-bar { background: #eceef0; }
+html.light .scn-bar i { background: #2997ff; }
+html.light .scn-lbl { color: #767d85; }
+html.light .scn-case { background: #f8fafc; border-left-color: #dddddd; color: #41454d; }
+html.light .scn-ms li { color: #41454d; }
+html.light .scn-ms li i { color: #767d85; }
+html.light .scn-work { color: #41454d; }
+html.light .scn-work i { color: #767d85; }
+html.light .scn-more { color: #1a73e8; }
+html.light .scn-list { color: #5f636b; }
+
+/* 시나리오 구역 안으로 옮겨 온 재해형태 차트 — 카드 안의 카드가 되지 않게 테두리를 없앤다 */
+.scn-chart { padding: 0 0 .25rem; background: none; border: 0; }
+
+@media (max-width: 640px) { .scn { margin-left: 0; } }
+@media print { .scn { break-inside: avoid; } .scn-more { display: none; } }

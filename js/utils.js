@@ -59,6 +59,13 @@ function topN(data, key, n) {
 }
 
 /** 숫자 포맷 (1,234) */
+/** innerHTML 에 원문(재해유발요인·감소대책 등)을 넣기 전에 거른다 */
+function escapeHtml(v) {
+  return String(v == null ? '' : v)
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+}
+
 function formatNumber(n) {
   if (n == null) return '-';
   return Number(n).toLocaleString('ko-KR');

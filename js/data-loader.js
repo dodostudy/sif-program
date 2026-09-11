@@ -40,6 +40,10 @@ const DataLoader = {
     return this.loadJSON(this._basePath('/data/dropdown-ref.json'));
   },
 
+  async loadScenarios() {
+    return this.loadJSON(this._basePath('/data/scenarios.json'));
+  },
+
   async loadCSVFile(filename) {
     return this.loadCSV(this._basePath(`/data/csv/${filename}`));
   },

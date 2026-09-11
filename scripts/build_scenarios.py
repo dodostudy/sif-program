@@ -129,6 +129,27 @@ def review_json(result, by_id):
     return out
 
 
+def site_json(result, h):
+    """사이트용 — 시나리오 이름과 사례번호만 담는다.
+
+    건수·비중·핵심대책은 브라우저가 db.json 과 맞춰 그때그때 센다.
+    화면에 필터(공종·발전소공정 등)가 걸려 있어도 숫자가 어긋나지 않게 하려는 것이다.
+    대표사례만은 medoid 계산이 필요해 여기서 미리 정해 둔다.
+    """
+    return {
+        '생성일': datetime.date.today().isoformat(),
+        '배정해시': h,
+        '기인물수': len(result),
+        '시나리오수': sum(len(t['scenarios']) for v in result.values() for t in v['types']),
+        '사례수': sum(v['total'] for v in result.values()),
+        '기인물': {기: [{'재해형태': t['재해형태'],
+                        '시나리오': [{'이름': s['이름'], '대표': s['대표사례']['id'], '사례': s['사례id']}
+                                   for s in t['scenarios']]}
+                       for t in v['types']]
+                  for 기, v in sorted(result.items(), key=lambda kv: -kv[1]['total'])},
+    }
+
+
 # ── 초안 문서 ────────────────────────────────────────────────────────
 
 CSS = """
@@ -331,6 +352,8 @@ def main():
     ap.add_argument('--db', default=os.path.join(PROJECT_DIR, 'data', 'db.json'))
     ap.add_argument('--out-dir', default=os.path.join(SCRIPT_DIR, 'out'))
     ap.add_argument('--doc', default=os.path.join(SCRIPT_DIR, 'docs', '기인물_재해시나리오_초안.html'))
+    ap.add_argument('--site', default=os.path.join(PROJECT_DIR, 'data', 'scenarios.json'),
+                    help='사이트가 읽는 시나리오 데이터')
     ap.add_argument('--quiet', action='store_true', help='기인물별 나열 생략')
     args = ap.parse_args()
 
@@ -353,6 +376,8 @@ def main():
               ensure_ascii=False, indent=1)
     with open(args.doc, 'w', encoding='utf-8') as f:
         f.write(build_doc(result))
+    with open(args.site, 'w', encoding='utf-8') as f:
+        json.dump(site_json(result, h), f, ensure_ascii=False, separators=(',', ':'))
 
     if not args.quiet:
         for 기, v in result.items():
@@ -372,7 +397,8 @@ def main():
     missing = sorted({r['기인물'] for r in db} - set(SCEN))
     if missing:
         print(f"주의 — 규칙이 없는 기인물 {len(missing)}종: {', '.join(missing)}")
-    print(f"\n  {os.path.relpath(args.doc, PROJECT_DIR)}")
+    print(f"\n  {os.path.relpath(args.site, PROJECT_DIR)}  ({os.path.getsize(args.site) / 1024:.0f}KB · 사이트용)")
+    print(f"  {os.path.relpath(args.doc, PROJECT_DIR)}")
     print(f"  {os.path.relpath(args.out_dir, PROJECT_DIR)}/scenario_review.json · scenario_result.json")
     print(f"{'═' * 70}")
 

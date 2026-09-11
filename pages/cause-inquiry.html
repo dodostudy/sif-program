@@ -73,20 +73,39 @@
       </div>
     </div>
 
-    <!-- 차트: 공종별 + 재해형태별 + 작업명별 한 행 -->
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-4">
+    <!-- 차트: 공종별 + 재해형태별 + 작업명별.
+         기인물을 하나만 고르면 '재해형태별' 카드는 아래 시나리오 구역 맨 위로 옮겨 간다 —
+         재해형태 분포를 보고 바로 그 갈래를 이어 보게 하려는 것이다. -->
+    <div id="chart-row" class="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-4">
       <div class="chart-container">
         <h3 class="text-sm font-semibold text-gray-300 mb-3">공종별 사고건수</h3>
         <div style="height:300px"><canvas id="chart-by-construction"></canvas></div>
       </div>
-      <div class="chart-container">
-        <h3 class="text-sm font-semibold text-gray-300 mb-3">재해형태별 건수</h3>
-        <div style="height:300px"><canvas id="chart-by-disaster"></canvas></div>
+      <div class="chart-container" id="card-by-disaster">
+        <h3 class="text-sm font-semibold text-gray-300 mb-3" id="disaster-chart-title">재해형태별 건수</h3>
+        <div style="height:300px" id="disaster-chart-box"><canvas id="chart-by-disaster"></canvas></div>
       </div>
       <div class="chart-container">
         <h3 class="text-sm font-semibold text-gray-300 mb-3">작업명별 사고건수</h3>
         <div style="height:300px"><canvas id="chart-by-work"></canvas></div>
       </div>
+    </div>
+
+    <!-- 재해 시나리오 — 기인물 하나를 골랐을 때만 -->
+    <div id="scenario-wrap" class="chart-container mb-4 hidden">
+      <div class="flex flex-wrap items-baseline justify-between gap-2 mb-1">
+        <h3 class="text-sm font-semibold text-gray-300">재해 시나리오</h3>
+        <div class="flex items-center gap-3">
+          <span class="text-xs text-gray-500" id="scenario-meta"></span>
+          <button type="button" id="btn-scenario-excel"
+            class="text-xs text-emerald-400 hover:text-emerald-300 px-3 py-1 border border-emerald-700 hover:border-emerald-500 rounded transition-colors">
+            📥 엑셀 다운로드</button>
+        </div>
+      </div>
+      <p class="text-xs text-gray-500 mb-3" id="scenario-sub"></p>
+      <!-- 재해형태별 차트가 여기로 옮겨 온다 -->
+      <div id="scenario-chart-slot" class="mb-1"></div>
+      <div id="scenario-body"></div>
     </div>
 
     <!-- 재해사례 목록 (풀폭) -->
@@ -102,6 +121,7 @@
   <script src="../js/chart-manager.js"></script>
   <script src="../js/utils.js"></script>
   <script src="../js/analytics.js"></script>
+  <script src="../js/scenarios.js"></script>
   <script src="../js/multi-select.js"></script>
   <script src="../js/components.js"></script>
   <script src="../js/app.js"></script>
@@ -150,18 +170,22 @@
     });
 
     let keywordInput = null;
+    let lastScenarioForms = null;      // 내려받기가 화면과 같은 것을 쓰도록 보관
 
     async function init() {
       renderPageHeader('기인물조회', '기인물 기준 역방향 조회 - 해당 기인물이 어떤 공정에서 위험한지 분석');
 
       allData = await DataLoader.loadDB();
       dropdownRef = await DataLoader.loadDropdownRef();
+      await Scenarios.load();
 
       // 전체 건수 맵 구축
       allData.forEach(r => {
         const c = r['기인물'];
         if (c) causeCountMap[c] = (causeCountMap[c] || 0) + 1;
       });
+
+      document.getElementById('btn-scenario-excel').addEventListener('click', downloadScenarios);
 
       // 발전소 공정 토글
       createKoenToggle('cause-koen-wrap', (val) => fm.set('koen', val));
@@ -283,6 +307,7 @@
       }
 
       renderCauseSummary(filtered, filters);
+      renderScenarios(filtered, filters);
       renderByConstructionChart(filtered);
       renderByDisasterChart(filtered);
       renderByWorkChart(filtered);
@@ -341,6 +366,148 @@
       }
     }
 
+    /**
+     * 재해 시나리오 — 기인물을 하나만 골랐을 때 나온다.
+     * 재해형태를 대분류로 두고 그 아래 시나리오를 건수 순으로 싣는다.
+     * 건수는 화면에 걸린 필터를 반영하므로, 공정을 좁히면 해당 사례가 없는 시나리오는 빠진다.
+     */
+    function renderScenarios(data, filters) {
+      const wrap = document.getElementById('scenario-wrap');
+      const sel = filters['기인물'];
+      const list = Array.isArray(sel) ? sel : (sel ? [sel] : []);
+
+      if (list.length !== 1 || !Scenarios.has(list[0])) {
+        wrap.classList.add('hidden');
+        moveDisasterChart(false);
+        return;
+      }
+      const cause = list[0];
+      const forms = Scenarios.forCause(cause, data);
+      if (!forms.length) {
+        wrap.classList.add('hidden');
+        moveDisasterChart(false);
+        return;
+      }
+      wrap.classList.remove('hidden');
+      moveDisasterChart(true);
+      lastScenarioForms = forms;
+
+      const nScen = forms.reduce((a, f) => a + f.시나리오.length, 0);
+      const nCase = forms.reduce((a, f) => a + f.건수, 0);
+      document.getElementById('scenario-meta').textContent =
+        `${formatNumber(nCase)}건 · 시나리오 ${nScen}개`;
+      document.getElementById('scenario-sub').textContent =
+        `${cause} 사고가 나는 방식을 ${Scenarios.summary(forms)}로 나눴습니다. ` +
+        '사례 원문을 읽고 정한 것이며, 감소대책이 달라지는 지점을 기준으로 갈랐습니다.';
+
+      document.getElementById('scenario-body').innerHTML = forms.map(f => `
+        <div class="scn-form">
+          <b>${escapeHtml(f.재해형태)}</b>
+          <span>${formatNumber(f.건수)}건 · 이 기인물의 ${f.비중}% · 시나리오 ${f.시나리오.length}개</span>
+        </div>
+        ${f.시나리오.map((s, i) => scenarioCard(s, i + 1)).join('')}
+      `).join('');
+    }
+
+    /**
+     * 재해형태별 차트를 시나리오 구역 맨 위로 옮긴다(또는 원래 행으로 되돌린다).
+     * 분포를 본 뒤 그 갈래를 바로 이어 보게 하려는 것이다. 차트를 두 벌 그리지 않고 같은 요소를 옮겨 쓴다.
+     * 옮기기 전에 차트를 파괴한다 — Chart.js 가 캔버스의 옛 부모를 붙들고 있어 그대로 떼면 오류가 난다.
+     * 호출 직후 renderByDisasterChart() 가 새 자리에서 다시 그린다(renderResults 의 호출 순서).
+     */
+    function moveDisasterChart(intoScenario) {
+      const card = document.getElementById('card-by-disaster');
+      const slot = document.getElementById('scenario-chart-slot');
+      const row = document.getElementById('chart-row');
+      if (!card || !slot || !row) return;
+
+      const inScenario = card.parentElement === slot;
+      if (intoScenario === inScenario) return;
+
+      cm.destroy('chart-by-disaster');
+
+      if (intoScenario) {
+        slot.appendChild(card);
+        card.classList.remove('chart-container');        // 이미 카드 안이라 테두리가 겹친다
+        card.classList.add('scn-chart');
+        row.classList.replace('lg:grid-cols-3', 'lg:grid-cols-2');
+        document.getElementById('disaster-chart-title').textContent = '재해형태별 건수 — 아래 시나리오의 대분류';
+      } else {
+        row.insertBefore(card, row.children[1] || null);
+        card.classList.add('chart-container');
+        card.classList.remove('scn-chart');
+        row.classList.replace('lg:grid-cols-2', 'lg:grid-cols-3');
+        document.getElementById('disaster-chart-title').textContent = '재해형태별 건수';
+      }
+    }
+
+    function scenarioCard(s, rank) {
+      const rep = s.대표;
+      const work = s.주요작업.map(([w, n]) => `${escapeHtml(w)} <i>${n}건</i>`).join(' · ');
+      const ms = s.핵심대책.map(([m, n]) => `<li>${escapeHtml(m)} <i>(${n}건)</i></li>`).join('');
+      const rest = s.사례.filter(r => r['id'] !== rep['id']);
+      const id = `scn-more-${rank}-${Math.random().toString(36).slice(2, 7)}`;
+      return `
+        <div class="scn">
+          <div class="scn-head">
+            <span class="scn-rank">${rank}</span>
+            <span class="scn-name">${escapeHtml(s.이름)}</span>
+            <span class="scn-cnt">${s.건수}건 · 이 재해형태의 ${s.재해형태내비중}%</span>
+          </div>
+          <div class="scn-bar"><i style="width:${s.재해형태내비중}%"></i></div>
+          ${work ? `<div class="scn-lbl">주로 어떤 작업에서</div><div class="scn-work">${work}</div>` : ''}
+          <div class="scn-lbl">대표사례 — 사례번호 ${rep['id']} · ${escapeHtml(String(rep['공종'] || '').replace(/^\d+\.\s*/, ''))} · ${rep['발생연도']}년</div>
+          <div class="scn-case">${escapeHtml(rep['재해유발요인'])}</div>
+          ${ms ? `<div class="scn-lbl">이 시나리오에서 가장 많이 제시된 대책</div><ul class="scn-ms">${ms}</ul>` : ''}
+          ${rest.length ? `
+            <button type="button" class="scn-more" onclick="toggleScnMore('${id}', this, ${rest.length})">
+              나머지 사례 ${rest.length}건 보기</button>
+            <ul class="scn-list hidden" id="${id}">
+              ${rest.map(r => `<li>${r['id']} · ${escapeHtml(r['재해유발요인'])}</li>`).join('')}
+            </ul>` : ''}
+        </div>`;
+    }
+
+    /** 지금 화면에 보이는 시나리오를 표로 내려받는다. 필터가 걸려 있으면 그 기준 그대로다. */
+    function downloadScenarios() {
+      const sel = fm.getAll()['기인물'];
+      const cause = Array.isArray(sel) ? sel[0] : sel;
+      if (!cause || !lastScenarioForms) return;
+
+      const rows = [];
+      lastScenarioForms.forEach(f => {
+        f.시나리오.forEach((s, i) => {
+          const rep = s.대표;
+          const ms = s.핵심대책.map(([m]) => m).concat(['', '', '']);
+          rows.push({
+            기인물: cause,
+            재해형태: f.재해형태,
+            '재해형태 건수': f.건수,
+            순위: i + 1,
+            '재해 시나리오': s.이름,
+            건수: s.건수,
+            '재해형태 내 비중(%)': s.재해형태내비중,
+            '주요 작업': s.주요작업.map(([w, n]) => `${w}(${n})`).join(' · '),
+            '대표사례 번호': rep['id'],
+            '대표사례 공종': String(rep['공종'] || '').replace(/^\d+\.\s*/, ''),
+            '대표사례 작업명': rep['작업명'],
+            '대표사례 연도': rep['발생연도'],
+            '대표사례 재해유발요인': rep['재해유발요인'],
+            '핵심대책 1': ms[0], '핵심대책 2': ms[1], '핵심대책 3': ms[2],
+            '사례번호 전체': s.사례.map(r => r['id']).join(' '),
+          });
+        });
+      });
+      const columns = Object.keys(rows[0]).map(k => ({ key: k, label: k }));
+      downloadTableAsExcel(columns, rows, `재해시나리오_${cause.replace(/[\\/:*?"<>|]/g, '')}`);
+    }
+
+    function toggleScnMore(id, btn, n) {
+      const el = document.getElementById(id);
+      const open = el.classList.toggle('hidden');
+      btn.textContent = open ? `나머지 사례 ${n}건 보기` : '나머지 사례 접기';
+    }
+
     function renderByConstructionChart(data) {
       const agg = aggregateBy(data, '공종');
       // 공종은 고정 차원(현재 13개) — 개수를 박아두면 신규 공종이 조용히 잘린다
@@ -355,6 +522,7 @@
             backgroundColor: sorted.map((_, i) => CHART_COLORS.getAlpha(CHART_COLORS.getColor(i), 0.7)),
             borderColor: sorted.map((_, i) => CHART_COLORS.getColor(i)),
             borderWidth: 1, borderRadius: 3,
+            maxBarThickness: 44,      // 재해형태가 한둘뿐인 기인물(사다리 등)에서 막대가 지나치게 굵어진다 — 제한 없으면 90px 남짓
           }]
         },
         options: {
@@ -376,6 +544,13 @@
       const agg = aggregateBy(data, '재해형태');
       const sorted = topN(agg, 'count', 10);
 
+      // 막대 두께를 제한했으므로 막대가 적으면 빈 칸이 남는다 — 칸 높이를 막대 수에 맞춘다.
+      const box = document.getElementById('disaster-chart-box');
+      const inScenario = document.getElementById('card-by-disaster').parentElement.id === 'scenario-chart-slot';
+      box.style.height = inScenario
+        ? Math.max(170, Math.min(340, sorted.length * 46 + 66)) + 'px'
+        : '300px';
+
       cm.create('chart-by-disaster', {
         type: 'bar',
         data: {
@@ -385,6 +560,7 @@
             backgroundColor: sorted.map((_, i) => CHART_COLORS.getAlpha(CHART_COLORS.getColor(i), 0.7)),
             borderColor: sorted.map((_, i) => CHART_COLORS.getColor(i)),
             borderWidth: 1, borderRadius: 3,
+            maxBarThickness: 44,      // 재해형태가 한둘뿐인 기인물(사다리 등)에서 막대가 지나치게 굵어진다 — 제한 없으면 90px 남짓
           }]
         },
         options: {
@@ -415,6 +591,7 @@
             backgroundColor: sorted.map((_, i) => CHART_COLORS.getAlpha(CHART_COLORS.getColor(i), 0.7)),
             borderColor: sorted.map((_, i) => CHART_COLORS.getColor(i)),
             borderWidth: 1, borderRadius: 3,
+            maxBarThickness: 44,      // 재해형태가 한둘뿐인 기인물(사다리 등)에서 막대가 지나치게 굵어진다 — 제한 없으면 90px 남짓
           }]
         },
         options: {
